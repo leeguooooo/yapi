@@ -1,4 +1,4 @@
-// import './Footer.scss'; // 暂时注释掉
+import './Footer.scss';
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col } from 'antd';
