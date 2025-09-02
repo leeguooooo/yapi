@@ -2,7 +2,7 @@ import './View.scss';
 import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Table, Icon, Row, Col, Tooltip, message } from 'antd';
+import { Table, Icon, Row, Col, Tooltip, message, Tag } from 'antd';
 import { Link } from 'react-router-dom';
 import AceEditor from 'client/components/AceEditor/AceEditor';
 import { formatTime, safeArray } from '../../../../common.js';
@@ -11,6 +11,7 @@ import variable from '../../../../constants/variable';
 import constants from '../../../../constants/variable.js';
 import copy from 'copy-to-clipboard';
 import SchemaTable from '../../../../components/SchemaTable/SchemaTable.js';
+import OpenAPI3SchemaViewer from '../../../../components/OpenAPI3Schema/OpenAPI3SchemaViewer.js';
 
 const HTTP_METHOD = constants.HTTP_METHOD;
 
@@ -115,13 +116,33 @@ class View extends Component {
     }
   }
   res_body(res_body_type, res_body, res_body_is_json_schema) {
+    // 检查是否有 OpenAPI 3.1.1 特性
+    const hasOpenAPI3Features = this.props.curData.schema_composition || this.props.curData.openapi_raw;
+    
     if (res_body_type === 'json') {
       if (res_body_is_json_schema) {
-        return <SchemaTable dataSource={res_body} />;
+        return (
+          <div>
+            {hasOpenAPI3Features && this.props.curData.schema_composition && (
+              <OpenAPI3SchemaViewer
+                schema={res_body}
+                composition={this.props.curData.schema_composition}
+                title="返回数据 Schema (OpenAPI 3.1)"
+              />
+            )}
+            <SchemaTable dataSource={res_body} />
+          </div>
+        );
       } else {
         return (
           <div className="colBody">
-            {/* <div id="vres_body_json" style={{ minHeight: h * 16 + 100 }}></div> */}
+            {hasOpenAPI3Features && this.props.curData.schema_composition && (
+              <OpenAPI3SchemaViewer
+                schema={res_body}
+                composition={this.props.curData.schema_composition}
+                title="返回数据 Schema (OpenAPI 3.1)"
+              />
+            )}
             <AceEditor data={res_body} readOnly={true} style={{ minHeight: 600 }} />
           </div>
         );
@@ -137,11 +158,32 @@ class View extends Component {
 
   req_body(req_body_type, req_body_other, req_body_is_json_schema) {
     if (req_body_other) {
+      // 检查是否有 OpenAPI 3.1.1 特性
+      const hasOpenAPI3Features = this.props.curData.schema_composition || this.props.curData.openapi_raw;
+      
       if (req_body_is_json_schema && req_body_type === 'json') {
-        return <SchemaTable dataSource={req_body_other} />;
+        return (
+          <div>
+            {hasOpenAPI3Features && this.props.curData.schema_composition && (
+              <OpenAPI3SchemaViewer
+                schema={req_body_other}
+                composition={this.props.curData.schema_composition}
+                title="请求参数 Schema (OpenAPI 3.1)"
+              />
+            )}
+            <SchemaTable dataSource={req_body_other} />
+          </div>
+        );
       } else {
         return (
           <div className="colBody">
+            {hasOpenAPI3Features && this.props.curData.schema_composition && (
+              <OpenAPI3SchemaViewer
+                schema={req_body_other}
+                composition={this.props.curData.schema_composition}
+                title="请求参数 Schema (OpenAPI 3.1)"
+              />
+            )}
             <AceEditor
               data={req_body_other}
               readOnly={true}
@@ -481,6 +523,48 @@ class View extends Component {
               </span>
             </Col>
           </Row>
+          
+          {/* OpenAPI 3.1.1 特性展示 */}
+          {this.props.curData.deprecated && (
+            <Row className="row">
+              <Col span={4} className="colKey">
+                接口状态：
+              </Col>
+              <Col span={18} className="colValue">
+                <Tag color="red">已弃用 (Deprecated)</Tag>
+              </Col>
+            </Row>
+          )}
+          
+          {this.props.curData.servers && this.props.curData.servers.length > 0 && (
+            <Row className="row">
+              <Col span={4} className="colKey">
+                服务器配置：
+              </Col>
+              <Col span={18} className="colValue">
+                {this.props.curData.servers.map((server, index) => (
+                  <div key={index} style={{ marginBottom: '4px' }}>
+                    <Tag color="blue">{server.url}</Tag>
+                    {server.description && <span style={{ marginLeft: '8px', color: '#666' }}>{server.description}</span>}
+                  </div>
+                ))}
+              </Col>
+            </Row>
+          )}
+          
+          {this.props.curData.schema_composition && this.props.curData.schema_composition.discriminator && (
+            <Row className="row">
+              <Col span={4} className="colKey">
+                类型识别：
+              </Col>
+              <Col span={18} className="colValue">
+                <Tag color="orange">
+                  discriminator: {this.props.curData.schema_composition.discriminator.propertyName}
+                </Tag>
+              </Col>
+            </Row>
+          )}
+          
           {this.props.curData.custom_field_value &&
             this.props.custom_field.enable && (
               <Row className="row remark">
@@ -560,6 +644,7 @@ class View extends Component {
                 this.props.curData.req_body_other,
                 this.props.curData.req_body_is_json_schema
               )}
+              123123
         </div>
 
         <h2 className="interface-title">返回数据</h2>

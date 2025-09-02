@@ -8,6 +8,8 @@ module.exports = {
   },{
     name: 'import-swagger'
   },{
+    name: 'import-openapi3'
+  },{
     name: 'statistics'
   },{
     name: 'export-data'
@@ -15,6 +17,8 @@ module.exports = {
     name: 'gen-services'
   },{
     name: 'export-swagger2-data'
+  },{
+    name: 'export-openapi3'
   },{
     name: 'import-yapi-json'
   },{

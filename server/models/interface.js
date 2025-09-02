@@ -94,7 +94,26 @@ class interfaceModel extends baseModel {
       field3: String,
       api_opened: { type: Boolean, default: false },
       index: { type: Number, default: 0 },
-      tag: Array
+      tag: Array,
+      // OpenAPI 3.1.1 新增字段
+      schema_composition: {
+        type: { type: String, enum: ['oneOf', 'anyOf', 'allOf'] },
+        schemas: Array,
+        discriminator: {
+          propertyName: String,
+          mapping: Object
+        }
+      },
+      servers: [{
+        url: String,
+        description: String,
+        variables: Object
+      }],
+      deprecated: { type: Boolean, default: false },
+      webhooks: Object,
+      links: Object,
+      callbacks: Object,
+      openapi_raw: Object
     };
   }
 

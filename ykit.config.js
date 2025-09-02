@@ -34,7 +34,7 @@ function createScript(plugin, pathAlias) {
 }
 
 function initPlugins(configPlugin) {
-  configPlugin = require('../config.json').plugins;
+  configPlugin = require('./config.json').plugins;
   var systemConfigPlugin = require('./common/config.js').exts;
 
   var scripts = [];
@@ -59,6 +59,7 @@ function initPlugins(configPlugin) {
 }
 
 initPlugins();
+// Force recompile
 
 module.exports = {
   plugins: [
@@ -79,7 +80,7 @@ module.exports = {
           defaultQuery.plugins.push(['import', { libraryName: 'antd' }]);
           return defaultQuery;
         },
-        exclude: isWin ? /(tui-editor|node_modules\\(?!_?(yapi-plugin|json-schema-editor-visual)))/ : /(tui-editor|node_modules\/(?!_?(yapi-plugin|json-schema-editor-visual)))/
+        exclude: isWin ? /(tui-editor|node_modules\\(?!_?(yapi-plugin|json-schema-editor-visual|swagger-client)))/ : /(tui-editor|node_modules\/(?!_?(yapi-plugin|json-schema-editor-visual|swagger-client)))/
       }
     }
   ],
@@ -142,6 +143,19 @@ module.exports = {
         // baseConfig.resolve.alias.react = 'anujs';
         // baseConfig.resolve.alias['react-dom'] = 'anujs';
 
+        // Prevent Node.js modules from being bundled in browser
+        baseConfig.node = {
+          fs: 'empty',
+          net: 'empty',
+          tls: 'empty',
+          dns: 'empty',
+          child_process: 'empty',
+          crypto: 'empty',
+          stream: 'empty',
+          http: 'empty',
+          https: 'empty'
+        };
+
         baseConfig.output.prd.path = 'static/prd';
         baseConfig.output.prd.publicPath = '';
         baseConfig.output.prd.filename = '[name]@[chunkhash][ext]';
@@ -170,21 +184,20 @@ module.exports = {
         baseConfig.module.loaders.push({
           test: /\.(sass|scss)$/,
           loader: ykit.ExtractTextPlugin.extract(
-            require.resolve('css-loader') +
-              '?sourceMap!' +
-              require.resolve('sass-loader') +
-              '?sourceMap'
+            require.resolve('style-loader'),
+            require.resolve('css-loader') + '?sourceMap!' + require.resolve('sass-loader')
           )
         });
 
         baseConfig.module.preLoaders.push({
           test: /\.(js|jsx)$/,
-          exclude: /tui-editor|node_modules|google-diff.js/,
+          exclude: /tui-editor|node_modules|google-diff.js|server/,
           loader: 'eslint-loader'
         });
 
         baseConfig.module.preLoaders.push({
           test: /\.json$/,
+          exclude: /config\.json|server/,
           loader: 'json-loader'
         });
 

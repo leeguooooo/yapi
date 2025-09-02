@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import './Loading.scss';
+// import './Loading.scss'; // 暂时注释掉
 
 export default class Loading extends React.PureComponent {
   static defaultProps = {
@@ -13,8 +13,10 @@ export default class Loading extends React.PureComponent {
     super(props);
     this.state = { show: props.visible };
   }
-  componentWillReceiveProps(nextProps) {
-    this.setState({ show: nextProps.visible });
+  componentDidUpdate(prevProps) {
+    if (prevProps.visible !== this.props.visible) {
+      this.setState({ show: this.props.visible });
+    }
   }
   render() {
     return (

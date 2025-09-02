@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YApi OpenAPI 3.1.1 测试</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .info { background: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        textarea { width: 100%; height: 200px; margin: 10px 0; }
+        button { padding: 10px 20px; margin: 10px 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 3px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 YApi OpenAPI 3.1.1 功能测试</h1>
+        
+        <div class="section success">
+            <h2>✅ 后端状态检查</h2>
+            <p>YApi后端服务运行正常！</p>
+            <p>管理员账号: admin@admin.com / ymfe.org</p>
+        </div>
+
+        <div class="section info">
+            <h2>🧪 测试OpenAPI 3.1.1导入</h2>
+            <p>测试我们新增的OpenAPI 3.1.1支持，包括oneOf + discriminator功能</p>
+            
+            <h3>测试数据 (OpenAPI 3.1.1 with oneOf + discriminator):</h3>
+            <textarea id="openapi31-data" readonly>{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Pet Store API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/pets": {
+      "post": {
+        "summary": "Create a pet",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pet"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Pet": {
+        "oneOf": [
+          { "$ref": "#/components/schemas/Dog" },
+          { "$ref": "#/components/schemas/Cat" }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "dog": "#/components/schemas/Dog",
+            "cat": "#/components/schemas/Cat"
+          }
+        }
+      },
+      "Dog": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "const": "dog" },
+          "name": { "type": "string" },
+          "breed": { "type": "string" }
+        },
+        "required": ["type", "name"]
+      },
+      "Cat": {
+        "type": "object", 
+        "properties": {
+          "type": { "type": "string", "const": "cat" },
+          "name": { "type": "string" },
+          "indoor": { "type": "boolean" }
+        },
+        "required": ["type", "name"]
+      }
+    }
+  }
+}</textarea>
+            
+            <h3>API测试:</h3>
+            <button onclick="testLogin()">1. 登录测试</button>
+            <button onclick="testCreateProject()">2. 创建测试项目</button>
+            <button onclick="testImportOpenAPI31()">3. 导入OpenAPI 3.1.1</button>
+            
+            <div id="result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+        let projectId = null;
+
+        async function log(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+        }
+
+        async function testLogin() {
+            try {
+                log('开始登录测试...');
+                const response = await fetch('/api/user/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@admin.com',
+                        password: 'ymfe.org'
+                    })
+                });
+                const data = await response.json();
+                if (data.errcode === 0) {
+                    log('✅ 登录成功！用户: ' + data.data.username);
+                    authToken = 'logged-in';
+                } else {
+                    log('❌ 登录失败: ' + data.errmsg);
+                }
+            } catch (error) {
+                log('❌ 登录请求失败: ' + error.message);
+            }
+        }
+
+        async function testCreateProject() {
+            if (!authToken) {
+                log('❌ 请先登录');
+                return;
+            }
+            
+            try {
+                log('开始创建测试项目...');
+                const response = await fetch('/api/project/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: 'OpenAPI 3.1.1 测试项目',
+                        basepath: '/openapi31-test',
+                        desc: '测试OpenAPI 3.1.1功能',
+                        group_id: 0
+                    })
+                });
+                const data = await response.json();
+                if (data.errcode === 0) {
+                    projectId = data.data._id;
+                    log('✅ 项目创建成功！项目ID: ' + projectId);
+                } else {
+                    log('❌ 项目创建失败: ' + data.errmsg);
+                }
+            } catch (error) {
+                log('❌ 项目创建请求失败: ' + error.message);
+            }
+        }
+
+        async function testImportOpenAPI31() {
+            if (!projectId) {
+                log('❌ 请先创建项目');
+                return;
+            }
+
+            try {
+                log('开始获取项目token...');
+                // 先获取项目token
+                const tokenResponse = await fetch(`/api/project/token?project_id=${projectId}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const tokenData = await tokenResponse.json();
+                if (tokenData.errcode !== 0) {
+                    log('❌ 获取token失败: ' + tokenData.errmsg);
+                    return;
+                }
+                
+                const projectToken = tokenData.data;
+                log('✅ 获取到项目token: ' + projectToken.substr(0, 10) + '...');
+
+                log('开始导入OpenAPI 3.1.1数据...');
+                const openapi31Data = document.getElementById('openapi31-data').value;
+                const response = await fetch('/api/open/import_data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'openapi3',
+                        project_id: projectId,
+                        json: openapi31Data,
+                        token: projectToken
+                    })
+                });
+                const data = await response.json();
+                if (data.errcode === 0) {
+                    log('✅ OpenAPI 3.1.1导入成功！');
+                    log('📊 导入统计: ' + JSON.stringify(data.data));
+                } else {
+                    log('❌ 导入失败: ' + data.errmsg);
+                }
+            } catch (error) {
+                log('❌ 导入请求失败: ' + error.message);
+            }
+        }
+        
+        log('页面加载完成，可以开始测试！');
+    </script>
+</body>
+</html>

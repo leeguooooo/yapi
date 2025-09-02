@@ -1,0 +1,73 @@
+.openapi3-schema-viewer {
+  .openapi3-composition {
+    border: 1px solid #d9d9d9;
+    margin-bottom: 16px;
+    
+    .composition-header {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .composition-schemas {
+      .ant-collapse-header {
+        padding: 8px 16px !important;
+        font-size: 13px;
+      }
+      
+      .ant-collapse-content-box {
+        padding: 12px;
+      }
+    }
+    
+    .discriminator-mapping {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #f0f0f0;
+      
+      h4 {
+        color: #666;
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+      
+      .mapping-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      
+      .mapping-tag {
+        font-family: 'Monaco', 'Consolas', monospace;
+        font-size: 12px;
+      }
+    }
+  }
+  
+  .schema-content {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 12px;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    max-height: 300px;
+    overflow: auto;
+    font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+    color: #495057;
+  }
+  
+  .ant-alert {
+    .ant-alert-message {
+      font-weight: 500;
+      color: #1890ff;
+    }
+    
+    .ant-alert-description {
+      color: #666;
+      font-size: 13px;
+    }
+  }
+}

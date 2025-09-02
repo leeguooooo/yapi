@@ -58,7 +58,15 @@ class projectModel extends baseModel {
       is_mock_open: { type: Boolean, default: false },
       strice: { type: Boolean, default: false },
       is_json5: { type: Boolean, default: true },
-      tag: [{name: String, desc: String}]
+      tag: [{name: String, desc: String}],
+      // OpenAPI 3.1.1 新增字段
+      openapi_servers: [{
+        url: String,
+        description: String,
+        variables: Object
+      }],
+      openapi_version: { type: String, default: '3.0.0' },
+      webhooks: Object
     };
   }
 

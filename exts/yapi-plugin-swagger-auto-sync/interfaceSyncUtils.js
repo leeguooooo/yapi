@@ -24,12 +24,30 @@ class syncUtils {
     //初始化定时任务
     async init() {
         let allSyncJob = await this.syncModel.listAll();
-        for (let i = 0, len = allSyncJob.length; i < len; i++) {
-            let syncItem = allSyncJob[i];
+        yapi.commons.log('找到 ' + allSyncJob.length + ' 个同步任务配置');
+        
+        // 去重：按project_id分组，只保留最新的配置
+        const uniqueJobs = new Map();
+        allSyncJob.forEach(syncItem => {
+            const existing = uniqueJobs.get(syncItem.project_id);
+            if (!existing || syncItem.up_time > existing.up_time) {
+                uniqueJobs.set(syncItem.project_id, syncItem);
+            }
+        });
+        
+        yapi.commons.log('去重后剩余 ' + uniqueJobs.size + ' 个唯一同步任务');
+        
+        // 启动唯一的同步任务
+        uniqueJobs.forEach(syncItem => {
+            yapi.commons.log('项目 ' + syncItem.project_id + ' 同步配置: ' + 
+                           'URL=' + syncItem.sync_json_url + ', ' +
+                           '启用=' + syncItem.is_sync_open + ', ' +
+                           '模式=' + syncItem.sync_mode);
+                           
             if (syncItem.is_sync_open) {
                 this.addSyncJob(syncItem.project_id, syncItem.sync_cron, syncItem.sync_json_url, syncItem.sync_mode, syncItem.uid);
             }
-        }
+        });
     }
 
     /**
@@ -109,10 +127,31 @@ class syncUtils {
             merge: syncMode,
             token: projectToken
         }
+        
+        // 创建模拟的上下文对象用于API调用
         let requestObj = {
-            params: _params
+            params: _params,
+            body: {} // 用于存储响应
         };
-        await this.openController.importData(requestObj);
+        
+        // 创建一个模拟的ctx对象
+        const mockCtx = {
+            params: _params,
+            body: {},
+            request: { body: _params }
+        };
+        
+        try {
+            await this.openController.importData(mockCtx);
+            requestObj.body = mockCtx.body;
+            
+            if (mockCtx.body.errcode !== 0) {
+                yapi.commons.log('同步失败 - 项目' + projectId + ': ' + mockCtx.body.errmsg);
+            }
+        } catch (e) {
+            yapi.commons.log('导入数据时发生错误: ' + e.message);
+            requestObj.body = { errcode: 1, errmsg: e.message };
+        }
 
         //同步成功就更新同步表的数据
         if (requestObj.body.errcode == 0) {
@@ -145,8 +184,15 @@ class syncUtils {
      * @param {*} projectId 
      */
     saveSyncLog(errcode, syncMode, moremsg, uid, projectId) {
+        const logMessage = '自动同步接口状态:' + (errcode == 0 ? '成功,' : '失败,') + "合并模式:" + this.getSyncModeName(syncMode) + ",更多信息:" + moremsg;
+        
+        // 只在失败时输出到控制台
+        if (errcode !== 0) {
+            yapi.commons.log('同步失败 - 项目' + projectId + ': ' + moremsg);
+        }
+        
         yapi.commons.saveLog({
-            content: '自动同步接口状态:' + (errcode == 0 ? '成功,' : '失败,') + "合并模式:" + this.getSyncModeName(syncMode) + ",更多信息:" + moremsg,
+            content: logMessage,
             type: 'project',
             uid: uid,
             username: "自动同步用户",
@@ -176,9 +222,9 @@ class syncUtils {
             }
 
             token = getToken(token, uid);
-
             return token;
         } catch (err) {
+            yapi.commons.log('获取项目token时发生错误: ' + err.message);
             return "";
         }
     }

@@ -1,0 +1,292 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAPI 3.1 Test API",
+    "version": "1.0.0",
+    "description": "测试 OpenAPI 3.1.1 特性，包括 oneOf、anyOf、discriminator 等"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "生产环境"
+    },
+    {
+      "url": "https://staging.api.example.com/v1",
+      "description": "测试环境"
+    }
+  ],
+  "paths": {
+    "/pets": {
+      "get": {
+        "summary": "获取所有宠物",
+        "description": "返回所有宠物的列表",
+        "tags": ["pets"],
+        "responses": {
+          "200": {
+            "description": "成功返回宠物列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Pet"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "创建新宠物",
+        "description": "使用 oneOf 和 discriminator 支持不同类型的宠物",
+        "tags": ["pets"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pet"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "宠物创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pet"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "无效的请求参数"
+          }
+        }
+      }
+    },
+    "/pets/{petId}": {
+      "get": {
+        "summary": "根据 ID 获取宠物",
+        "tags": ["pets"],
+        "parameters": [
+          {
+            "name": "petId",
+            "in": "path",
+            "required": true,
+            "description": "宠物 ID",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功返回宠物信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pet"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "宠物未找到"
+          }
+        }
+      }
+    },
+    "/vehicles": {
+      "post": {
+        "summary": "创建车辆",
+        "description": "展示 anyOf 的使用场景",
+        "tags": ["vehicles"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Vehicle"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "车辆创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vehicle"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Pet": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Cat"
+          },
+          {
+            "$ref": "#/components/schemas/Dog"
+          },
+          {
+            "$ref": "#/components/schemas/Bird"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "petType",
+          "mapping": {
+            "cat": "#/components/schemas/Cat",
+            "dog": "#/components/schemas/Dog", 
+            "bird": "#/components/schemas/Bird"
+          }
+        }
+      },
+      "Cat": {
+        "type": "object",
+        "required": ["petType", "name", "meowVolume"],
+        "properties": {
+          "petType": {
+            "type": "string",
+            "enum": ["cat"]
+          },
+          "name": {
+            "type": "string",
+            "description": "猫咪的名字"
+          },
+          "meowVolume": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "叫声音量等级"
+          },
+          "breed": {
+            "type": "string",
+            "description": "品种",
+            "examples": ["Persian", "Siamese", "Maine Coon"]
+          }
+        }
+      },
+      "Dog": {
+        "type": "object",
+        "required": ["petType", "name", "barkVolume"],
+        "properties": {
+          "petType": {
+            "type": "string",
+            "enum": ["dog"]
+          },
+          "name": {
+            "type": "string",
+            "description": "狗狗的名字"
+          },
+          "barkVolume": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "叫声音量等级"
+          },
+          "breed": {
+            "type": "string",
+            "description": "品种",
+            "examples": ["Golden Retriever", "Labrador", "German Shepherd"]
+          }
+        }
+      },
+      "Bird": {
+        "type": "object",
+        "required": ["petType", "name", "wingspan"],
+        "properties": {
+          "petType": {
+            "type": "string",
+            "enum": ["bird"]
+          },
+          "name": {
+            "type": "string",
+            "description": "鸟儿的名字"
+          },
+          "wingspan": {
+            "type": "number",
+            "minimum": 0,
+            "description": "翼展长度(厘米)"
+          },
+          "canFly": {
+            "type": "boolean",
+            "description": "是否会飞",
+            "default": true
+          }
+        }
+      },
+      "Vehicle": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Car"
+          },
+          {
+            "$ref": "#/components/schemas/Motorcycle"
+          }
+        ],
+        "description": "车辆可以是汽车或摩托车"
+      },
+      "Car": {
+        "type": "object",
+        "required": ["type", "doors"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["car"]
+          },
+          "doors": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 6,
+            "description": "车门数量"
+          },
+          "brand": {
+            "type": "string",
+            "description": "汽车品牌"
+          }
+        }
+      },
+      "Motorcycle": {
+        "type": "object",
+        "required": ["type", "engineSize"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["motorcycle"]
+          },
+          "engineSize": {
+            "type": "number",
+            "description": "发动机排量(cc)"
+          },
+          "brand": {
+            "type": "string",
+            "description": "摩托车品牌"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "pets",
+      "description": "宠物相关操作"
+    },
+    {
+      "name": "vehicles", 
+      "description": "车辆相关操作"
+    }
+  ]
+}

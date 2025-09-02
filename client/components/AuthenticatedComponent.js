@@ -4,16 +4,6 @@ import PropTypes from 'prop-types';
 import { changeMenuItem } from '../reducer/modules/menu';
 
 export function requireAuthentication(Component) {
-  return @connect(
-    state => {
-      return {
-        isAuthenticated: state.user.isLogin
-      };
-    },
-    {
-      changeMenuItem
-    }
-  )
   class AuthenticatedComponent extends React.PureComponent {
     constructor(props) {
       super(props);
@@ -25,10 +15,10 @@ export function requireAuthentication(Component) {
       history: PropTypes.object,
       changeMenuItem: PropTypes.func
     };
-    componentWillMount() {
+    componentDidMount() {
       this.checkAuth();
     }
-    componentWillReceiveProps() {
+    componentDidUpdate() {
       this.checkAuth();
     }
     checkAuth() {
@@ -40,5 +30,21 @@ export function requireAuthentication(Component) {
     render() {
       return <div>{this.props.isAuthenticated ? <Component {...this.props} /> : null}</div>;
     }
-  };
+  }
+  
+  const ConnectedComponent = connect(
+    state => {
+      return {
+        isAuthenticated: state.user.isLogin
+      };
+    },
+    {
+      changeMenuItem
+    }
+  )(AuthenticatedComponent);
+  
+  // Ensure the component has a displayName for better debugging
+  ConnectedComponent.displayName = `AuthenticatedComponent(${Component.displayName || Component.name || 'Component'})`;
+  
+  return ConnectedComponent;
 }

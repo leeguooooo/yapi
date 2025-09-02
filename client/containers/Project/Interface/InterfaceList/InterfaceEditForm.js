@@ -19,8 +19,8 @@ const ReqBodySchema = jSchema({ lang: 'zh_CN', mock: MOCK_SOURCE });
 const TabPane = Tabs.TabPane;
 
 
-require('common/tui-editor/dist/tui-editor.min.css'); // editor ui
-require('common/tui-editor/dist/tui-editor-contents.min.css'); // editor content
+// require('common/tui-editor/dist/tui-editor.min.css'); // editor ui - 暂时注释掉
+// require('common/tui-editor/dist/tui-editor-contents.min.css'); // editor content - 暂时注释掉
 require('./editor.css');
 
 
