@@ -643,8 +643,7 @@ class View extends Component {
                 this.props.curData.req_body_type,
                 this.props.curData.req_body_other,
                 this.props.curData.req_body_is_json_schema
-              )}
-              123123
+          )}
         </div>
 
         <h2 className="interface-title">返回数据</h2>

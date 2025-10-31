@@ -127,16 +127,16 @@ class InterfaceList extends Component {
     this.handleRequest(this.props);
   }
 
-  componentWillReceiveProps(nextProps) {
-    let _actionId = nextProps.match.params.actionId;
+  componentDidUpdate(prevProps) {
+    let _actionId = this.props.match.params.actionId;
 
-    if (this.actionId !== _actionId) {
+    if (prevProps.match.params.actionId !== _actionId) {
       this.actionId = _actionId;
       this.setState(
         {
           current: 1
         },
-        () => this.handleRequest(nextProps)
+        () => this.handleRequest(this.props)
       );
     }
   }

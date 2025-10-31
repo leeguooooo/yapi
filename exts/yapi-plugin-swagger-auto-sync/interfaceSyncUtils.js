@@ -120,8 +120,18 @@ class syncUtils {
             return;
         }
 
+        // 自动检测 OpenAPI 版本，选择合适的导入器
+        let importType = 'swagger';  // 默认使用 swagger
+        if (newSwaggerJsonData && typeof newSwaggerJsonData === 'object') {
+            if (newSwaggerJsonData.openapi && newSwaggerJsonData.openapi.startsWith('3.')) {
+                importType = 'openapi3';
+            } else if (newSwaggerJsonData.swagger && newSwaggerJsonData.swagger.startsWith('2.')) {
+                importType = 'swagger';
+            }
+        }
+
         let _params = {
-            type: 'swagger',
+            type: importType,
             json: newSwaggerJsonData,
             project_id: projectId,
             merge: syncMode,

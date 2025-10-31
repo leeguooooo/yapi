@@ -26,8 +26,13 @@ class MyPopConfirm extends Component {
     this.setState({ visible: false });
   }
 
-  componentWillReceiveProps() {
-    this.setState({ visible: true });
+  componentDidUpdate(prevProps) {
+    // 只在 props 发生变化时重置 visible，避免用户点击后立即重新显示
+    if (prevProps.msg !== this.props.msg || prevProps.callback !== this.props.callback) {
+      if (!this.state.visible) {
+        this.setState({ visible: true });
+      }
+    }
   }
 
   render() {

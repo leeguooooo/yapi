@@ -31,7 +31,9 @@ const shouldSuppressMessage = (message) => {
     'legacy contextTypes API',
     'Use React.createContext()',
     'findDOMNode is deprecated',
-    'findDOMNode will be removed'
+    'findDOMNode will be removed',
+    'unmountComponentAtNode is deprecated',
+    'Switch to the createRoot API'
   ];
   
   return suppressedMessages.some(msg => message.includes(msg));

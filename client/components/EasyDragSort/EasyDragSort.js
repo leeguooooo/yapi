@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-
 import PropTypes from 'prop-types';
 
 /**
@@ -31,6 +30,11 @@ export default class EasyDragSort extends React.Component {
     onlyChild: PropTypes.string
   };
 
+  constructor(props) {
+    super(props);
+    this.itemRefs = {};
+  }
+
   render() {
     const that = this;
     const props = this.props;
@@ -55,7 +59,19 @@ export default class EasyDragSort extends React.Component {
           if (React.isValidElement(item)) {
             return React.cloneElement(item, {
               draggable: onlyChild ? false : true,
-              ref: 'x' + index,
+              ref: (el) => {
+                // 获取真实的 DOM 节点，支持组件实例的情况
+                let domNode = el;
+                if (el) {
+                  // 判断是否为真实 DOM 节点
+                  const isDOMNode = el.nodeType === 1;
+                  // 如果不是 DOM 节点（可能是组件实例），尝试获取真实 DOM
+                  if (!isDOMNode && typeof ReactDOM.findDOMNode === 'function') {
+                    domNode = ReactDOM.findDOMNode(el);
+                  }
+                }
+                that.itemRefs['x' + index] = domNode;
+              },
               'data-ref': 'x' + index,
               onDragStart: function() {
                 curDragIndex = index;
@@ -84,8 +100,8 @@ export default class EasyDragSort extends React.Component {
                 if (!el) {
                   return;
                 }
-                let ref = that.refs[el.getAttribute('data-ref')];
-                let dom = ReactDOM.findDOMNode(ref);
+                let refKey = el.getAttribute('data-ref');
+                let dom = that.itemRefs[refKey];
                 if (dom) {
                   dom.draggable = target.getAttribute(onlyChild) ? true : false;
                 }

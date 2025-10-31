@@ -34,8 +34,6 @@ export default class Run extends Component {
 
   componentWillMount() {}
 
-  componentWillReceiveProps() {}
-
   savePostmanRef = postman => {
     this.postman = postman;
   };

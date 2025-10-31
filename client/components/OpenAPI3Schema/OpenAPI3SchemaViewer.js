@@ -27,13 +27,45 @@ class OpenAPI3SchemaViewer extends PureComponent {
   renderComposition = (composition) => {
     if (!composition) return null;
 
-    const { type, schemas, discriminator } = composition;
+    const { type, schemas = [], discriminator } = composition;
+    
+    // 如果没有 type，尝试从 composition 对象的键中推断
+    let compositionType = type;
+    if (!compositionType) {
+      if (composition.oneOf) {
+        compositionType = 'oneOf';
+      } else if (composition.anyOf) {
+        compositionType = 'anyOf';  
+      } else if (composition.allOf) {
+        compositionType = 'allOf';
+      }
+    }
+    
+    // 如果 schemas 为空但有 oneOf/anyOf/allOf 数据，使用它们
+    let actualSchemas = schemas;
+    if (schemas.length === 0) {
+      if (composition.oneOf && composition.oneOf.length > 0) {
+        actualSchemas = composition.oneOf;
+        compositionType = 'oneOf';
+      } else if (composition.anyOf && composition.anyOf.length > 0) {
+        actualSchemas = composition.anyOf;
+        compositionType = 'anyOf';
+      } else if (composition.allOf && composition.allOf.length > 0) {
+        actualSchemas = composition.allOf;
+        compositionType = 'allOf';
+      }
+    }
+    
+    // 如果仍然没有有效数据，不渲染组件
+    if (!compositionType || actualSchemas.length === 0) {
+      return null;
+    }
     
     return (
       <Card size="small" className="openapi3-composition">
         <div className="composition-header">
-          <Tag color={type === 'oneOf' ? 'blue' : type === 'anyOf' ? 'green' : 'purple'}>
-            {type}
+          <Tag color={compositionType === 'oneOf' ? 'blue' : compositionType === 'anyOf' ? 'green' : 'purple'}>
+            {compositionType}
           </Tag>
           {discriminator && (
             <Tag color="orange" style={{ marginLeft: 8 }}>
@@ -43,7 +75,7 @@ class OpenAPI3SchemaViewer extends PureComponent {
         </div>
         
         <Collapse size="small" className="composition-schemas">
-          {schemas && schemas.map((schema, index) => (
+          {actualSchemas && actualSchemas.map((schema, index) => (
             <Panel 
               header={
                 <span>

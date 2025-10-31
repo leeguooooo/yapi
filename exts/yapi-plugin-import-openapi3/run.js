@@ -16,21 +16,27 @@ function handlePath(path) {
 }
 
 function detectCompositionType(schema) {
-  // 简化处理：如果检测到组合模式，展平处理而不标记为特殊类型
   if (schema.oneOf || schema.anyOf || schema.allOf) {
-    // 对于allOf，可以合并properties
-    if (schema.allOf) {
-      const merged = { type: 'object', properties: {} };
-      schema.allOf.forEach(subSchema => {
-        if (subSchema.properties) {
-          Object.assign(merged.properties, subSchema.properties);
-        }
-      });
-      return merged;
+    // 返回组合模式的完整信息，而不是展平
+    const composition = {};
+    
+    if (schema.oneOf) {
+      composition.type = 'oneOf';
+      composition.schemas = schema.oneOf;
+    } else if (schema.anyOf) {
+      composition.type = 'anyOf';  
+      composition.schemas = schema.anyOf;
+    } else if (schema.allOf) {
+      composition.type = 'allOf';
+      composition.schemas = schema.allOf;
     }
-    // 对于oneOf/anyOf，使用第一个schema作为示例
-    if (schema.oneOf) return schema.oneOf[0];
-    if (schema.anyOf) return schema.anyOf[0];
+    
+    // 保存 discriminator 信息
+    if (schema.discriminator) {
+      composition.discriminator = schema.discriminator;
+    }
+    
+    return composition;
   }
   return null;
 }
@@ -63,11 +69,17 @@ function handleRequestBody(requestBody, api) {
     if (contentTypes.includes('application/json')) {
       const jsonContent = requestBody.content['application/json'];
       if (jsonContent.schema) {
-        api.req_body_other = JSON.stringify(jsonContent.schema, null, 2);
-        
         const composition = detectCompositionType(jsonContent.schema);
         if (composition) {
-          api.req_body_other = JSON.stringify(composition, null, 2);
+          // 保存组合模式信息到专门字段
+          api.schema_composition = composition;
+          // 对于请求体，使用第一个schema作为示例展示
+          const exampleSchema = composition.schemas && composition.schemas[0] 
+            ? composition.schemas[0] 
+            : jsonContent.schema;
+          api.req_body_other = JSON.stringify(exampleSchema, null, 2);
+        } else {
+          api.req_body_other = JSON.stringify(jsonContent.schema, null, 2);
         }
       }
     } else if (contentTypes.includes('application/x-www-form-urlencoded') || 
@@ -126,7 +138,7 @@ function handleParameters(parameters, api) {
   });
 }
 
-function handleResponse(responses) {
+function handleResponseWithComposition(responses, api) {
   if (!responses || typeof responses !== 'object') {
     return '';
   }
@@ -153,16 +165,17 @@ function handleResponse(responses) {
       if (jsonContent.schema) {
         const composition = detectCompositionType(jsonContent.schema);
         if (composition) {
-          return JSON.stringify(composition, null, 2);
+          // 如果请求体没有设置组合模式，用响应体的组合模式
+          if (!api.schema_composition) {
+            api.schema_composition = composition;
+          }
+          // 返回第一个schema作为示例
+          const exampleSchema = composition.schemas && composition.schemas[0] 
+            ? composition.schemas[0] 
+            : jsonContent.schema;
+          return JSON.stringify(exampleSchema, null, 2);
         }
         return JSON.stringify(jsonContent.schema, null, 2);
-      }
-    }
-    
-    if (contentTypes.length > 0) {
-      const firstContent = response.content[contentTypes[0]];
-      if (firstContent.schema) {
-        return JSON.stringify(firstContent.schema, null, 2);
       }
     }
   }
@@ -211,7 +224,8 @@ function handleOpenAPIData(data, originTags = []) {
   handleParameters(data.parameters, api);
   handleRequestBody(data.requestBody, api);
   
-  api.res_body = handleResponse(data.responses);
+  const responseResult = handleResponseWithComposition(data.responses, api);
+  api.res_body = responseResult;
   
   try {
     JSON.parse(api.res_body);
