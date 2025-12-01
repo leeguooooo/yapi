@@ -2,9 +2,13 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import * as sass from 'sass'
+import { ViteMcp } from 'vite-plugin-mcp'
 
 // Silence Dart Sass legacy API warnings until upstream tooling moves to the new API
 process.env.SASS_SILENCE_DEPRECATIONS = 'legacy-js-api,import,slash-div'
+
+const isProd = process.env.NODE_ENV === 'production'
+const isMcpEnabled = process.env.MCP_ENABLED !== 'false'
 
 export default defineConfig({
   plugins: [
@@ -22,8 +26,14 @@ export default defineConfig({
           ['@babel/plugin-proposal-object-rest-spread', { loose: true }]
         ]
       }
-    })
-  ],
+    }),
+    !isProd && isMcpEnabled
+      ? ViteMcp({
+          // Avoid auto-updating editor configs; only expose MCP server at /__mcp/sse
+          updateConfig: false
+        })
+      : null
+  ].filter(Boolean),
   
   root: 'client',
   
