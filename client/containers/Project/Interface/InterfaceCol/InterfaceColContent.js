@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
 //import constants from '../../../../constants/variable.js'
-import { Tooltip, Icon,Input, Button, Row, Col, Spin, Modal, message, Select, Switch } from 'antd';
+import { Tooltip, Icon,Input, Button, Row, Col, Spin, Modal, message, Select, Switch, Table } from 'antd';
 import {
   fetchInterfaceColList,
   fetchCaseList,
@@ -13,11 +13,8 @@ import {
 } from '../../../../reducer/modules/interfaceCol';
 import HTML5Backend from 'react-dnd-html5-backend';
 import { getToken, getEnv } from '../../../../reducer/modules/project';
-import { DragDropContext } from 'react-dnd';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import AceEditor from 'client/components/AceEditor/AceEditor';
-import * as Table from 'reactabular-table';
-import * as dnd from 'reactabular-dnd';
-import * as resolve from 'table-resolver';
 import axios from 'axios';
 import CaseReport from './CaseReport.js';
 import _ from 'underscore';
@@ -44,6 +41,48 @@ import copy from 'copy-to-clipboard';
 const defaultModalStyle = {
   top: 10
 }
+
+const rowDragType = 'col-row';
+
+const DraggableBodyRow = ({ index, moveRow, onDrop, className, style, ...restProps }) => {
+  const ref = React.useRef();
+  const [{ isOver, dropClassName }, drop] = useDrop({
+    accept: rowDragType,
+    collect: monitor => {
+      const { index: dragIndex } = monitor.getItem() || {};
+      if (dragIndex === index) {
+        return {};
+      }
+      return {
+        isOver: monitor.isOver(),
+        dropClassName: dragIndex < index ? ' drop-over-downward' : ' drop-over-upward'
+      };
+    },
+    drop: item => {
+      if (item.index !== index) {
+        moveRow(item.index, index);
+        onDrop && onDrop();
+        item.index = index;
+      }
+    }
+  });
+
+  const [, drag] = useDrag({
+    type: rowDragType,
+    item: { index }
+  });
+
+  drag(drop(ref));
+
+  return (
+    <tr
+      ref={ref}
+      className={`${className || ''}${isOver ? dropClassName : ''}`}
+      style={{ cursor: 'move', ...style }}
+      {...restProps}
+    />
+  );
+};
 
 function handleReport(json) {
   try {
@@ -80,7 +119,6 @@ function handleReport(json) {
   }
 )
 @withRouter
-@DragDropContext(HTML5Backend)
 class InterfaceColContent extends Component {
   static propTypes = {
     match: PropTypes.object,
@@ -442,26 +480,20 @@ class InterfaceColContent extends Component {
     return obj;
   };
 
-  onRow(row) {
-    return { rowId: row.id, onMove: this.onMoveRow, onDrop: this.onDrop };
-  }
-
-  onDrop = () => {
-    let changes = [];
-    this.state.rows.forEach((item, index) => {
-      changes.push({ id: item._id, index: index });
-    });
+  saveRowOrder = () => {
+    const changes = this.state.rows.map((item, index) => ({ id: item._id, index }));
     axios.post('/api/col/up_case_index', changes).then(() => {
       this.props.fetchInterfaceColList(this.props.match.params.id);
     });
   };
-  onMoveRow({ sourceRowId, targetRowId }) {
-    let rows = dnd.moveRows({ sourceRowId, targetRowId })(this.state.rows);
 
-    if (rows) {
-      this.setState({ rows });
-    }
-  }
+  moveRow = (dragIndex, hoverIndex) => {
+    const rows = [...this.state.rows];
+    const dragRow = rows[dragIndex];
+    rows.splice(dragIndex, 1);
+    rows.splice(hoverIndex, 0, dragRow);
+    this.setState({ rows });
+  };
 
   onChangeTest = d => {
     
@@ -662,208 +694,104 @@ class InterfaceColContent extends Component {
     const currProjectId = this.props.currProject._id;
     const columns = [
       {
-        property: 'casename',
-        header: {
-          label: '用例名称'
-        },
-        props: {
-          style: {
-            width: '250px'
-          }
-        },
-        cell: {
-          formatters: [
-            (text, { rowData }) => {
-              let record = rowData;
-              return (
-                <Link to={'/project/' + currProjectId + '/interface/case/' + record._id}>
-                  {record.casename.length > 23
-                    ? record.casename.substr(0, 20) + '...'
-                    : record.casename}
-                </Link>
-              );
-            }
-          ]
-        }
+        title: '用例名称',
+        dataIndex: 'casename',
+        key: 'casename',
+        width: 250,
+        render: (text, record) => (
+          <Link to={`/project/${currProjectId}/interface/case/${record._id}`}>
+            {record.casename && record.casename.length > 23
+              ? record.casename.substr(0, 20) + '...'
+              : record.casename}
+          </Link>
+        )
       },
       {
-        header: {
-          label: 'key',
-          formatters: [
-            () => {
-              return (
-                <Tooltip
-                  title={
-                    <span>
-                      {' '}
-                      每个用例都有唯一的key，用于获取所匹配接口的响应数据，例如使用{' '}
-                      <a
-                        href="https://hellosean1025.github.io/yapi/documents/case.html#%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%8C%E7%BC%96%E8%BE%91%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B"
-                        className="link-tooltip"
-                        target="blank"
-                      >
-                        {' '}
-                        变量参数{' '}
-                      </a>{' '}
-                      功能{' '}
-                    </span>
-                  }
-                >
-                  Key
-                </Tooltip>
-              );
-            }
-          ]
-        },
-        props: {
-          style: {
-            width: '100px'
-          }
-        },
-        cell: {
-          formatters: [
-            (value, { rowData }) => {
-              return <span>{rowData._id}</span>;
-            }
-          ]
-        }
+        title: (
+          <Tooltip title={
+            <span>
+              每个用例都有唯一的 key，用于变量参数等功能
+            </span>
+          }>
+            Key
+          </Tooltip>
+        ),
+        dataIndex: '_id',
+        key: 'key',
+        width: 100,
+        render: value => <span>{value}</span>
       },
       {
-        property: 'test_status',
-        header: {
-          label: '状态'
-        },
-        props: {
-          style: {
-            width: '100px'
+        title: '状态',
+        dataIndex: 'test_status',
+        key: 'status',
+        width: 100,
+        render: (value, record) => {
+          const id = record._id;
+          const code = this.reports[id] ? this.reports[id].code : 0;
+          if (record.test_status === 'loading') {
+            return (
+              <div>
+                <Spin />
+              </div>
+            );
           }
-        },
-        cell: {
-          formatters: [
-            (value, { rowData }) => {
-              let id = rowData._id;
-              let code = this.reports[id] ? this.reports[id].code : 0;
-              if (rowData.test_status === 'loading') {
-                return (
-                  <div>
-                    <Spin />
-                  </div>
-                );
-              }
 
-              switch (code) {
-                case 0:
-                  return (
-                    <div>
-                      <Tooltip title="Pass">
-                        <Icon
-                          style={{
-                            color: '#00a854'
-                          }}
-                          type="check-circle"
-                        />
-                      </Tooltip>
-                    </div>
-                  );
-                case 400:
-                  return (
-                    <div>
-                      <Tooltip title="请求异常">
-                        <Icon
-                          type="info-circle"
-                          style={{
-                            color: '#f04134'
-                          }}
-                        />
-                      </Tooltip>
-                    </div>
-                  );
-                case 1:
-                  return (
-                    <div>
-                      <Tooltip title="验证失败">
-                        <Icon
-                          type="exclamation-circle"
-                          style={{
-                            color: '#ffbf00'
-                          }}
-                        />
-                      </Tooltip>
-                    </div>
-                  );
-                default:
-                  return (
-                    <div>
-                      <Icon
-                        style={{
-                          color: '#00a854'
-                        }}
-                        type="check-circle"
-                      />
-                    </div>
-                  );
-              }
-            }
-          ]
-        }
-      },
-      {
-        property: 'path',
-        header: {
-          label: '接口路径'
-        },
-        cell: {
-          formatters: [
-            (text, { rowData }) => {
-              let record = rowData;
+          switch (code) {
+            case 0:
               return (
-                <Tooltip title="跳转到对应接口">
-                  <Link to={`/project/${record.project_id}/interface/api/${record.interface_id}`}>
-                    {record.path.length > 23 ? record.path + '...' : record.path}
-                  </Link>
+                <Tooltip title="Pass">
+                  <Icon style={{ color: '#00a854' }} type="check-circle" />
                 </Tooltip>
               );
-            }
-          ]
+            case 400:
+              return (
+                <Tooltip title="请求异常">
+                  <Icon type="info-circle" style={{ color: '#f04134' }} />
+                </Tooltip>
+              );
+            case 1:
+              return (
+                <Tooltip title="验证失败">
+                  <Icon type="exclamation-circle" style={{ color: '#ffbf00' }} />
+                </Tooltip>
+              );
+            default:
+              return <Icon style={{ color: '#00a854' }} type="check-circle" />;
+          }
         }
       },
       {
-        header: {
-          label: '测试报告'
-        },
-        props: {
-          style: {
-            width: '200px'
-          }
-        },
-        cell: {
-          formatters: [
-            (text, { rowData }) => {
-              let reportFun = () => {
-                if (!this.reports[rowData.id]) {
-                  return null;
-                }
-                return <Button onClick={() => this.openReport(rowData.id)}>测试报告</Button>;
-              };
-              return <div className="interface-col-table-action">{reportFun()}</div>;
-            }
-          ]
-        }
+        title: '接口路径',
+        dataIndex: 'path',
+        key: 'path',
+        render: (text, record) => (
+          <Tooltip title="跳转到对应接口">
+            <Link to={`/project/${record.project_id}/interface/api/${record.interface_id}`}>
+              {record.path && record.path.length > 23 ? record.path + '...' : record.path}
+            </Link>
+          </Tooltip>
+        )
+      },
+      {
+        title: '测试报告',
+        key: 'report',
+        width: 200,
+        render: (_, record) => (
+          <div className="interface-col-table-action">
+            {this.reports[record.id] && (
+              <Button onClick={() => this.openReport(record.id)}>测试报告</Button>
+            )}
+          </div>
+        )
       }
     ];
     const { rows } = this.state;
     const components = {
-      header: {
-        cell: dnd.Header
-      },
       body: {
-        row: dnd.Row
+        row: DraggableBodyRow
       }
     };
-    const resolvedColumns = resolve.columnChildren({ columns });
-    const resolvedRows = resolve.resolve({ columns: resolvedColumns, method: resolve.nested })(
-      rows
-    );
 
     const localUrl =
       location.protocol +
@@ -1083,26 +1011,20 @@ class InterfaceColContent extends Component {
           <Label onChange={val => this.handleChangeInterfaceCol(val, col_name)} desc={col_desc} />
         </div>
 
-        <Table.Provider
-          components={components}
-          columns={resolvedColumns}
-          style={{
-            width: '100%',
-            borderCollapse: 'collapse'
-          }}
-        >
-          <Table.Header
-            className="interface-col-table-header"
-            headerRows={resolve.headerRows({ columns })}
+        <DndProvider backend={HTML5Backend}>
+          <Table
+            components={components}
+            columns={columns}
+            dataSource={rows}
+            rowKey="_id"
+            pagination={false}
+            onRow={(_, index) => ({
+              index,
+              moveRow: this.moveRow,
+              onDrop: this.saveRowOrder
+            })}
           />
-
-          <Table.Body
-            className="interface-col-table-body"
-            rows={resolvedRows}
-            rowKey="id"
-            onRow={this.onRow}
-          />
-        </Table.Provider>
+        </DndProvider>
         <Modal
           title="测试报告"
           width="900px"

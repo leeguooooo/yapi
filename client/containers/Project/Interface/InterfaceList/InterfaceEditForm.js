@@ -13,9 +13,6 @@ import AceEditor from 'client/components/AceEditor/AceEditor';
 import axios from 'axios';
 import { MOCK_SOURCE } from '../../../../constants/variable.js';
 import Editor from 'common/tui-editor/dist/tui-editor-Editor-all.min.js';
-const jSchema = require('json-schema-editor-visual');
-const ResBodySchema = jSchema({ lang: 'zh_CN', mock: MOCK_SOURCE });
-const ReqBodySchema = jSchema({ lang: 'zh_CN', mock: MOCK_SOURCE });
 const TabPane = Tabs.TabPane;
 
 
@@ -104,6 +101,16 @@ const dataTpl = {
 const HTTP_METHOD = constants.HTTP_METHOD;
 const HTTP_METHOD_KEYS = Object.keys(HTTP_METHOD);
 const HTTP_REQUEST_HEADER = constants.HTTP_REQUEST_HEADER;
+
+const SchemaEditor = ({ value, onChange }) => (
+  <AceEditor
+    className="interface-editor"
+    data={value}
+    onChange={onChange}
+    fullScreen={true}
+    mode="json"
+  />
+);
 
 @connect(
   state => {
@@ -1113,7 +1120,8 @@ class InterfaceEditForm extends Component {
                     “全局编辑”或 “退出全屏” 请按 F9
                   </span>
                 ) : (
-                  <ReqBodySchema
+                  <SchemaEditor
+                    value={req_body_other_use_schema_editor}
                     onChange={text => {
                       this.setState({
                         req_body_other: text
@@ -1123,8 +1131,6 @@ class InterfaceEditForm extends Component {
                         EditFormContext.props.changeEditStatus(true);
                       }
                     }}
-                    isMock={true}
-                    data={req_body_other_use_schema_editor}
                   />
                 )}
               </Col>
@@ -1227,7 +1233,8 @@ class InterfaceEditForm extends Component {
                     </div>
                   ) : (
                     <div style={{ display: this.state.jsonType === 'tpl' ? 'block' : 'none' }}>
-                      <ResBodySchema
+                      <SchemaEditor
+                        value={res_body_use_schema_editor}
                         onChange={text => {
                           this.setState({
                             res_body: text
@@ -1236,8 +1243,6 @@ class InterfaceEditForm extends Component {
                             EditFormContext.props.changeEditStatus(true);
                           }
                         }}
-                        isMock={true}
-                        data={res_body_use_schema_editor}
                       />
                     </div>
                   )}

@@ -3,7 +3,14 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react({
+    babel: {
+      plugins: [
+        ['@babel/plugin-proposal-decorators', { legacy: true }],
+        ['@babel/plugin-proposal-class-properties', { loose: true }]
+      ]
+    }
+  })],
   
   root: 'client',
   
@@ -19,7 +26,7 @@ export default defineConfig({
     port: 4000,
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:3000',
+        target: 'http://127.0.0.1:3001',
         changeOrigin: true
       }
     }
@@ -30,7 +37,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        main: 'client/index.js'
+        main: 'client/index.jsx'
       }
     }
   },
@@ -39,6 +46,9 @@ export default defineConfig({
     preprocessorOptions: {
       scss: {
         additionalData: `@import "client/styles/mixin.scss";`
+      },
+      less: {
+        javascriptEnabled: true
       }
     }
   }

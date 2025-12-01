@@ -12,14 +12,12 @@ function model(model, schema) {
   return mongoose.model(model, schema, model);
 }
 
-function connect(callback) {
+async function connect(callback) {
   mongoose.Promise = global.Promise;
-  mongoose.set('useNewUrlParser', true);
-  mongoose.set('useFindAndModify', false);
-  mongoose.set('useCreateIndex', true);
+  mongoose.set('strictQuery', false);
 
   let config = yapi.WEBCONFIG;
-  let options = {useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true};
+  let options = { useUnifiedTopology: true };
 
   if (config.db.user) {
     options.user = config.db.user;
@@ -48,31 +46,22 @@ function connect(callback) {
     }
   }
 
-  let db = mongoose.connect(
-    connectString,
-    options,
-    function(err) {
-      if (err) {
-        yapi.commons.log(err + ', mongodb Authentication failed', 'error');
-      }
+  try {
+    // 初始化自增插件，使用默认 mongoose 实例
+    autoIncrement.initialize(mongoose);
+
+    const conn = await mongoose.connect(connectString, options);
+    yapi.commons.log('mongodb load success...');
+
+    if (typeof callback === 'function') {
+      callback.call(conn);
     }
-  );
 
-  db.then(
-    function() {
-      yapi.commons.log('mongodb load success...');
-
-      if (typeof callback === 'function') {
-        callback.call(db);
-      }
-    },
-    function(err) {
-      yapi.commons.log(err + 'mongodb connect error', 'error');
-    }
-  );
-
-  autoIncrement.initialize(db);
-  return db;
+    return conn;
+  } catch (err) {
+    yapi.commons.log(err + ' mongodb connect error', 'error');
+    throw err;
+  }
 }
 
 yapi.db = model;

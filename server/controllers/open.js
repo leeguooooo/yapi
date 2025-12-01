@@ -99,24 +99,17 @@ class openController extends baseController {
       return (ctx.body = yapi.commons.resReturn(null, 40022, 'json 或者 url 参数，不能都为空'));
     }
     try {
-      let request = require("request");// let Promise = require('Promise');
-      let syncGet = function (url){
-          return new Promise(function(resolve, reject){
-              request.get({url : url}, function(error, response, body){
-                  if(error){
-                      reject(error);
-                  }else{
-                      resolve(body);
-                  }
-              });
-          });
-      } 
-      if(ctx.params.url){
-        content = await syncGet(ctx.params.url);
-      }else if(content.indexOf('http://') === 0 || content.indexOf('https://') === 0){
-        content = await syncGet(content);
+      const fetchJson = async (url) => {
+        const res = await axios.get(url);
+        return res.data;
+      };
+      if (ctx.params.url) {
+        content = await fetchJson(ctx.params.url);
+      } else if (content.indexOf('http://') === 0 || content.indexOf('https://') === 0) {
+        content = await fetchJson(content);
+      } else {
+        content = JSON.parse(content);
       }
-      content = JSON.parse(content);
     } catch (e) {
       return (ctx.body = yapi.commons.resReturn(null, 40022, 'json 格式有误:' + e));
     }

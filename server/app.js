@@ -5,7 +5,9 @@ const yapi = require('./yapi.js');
 const commons = require('./utils/commons');
 yapi.commons = commons;
 const dbModule = require('./utils/db.js');
-yapi.connect = dbModule.connect();
+yapi.connect = dbModule.connect().catch(err => {
+  commons.log('数据库连接失败: ' + err, 'error');
+});
 const mockServer = require('./middleware/mockServer.js');
 require('./plugin.js');
 const websockify = require('koa-websocket');
