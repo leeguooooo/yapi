@@ -7,12 +7,12 @@
     "dev-copy-icon": "cp -r static/iconfont ./",
     "dev-server": "nodemon server/app.js dev -L",
     "install-server": "node server/install.js",
-    "dev-client": "pnpm run dev-copy-icon && vite --config vite.config.js",
-    "dev": "concurrently \"pnpm run dev-server\" \"pnpm run dev-client\"",
+    "dev-client": "NODE_OPTIONS=\"--require ./tools/force-sass-silent.js\" SASS_SILENCE_DEPRECATION=all SASS_SILENCE_DEPRECATIONS=all pnpm run dev-copy-icon && NODE_OPTIONS=\"--require ./tools/force-sass-silent.js\" SASS_SILENCE_DEPRECATION=all SASS_SILENCE_DEPRECATIONS=all vite --config vite.config.js",
+    "dev": "NODE_OPTIONS=\"--require ./tools/force-sass-silent.js\" SASS_SILENCE_DEPRECATION=all SASS_SILENCE_DEPRECATIONS=all concurrently \"pnpm run dev-server\" \"pnpm run dev-client\"",
     "start": "node server/app.js",
     "test": "ava",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
-    "build-client": "vite build --config vite.config.js",
+    "build-client": "NODE_OPTIONS=\"--require ./tools/force-sass-silent.js\" SASS_SILENCE_DEPRECATION=all SASS_SILENCE_DEPRECATIONS=all vite build --config vite.config.js",
     "npm-publish": "node ./npm-publish.js",
     "docs": "ydoc build"
   },
@@ -128,6 +128,7 @@
     "redux-promise": "^0.6.0",
     "rewire": "^6.0.0",
     "sass": "^1.69.0",
+    "sass-embedded": "1.79.3",
     "validate-commit-msg": "^2.14.0",
     "vite": "^5.4.0",
     "ydoc-plugin-img-view": "^1.0.1"

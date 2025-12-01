@@ -1,4 +1,6 @@
-import constants from './variable.cjs';
+import * as constantsModule from './variable.cjs';
+
+const constants = constantsModule.default || constantsModule;
 
 export default constants;
 

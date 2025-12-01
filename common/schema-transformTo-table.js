@@ -1,4 +1,6 @@
-import schemaModule from './schema-transformTo-table.cjs';
+import * as schemaModule from './schema-transformTo-table.cjs';
 
-export default schemaModule;
-export const { schemaTransformToTable } = schemaModule;
+const schema = schemaModule.default || schemaModule;
+
+export default schema;
+export const { schemaTransformToTable } = schema;

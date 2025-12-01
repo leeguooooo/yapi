@@ -1,2 +1,3 @@
-import mockEditor from './mockEditor.cjs';
+import * as mockEditorModule from './mockEditor.cjs';
+const mockEditor = mockEditorModule.default || mockEditorModule;
 export default mockEditor;

@@ -3,7 +3,8 @@ import { Timeline, Spin, Row, Col, Tag, Avatar, Button, Modal, AutoComplete } fr
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { formatTime } from '../../common.js';
-import showDiffMsg from '../../../common/diff-view.js';
+import * as diffViewModule from '../../../common/diff-view.js';
+const showDiffMsg = diffViewModule.default || diffViewModule;
 import variable from '../../constants/variable';
 import { Link } from 'react-router-dom';
 import { fetchNewsData, fetchMoreNews } from '../../reducer/modules/news.js';

@@ -1,3 +1,12 @@
+// Polyfill global/setImmediate for CJS dependencies running in the browser.
+if (typeof global === 'undefined') {
+  // eslint-disable-next-line no-undef
+  window.global = window;
+}
+if (typeof window.setImmediate === 'undefined') {
+  window.setImmediate = (fn, ...args) => window.setTimeout(fn, 0, ...args);
+}
+
 import './styles/common.scss';
 import './styles/theme.less';
 import '@ant-design/compatible/assets/index.css';

@@ -1,4 +1,6 @@
-import utils from './utils.cjs';
+import * as utilsModule from './utils.cjs';
+
+const utils = utilsModule.default || utilsModule;
 
 export default utils;
 

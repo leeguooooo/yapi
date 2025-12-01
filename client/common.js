@@ -1,4 +1,6 @@
-import common from './common.cjs';
+import * as commonModule from './common.cjs';
+
+const common = commonModule.default || commonModule;
 
 export default common;
 

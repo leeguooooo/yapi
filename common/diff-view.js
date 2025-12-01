@@ -1,4 +1,7 @@
-// Bridge CJS implementation for both require() and ESM import
-const impl = require('./diff-view.cjs');
-module.exports = impl;
-module.exports.default = impl;
+// ESM bridge for the CJS implementation
+import * as implModule from './diff-view.cjs';
+
+const impl = implModule.default || implModule;
+
+export default impl;
+export const showDiffMsg = impl.showDiffMsg || impl;

@@ -304,4 +304,8 @@ Object.keys(pluginModuleList).forEach(plugin => {
   }
 });
 
-module.exports = pluginModule;
+// CJS compatibility for older plugins; ESM import gets default/exported functions.
+if (typeof module !== 'undefined') {
+  module.exports = pluginModule;
+}
+export default pluginModule;

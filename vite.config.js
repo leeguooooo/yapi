@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import * as sass from 'sass'
 
 // Silence Dart Sass legacy API warnings until upstream tooling moves to the new API
-process.env.SASS_SILENCE_DEPRECATION = 'legacy-js-api,import,slash-div'
+process.env.SASS_SILENCE_DEPRECATIONS = 'legacy-js-api,import,slash-div'
 
 export default defineConfig({
   plugins: [
@@ -32,6 +33,10 @@ export default defineConfig({
       'common': path.resolve(__dirname, 'common'), 
       'exts': path.resolve(__dirname, 'exts')
     }
+  },
+  
+  define: {
+    global: 'window'
   },
   
   server: {
@@ -66,7 +71,9 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `@use "client/styles/mixin.scss" as *;`
+        additionalData: `@use "client/styles/mixin.scss" as *;`,
+        // silence Sass legacy warnings emitted by upstream render() API usage
+        logger: sass.Logger.silent
       },
       less: {
         javascriptEnabled: true
