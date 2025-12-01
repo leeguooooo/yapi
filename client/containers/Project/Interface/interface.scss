@@ -1,4 +1,4 @@
-@import '../../../styles/mixin.scss';
+@use '../../../styles/mixin.scss' as *;
 
 .left-menu {
   min-height: 5rem;

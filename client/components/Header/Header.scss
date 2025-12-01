@@ -1,4 +1,4 @@
-@import '../../styles/mixin.scss';
+@use '../../styles/mixin.scss' as *;
 
 .nav-tooltip {
   color: red;

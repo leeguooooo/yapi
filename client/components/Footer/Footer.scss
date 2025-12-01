@@ -1,5 +1,5 @@
-@import '../../styles/common.scss';
-@import '../../styles/mixin.scss';
+@use '../../styles/common.scss' as *;
+@use '../../styles/mixin.scss' as *;
 
 .footer-wrapper{
   height: 2.4rem;

@@ -2,6 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+// Silence Dart Sass legacy API warnings until upstream tooling moves to the new API
+process.env.SASS_SILENCE_DEPRECATION = 'legacy-js-api,import,slash-div'
+
 export default defineConfig({
   plugins: [
     react({

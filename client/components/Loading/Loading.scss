@@ -3,6 +3,8 @@ $ball-size:.15rem;
 $ball-margin:.02rem;
 $loader-radius:.25rem;
 
+@use "sass:math";
+
 @function delay($interval, $count, $index) {
   @return ($index * $interval) - ($interval * $count);
 }
@@ -20,7 +22,7 @@ $loader-radius:.25rem;
 @mixin ball-spin-fade-loader($n:8,$start:1){
   @for $i from $start through $n {
     > div:nth-child(#{$i}) {
-      $quarter: ($loader-radius/2) + ($loader-radius/5.5);
+      $quarter: math.div($loader-radius, 2) + math.div($loader-radius, 5.5);
 
       @if $i == 1 {
         top: $loader-radius;
@@ -83,6 +85,4 @@ $loader-radius:.25rem;
     }
   }
 }
-
-
 

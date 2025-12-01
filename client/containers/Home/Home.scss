@@ -1,4 +1,4 @@
-@import '../../styles/mixin.scss';
+@use '../../styles/mixin.scss' as *;
 
 $color-white : #fff;
 $color-blue-lighter : #f1f5ff;

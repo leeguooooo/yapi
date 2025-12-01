@@ -1,4 +1,4 @@
-@import '../../../../styles/mixin.scss';
+@use '../../../../styles/mixin.scss' as *;
 
 .interface-edit{
   padding: 24px;
@@ -113,4 +113,3 @@
 .tag-modal-center {
   padding-left: 48px;
 }
-

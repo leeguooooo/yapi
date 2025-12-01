@@ -1,4 +1,4 @@
-@import '../../styles/mixin.scss';
+@use '../../styles/mixin.scss' as *;
 
 .g-doc {
   @include row-width-limit;

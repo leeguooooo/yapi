@@ -1,4 +1,4 @@
-@import '../../../styles/mixin.scss';
+@use '../../../styles/mixin.scss' as *;
 
 .group-bar {
   min-height: 5rem;
