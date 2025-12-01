@@ -1,6 +1,7 @@
 import React, { PureComponent as Component } from 'react'
 import PropTypes from 'prop-types'
-import { Form, Input, Select, Button } from 'antd';
+import { Form } from '@ant-design/compatible';
+import { Input, Select, Button, TreeSelect } from 'antd';
 
 import constants from '../../../../constants/variable.js'
 import { handleApiPath, nameLengthLimit } from '../../../../common.js'
@@ -13,6 +14,19 @@ function hasErrors(fieldsError) {
   return Object.keys(fieldsError).some(field => fieldsError[field]);
 }
 
+const buildTreeData = (list = []) =>
+  list.map(item => ({
+    title: item.name,
+    value: `${item._id}`,
+    key: `${item._id}`,
+    children: buildTreeData(item.children || [])
+  }));
+
+const getFirstCatId = list => {
+  if (!Array.isArray(list) || list.length === 0) return undefined;
+  const first = list[0];
+  return first ? first._id : undefined;
+};
 
 class AddInterfaceForm extends Component {
   static propTypes = {
@@ -71,13 +85,19 @@ class AddInterfaceForm extends Component {
           label="接口分类"
         >
           {getFieldDecorator('catid', {
-            initialValue: this.props.catid ? this.props.catid + '' : this.props.catdata[0]._id + ''
+            rules: [{ required: true, message: '请选择接口分类' }],
+            initialValue: this.props.catid
+              ? this.props.catid + ''
+              : getFirstCatId(this.props.catdata) !== undefined
+              ? getFirstCatId(this.props.catdata) + ''
+              : undefined
           })(
-            <Select>
-              {this.props.catdata.map(item => {
-                return <Option key={item._id} value={item._id + ""}>{item.name}</Option>
-              })}
-            </Select>
+            <TreeSelect
+              treeData={buildTreeData(this.props.catdata)}
+              dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+              placeholder="选择分类"
+              treeDefaultExpandAll
+            />
             )}
         </FormItem>
         <FormItem

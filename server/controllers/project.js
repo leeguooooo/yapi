@@ -316,6 +316,8 @@ class projectController extends baseController {
 
         // 拷贝接口列表
         let cat = params.cat;
+        const catIdMap = new Map();
+        const newCats = [];
         for (let i = 0; i < cat.length; i++) {
           let item = cat[i];
           let catDate = {
@@ -323,10 +325,13 @@ class projectController extends baseController {
             project_id: result._id,
             desc: item.desc,
             uid: this.getUid(),
+            parent_id: 0,
             add_time: yapi.commons.time(),
             up_time: yapi.commons.time()
           };
           let catResult = await catInst.save(catDate);
+          catIdMap.set(String(item._id), catResult._id);
+          newCats.push({ old: item, nextId: catResult._id });
 
           // 获取每个集合中的interface
           let interfaceData = await this.interfaceModel.listByInterStatus(item._id);
@@ -344,6 +349,14 @@ class projectController extends baseController {
             delete data._id;
 
             await this.interfaceModel.save(data);
+          }
+        }
+        for (const catItem of newCats) {
+          const mappedParent = catItem.old.parent_id
+            ? catIdMap.get(String(catItem.old.parent_id)) || 0
+            : 0;
+          if (mappedParent !== 0) {
+            await catInst.up(catItem.nextId, { parent_id: mappedParent });
           }
         }
       }

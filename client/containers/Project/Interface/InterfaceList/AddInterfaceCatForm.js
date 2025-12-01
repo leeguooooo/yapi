@@ -1,16 +1,27 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
-import { Form, Input, Button } from 'antd';
+import { Form } from '@ant-design/compatible';
+import { Input, Button, TreeSelect } from 'antd';
 const FormItem = Form.Item;
 function hasErrors(fieldsError) {
   return Object.keys(fieldsError).some(field => fieldsError[field]);
 }
+
+const buildTreeData = (list = []) =>
+  list.map(item => ({
+    title: item.name,
+    value: `${item._id}`,
+    key: `${item._id}`,
+    children: buildTreeData(item.children || [])
+  }));
+
 class AddInterfaceForm extends Component {
   static propTypes = {
     form: PropTypes.object,
     onSubmit: PropTypes.func,
     onCancel: PropTypes.func,
-    catdata: PropTypes.object
+    catdata: PropTypes.object,
+    catTree: PropTypes.array
   };
   handleSubmit = e => {
     e.preventDefault();
@@ -51,6 +62,24 @@ class AddInterfaceForm extends Component {
           {getFieldDecorator('desc', {
             initialValue: this.props.catdata ? this.props.catdata.desc || null : null
           })(<Input placeholder="备注" />)}
+        </FormItem>
+        <FormItem {...formItemLayout} label="父级分类">
+          {getFieldDecorator('parent_id', {
+            initialValue:
+              this.props.catdata && typeof this.props.catdata.parent_id !== 'undefined'
+                ? `${this.props.catdata.parent_id}`
+                : '0'
+          })(
+            <TreeSelect
+              allowClear
+              dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+              treeDefaultExpandAll
+              treeData={[
+                { title: '根分类', value: '0', key: 'root' },
+                ...buildTreeData(this.props.catTree || [])
+              ]}
+            />
+          )}
         </FormItem>
 
         <FormItem className="catModalfoot" wrapperCol={{ span: 24, offset: 8 }}>

@@ -18,6 +18,16 @@ import Label from '../../../../components/Label/Label.js';
 
 const Option = Select.Option;
 const limit = 20;
+const flattenCats = (cats = []) => {
+  let res = [];
+  cats.forEach(cat => {
+    res.push(cat);
+    if (cat.children && cat.children.length) {
+      res = res.concat(flattenCats(cat.children));
+    }
+  });
+  return res;
+};
 
 @connect(
   state => {
@@ -123,8 +133,9 @@ class InterfaceList extends Component {
     }, () => this.handleRequest(this.props));
   };
 
-  componentWillMount() {
+  async componentDidMount() {
     this.actionId = this.props.match.params.actionId;
+    await this.props.fetchInterfaceListMenu(this.props.match.params.id);
     this.handleRequest(this.props);
   }
 
@@ -143,8 +154,13 @@ class InterfaceList extends Component {
   }
 
   handleAddInterface = data => {
-    data.project_id = this.props.curProject._id;
-    axios.post('/api/interface/add', data).then(res => {
+    const catidVal = parseInt(data.catid, 10);
+    const payload = {
+      ...data,
+      project_id: this.props.curProject._id,
+      catid: Number.isNaN(catidVal) ? data.catid : catidVal
+    };
+    axios.post('/api/interface/add', payload).then(res => {
       if (res.data.errcode !== 0) {
         return message.error(`${res.data.errmsg}, 你可以在左侧的接口列表中对接口进行删改`);
       }
@@ -256,7 +272,7 @@ class InterfaceList extends Component {
               className="select path"
               onChange={catid => this.changeInterfaceCat(record._id, catid)}
             >
-              {this.props.catList.map(cat => {
+              {catFlat.map(cat => {
                 return (
                   <Option key={cat.id + ''} value={cat._id + ''}>
                     <span>{cat.name}</span>
@@ -318,13 +334,14 @@ class InterfaceList extends Component {
     ];
     let intername = '',
       desc = '';
-    let cat = this.props.curProject ? this.props.curProject.cat : [];
+    const catTree = this.props.catList || [];
+    const catFlat = flattenCats(catTree);
 
-    if (cat) {
-      for (let i = 0; i < cat.length; i++) {
-        if (cat[i]._id === this.state.catid) {
-          intername = cat[i].name;
-          desc = cat[i].desc;
+    if (catFlat) {
+      for (let i = 0; i < catFlat.length; i++) {
+        if (catFlat[i]._id === this.state.catid) {
+          intername = catFlat[i].name;
+          desc = catFlat[i].desc;
           break;
         }
       }
@@ -356,7 +373,7 @@ class InterfaceList extends Component {
       // onChange: this.changePage
     };
 
-    const isDisabled = this.props.catList.length === 0;
+    const isDisabled = catFlat.length === 0;
 
     // console.log(this.props.curProject.tag)
 
@@ -394,7 +411,7 @@ class InterfaceList extends Component {
           >
             <AddInterfaceForm
               catid={this.state.catid}
-              catdata={cat}
+              catdata={catTree}
               onCancel={() => this.setState({ visible: false })}
               onSubmit={this.handleAddInterface}
             />

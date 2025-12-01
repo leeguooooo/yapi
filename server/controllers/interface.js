@@ -10,7 +10,7 @@ const userModel = require('../models/user.js');
 const projectModel = require('../models/project.js');
 const jsondiffpatch = require('jsondiffpatch');
 const formattersHtml = jsondiffpatch.formatters.html;
-const showDiffMsg = require('../../common/diff-view.js');
+const showDiffMsg = require('../../common/diff-view.cjs');
 const mergeJsonSchema = require('../../common/mergeJsonSchema');
 const fs = require('fs-extra');
 const path = require('path');
@@ -76,6 +76,49 @@ function buildQueryPath(parsedPath) {
       value
     }))
   };
+}
+
+function buildCategoryTree(categories) {
+  const map = new Map();
+  const roots = [];
+  categories.forEach(item => {
+    const obj = item.toObject ? item.toObject() : { ...item };
+    obj.parent_id = typeof obj.parent_id === 'number' ? obj.parent_id : 0;
+    obj.children = [];
+    map.set(String(obj._id), obj);
+  });
+  categories.forEach(item => {
+    const obj = map.get(String(item._id));
+    const parentId = obj.parent_id || 0;
+    if (parentId && map.has(String(parentId))) {
+      map.get(String(parentId)).children.push(obj);
+    } else {
+      roots.push(obj);
+    }
+  });
+  return { map, roots };
+}
+
+function collectDescendantCatIds(catId, map) {
+  const stack = [catId];
+  const ids = [];
+  while (stack.length) {
+    const current = stack.pop();
+    ids.push(current);
+    const node = map.get(String(current));
+    if (node && Array.isArray(node.children)) {
+      node.children.forEach(child => stack.push(child._id));
+    }
+  }
+  return ids;
+}
+
+function isInvalidParent(catId, nextParentId, map) {
+  if (!nextParentId || catId === nextParentId) {
+    return catId === nextParentId;
+  }
+  const descendants = collectDescendantCatIds(catId, map);
+  return descendants.includes(nextParentId);
 }
 
 
@@ -646,19 +689,15 @@ class interfaceController extends baseController {
     }
 
     try {
-      let result = await this.catModel.list(project_id),
-        newResult = [];
-      for (let i = 0, item, list; i < result.length; i++) {
-        item = result[i].toObject();
-        list = await this.Model.listByCatid(item._id);
-        for (let j = 0; j < list.length; j++) {
-          list[j] = list[j].toObject();
-        }
-
-        item.list = list;
-        newResult[i] = item;
+      const treeMode = ctx.request.query.tree === '1';
+      const categories = await this.catModel.list(project_id);
+      const { map, roots } = buildCategoryTree(categories);
+      for (const [, cat] of map) {
+        const list = await this.Model.listByCatid(cat._id);
+        cat.list = list.map(item => item.toObject());
       }
-      ctx.body = yapi.commons.resReturn(newResult);
+      const result = treeMode ? roots : Array.from(map.values());
+      ctx.body = yapi.commons.resReturn(result);
     } catch (err) {
       ctx.body = yapi.commons.resReturn(null, 402, err.message);
     }
@@ -957,7 +996,8 @@ class interfaceController extends baseController {
       params = yapi.commons.handleParams(params, {
         name: 'string',
         project_id: 'number',
-        desc: 'string'
+        desc: 'string',
+        parent_id: 'number'
       });
 
       if (!params.project_id) {
@@ -974,10 +1014,20 @@ class interfaceController extends baseController {
         return (ctx.body = yapi.commons.resReturn(null, 400, '名称不能为空'));
       }
 
+      let parentId = typeof params.parent_id === 'number' ? params.parent_id : 0;
+      parentId = Number.isNaN(parseInt(parentId, 10)) ? 0 : parseInt(parentId, 10);
+      if (parentId) {
+        const parentCat = await this.catModel.get(parentId);
+        if (!parentCat || parentCat.project_id !== params.project_id) {
+          return (ctx.body = yapi.commons.resReturn(null, 400, '父级分类不存在'));
+        }
+      }
+
       let result = await this.catModel.save({
         name: params.name,
         project_id: params.project_id,
         desc: params.desc,
+        parent_id: parentId,
         uid: this.getUid(),
         add_time: yapi.commons.time(),
         up_time: yapi.commons.time()
@@ -1006,15 +1056,37 @@ class interfaceController extends baseController {
 
       let username = this.getUsername();
       let cate = await this.catModel.get(params.catid);
+      if (!cate) {
+        return (ctx.body = yapi.commons.resReturn(null, 400, '分类不存在'));
+      }
 
       let auth = await this.checkAuth(cate.project_id, 'project', 'edit');
       if (!auth) {
         return (ctx.body = yapi.commons.resReturn(null, 400, '没有权限'));
       }
 
+      const categories = await this.catModel.list(cate.project_id);
+      const { map } = buildCategoryTree(categories);
+      let nextParentId =
+        typeof params.parent_id === 'number' ? params.parent_id : cate.parent_id || 0;
+      nextParentId = Number.isNaN(parseInt(nextParentId, 10))
+        ? 0
+        : parseInt(nextParentId, 10);
+
+      if (nextParentId) {
+        const parentNode = map.get(String(nextParentId));
+        if (!parentNode) {
+          return (ctx.body = yapi.commons.resReturn(null, 400, '父级分类不存在'));
+        }
+      }
+      if (isInvalidParent(cate._id, nextParentId, map)) {
+        return (ctx.body = yapi.commons.resReturn(null, 400, '父级分类不能是自身或子级'));
+      }
+
       let result = await this.catModel.up(params.catid, {
         name: params.name,
         desc: params.desc,
+        parent_id: nextParentId,
         up_time: yapi.commons.time()
       });
 
@@ -1039,7 +1111,7 @@ class interfaceController extends baseController {
       let id = ctx.request.body.catid;
       let catData = await this.catModel.get(id);
       if (!catData) {
-        ctx.body = yapi.commons.resReturn(null, 400, '不存在的分类');
+        return (ctx.body = yapi.commons.resReturn(null, 400, '不存在的分类'));
       }
 
       if (catData.uid !== this.getUid()) {
@@ -1049,30 +1121,36 @@ class interfaceController extends baseController {
         }
       }
 
+      const categories = await this.catModel.list(catData.project_id);
+      const { map } = buildCategoryTree(categories);
+      const cascadeCatIds = collectDescendantCatIds(catData._id, map);
+
       let username = this.getUsername();
       yapi.commons.saveLog({
         content: `<a href="/user/profile/${this.getUid()}">${username}</a> 删除了分类 "${
           catData.name
-        }" 及该分类下的接口`,
+        }" 及其子分类下的接口`,
         type: 'project',
         uid: this.getUid(),
         username: username,
         typeid: catData.project_id
       });
 
-      let interfaceData = await this.Model.listByCatid(id);
-
-      interfaceData.forEach(async item => {
-        try {
-          yapi.emitHook('interface_del', item._id).then();
-          await this.caseModel.delByInterfaceId(item._id);
-        } catch (e) {
-          yapi.commons.log(e.message, 'error');
+      for (const catId of cascadeCatIds) {
+        const interfaceData = await this.Model.listByCatid(catId);
+        for (const item of interfaceData) {
+          try {
+            yapi.emitHook('interface_del', item._id).then();
+            await this.caseModel.delByInterfaceId(item._id);
+          } catch (e) {
+            yapi.commons.log(e.message, 'error');
+          }
         }
-      });
-      await this.catModel.del(id);
-      let r = await this.Model.delByCatid(id);
-      return (ctx.body = yapi.commons.resReturn(r));
+        await this.Model.delByCatid(catId);
+        await this.catModel.del(catId);
+      }
+
+      return (ctx.body = yapi.commons.resReturn(true));
     } catch (e) {
       yapi.commons.resReturn(null, 400, e.message);
     }
@@ -1219,18 +1297,39 @@ class interfaceController extends baseController {
     try {
       let params = ctx.request.body;
       if (!params || !Array.isArray(params)) {
-        ctx.body = yapi.commons.resReturn(null, 400, '请求参数必须是数组');
+        return (ctx.body = yapi.commons.resReturn(null, 400, '请求参数必须是数组'));
       }
-      params.forEach(item => {
+      if (!params.length) {
+        return (ctx.body = yapi.commons.resReturn('成功！'));
+      }
+
+      const firstCat = await this.catModel.get(params[0].id);
+      if (!firstCat) {
+        return (ctx.body = yapi.commons.resReturn(null, 400, '分类不存在'));
+      }
+      const categories = await this.catModel.list(firstCat.project_id);
+      const { map } = buildCategoryTree(categories);
+
+      for (const item of params) {
         if (item.id) {
-          this.catModel.upCatIndex(item.id, item.index).then(
+          const parentId =
+            typeof item.parent_id === 'number' || item.parent_id === 0
+              ? item.parent_id
+              : undefined;
+          if (parentId && !map.has(String(parentId))) {
+            return (ctx.body = yapi.commons.resReturn(null, 400, '父级分类不存在'));
+          }
+          if (typeof parentId === 'number' && isInvalidParent(item.id, parentId, map)) {
+            return (ctx.body = yapi.commons.resReturn(null, 400, '父级分类不能是自身或子级'));
+          }
+          this.catModel.upCatIndex(item.id, item.index, parentId).then(
             res => {},
             err => {
               yapi.commons.log(err.message, 'error');
             }
           );
         }
-      });
+      }
 
       return (ctx.body = yapi.commons.resReturn('成功！'));
     } catch (e) {

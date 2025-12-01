@@ -127,7 +127,12 @@ export async function fetchInterfaceData(interfaceId) {
 }
 
 export async function fetchInterfaceListMenu(projectId) {
-  let result = await axios.get('/api/interface/list_menu?project_id=' + projectId);
+  let result = await axios.get('/api/interface/list_menu', {
+    params: {
+      project_id: projectId,
+      tree: 1
+    }
+  });
   return {
     type: FETCH_INTERFACE_LIST_MENU,
     payload: result

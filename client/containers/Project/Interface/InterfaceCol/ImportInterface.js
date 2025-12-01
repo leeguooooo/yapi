@@ -7,6 +7,47 @@ import { connect } from 'react-redux';
 const Option = Select.Option;
 import { fetchInterfaceListMenu } from '../../../../reducer/modules/interface.js';
 
+const buildTableTree = (cats = []) =>
+  cats.map(cat => ({
+    key: 'category_' + cat._id,
+    _id: cat._id,
+    title: cat.name,
+    isCategory: true,
+    children: [
+      ...(buildTableTree(cat.children || [])),
+      ...(Array.isArray(cat.list)
+        ? cat.list.map(e => ({
+            ...e,
+            key: e._id,
+            isCategory: false
+          }))
+        : [])
+    ]
+  }));
+
+const collectInterfaceIds = node => {
+  if (!node) return [];
+  if (!node.isCategory) return [node._id];
+  return (node.children || []).reduce((acc, child) => acc.concat(collectInterfaceIds(child)), []);
+};
+
+const collectAllInterfaceIds = nodes =>
+  nodes.reduce((acc, node) => acc.concat(collectInterfaceIds(node)), []);
+
+const collectSelectedCategoryKeys = (nodes, selectedSet) => {
+  let keys = [];
+  nodes.forEach(node => {
+    if (node.isCategory) {
+      const ids = collectInterfaceIds(node);
+      if (ids.length && ids.every(id => selectedSet.has(id))) {
+        keys.push(node.key);
+      }
+      keys = keys.concat(collectSelectedCategoryKeys(node.children || [], selectedSet));
+    }
+  });
+  return keys;
+};
+
 @connect(
   state => {
     return {
@@ -25,7 +66,6 @@ export default class ImportInterface extends Component {
 
   state = {
     selectedRowKeys: [],
-    categoryCount: {},
     project: this.props.currProjectId
   };
 
@@ -46,8 +86,7 @@ export default class ImportInterface extends Component {
   onChange = async val => {
     this.setState({
       project: val,
-      selectedRowKeys: [],
-      categoryCount: {}
+      selectedRowKeys: []
     });
     await this.props.fetchInterfaceListMenu(val);
   };
@@ -55,96 +94,31 @@ export default class ImportInterface extends Component {
   render() {
     const { list, projectList } = this.props;
 
-    // const { selectedRowKeys } = this.state;
-    const data = list.map(item => {
-      return {
-        key: 'category_' + item._id,
-        title: item.name,
-        isCategory: true,
-        children: item.list
-          ? item.list.map(e => {
-              e.key = e._id;
-              e.categoryKey = 'category_' + item._id;
-              e.categoryLength = item.list.length;
-              return e;
-            })
-          : []
-      };
-    });
+    const data = buildTableTree(list || []);
     const self = this;
     const rowSelection = {
-      // onChange: (selectedRowKeys) => {
-      // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-      // if (selectedRows.isCategory) {
-      //   const selectedRowKeys = selectedRows.children.map(item => item._id)
-      //   this.setState({ selectedRowKeys })
-      // }
-      // this.props.onChange(selectedRowKeys.filter(id => ('' + id).indexOf('category') === -1));
-      // },
       onSelect: (record, selected) => {
-        // console.log(record, selected, selectedRows);
-        const oldSelecteds = self.state.selectedRowKeys;
-        const categoryCount = self.state.categoryCount;
-        const categoryKey = record.categoryKey;
-        const categoryLength = record.categoryLength;
-        let selectedRowKeys = [];
-        if (record.isCategory) {
-          selectedRowKeys = record.children.map(item => item._id).concat(record.key);
+        const selectedSet = new Set(self.state.selectedRowKeys.filter(id => typeof id === 'number'));
+        const ids = collectInterfaceIds(record);
+        ids.forEach(id => {
           if (selected) {
-            selectedRowKeys = selectedRowKeys
-              .filter(id => oldSelecteds.indexOf(id) === -1)
-              .concat(oldSelecteds);
-            categoryCount[categoryKey] = categoryLength;
+            selectedSet.add(id);
           } else {
-            selectedRowKeys = oldSelecteds.filter(id => selectedRowKeys.indexOf(id) === -1);
-            categoryCount[categoryKey] = 0;
+            selectedSet.delete(id);
           }
-        } else {
-          if (selected) {
-            selectedRowKeys = oldSelecteds.concat(record._id);
-            if (categoryCount[categoryKey]) {
-              categoryCount[categoryKey] += 1;
-            } else {
-              categoryCount[categoryKey] = 1;
-            }
-            if (categoryCount[categoryKey] === record.categoryLength) {
-              selectedRowKeys.push(categoryKey);
-            }
-          } else {
-            selectedRowKeys = oldSelecteds.filter(id => id !== record._id);
-            if (categoryCount[categoryKey]) {
-              categoryCount[categoryKey] -= 1;
-            }
-            selectedRowKeys = selectedRowKeys.filter(id => id !== categoryKey);
-          }
-        }
-        self.setState({ selectedRowKeys, categoryCount });
-        self.props.selectInterface(
-          selectedRowKeys.filter(id => ('' + id).indexOf('category') === -1),
-          self.state.project
-        );
+        });
+        const categoryKeys = collectSelectedCategoryKeys(data, selectedSet);
+        const selectedRowKeys = Array.from(new Set([...selectedSet, ...categoryKeys]));
+        self.setState({ selectedRowKeys });
+        self.props.selectInterface(Array.from(selectedSet), self.state.project);
       },
       onSelectAll: selected => {
-        // console.log(selected, selectedRows, changeRows);
-        let selectedRowKeys = [];
-        let categoryCount = self.state.categoryCount;
-        if (selected) {
-          data.forEach(item => {
-            if (item.children) {
-              categoryCount['category_' + item._id] = item.children.length;
-              selectedRowKeys = selectedRowKeys.concat(item.children.map(item => item._id));
-            }
-          });
-          selectedRowKeys = selectedRowKeys.concat(data.map(item => item.key));
-        } else {
-          categoryCount = {};
-          selectedRowKeys = [];
-        }
-        self.setState({ selectedRowKeys, categoryCount });
-        self.props.selectInterface(
-          selectedRowKeys.filter(id => ('' + id).indexOf('category') === -1),
-          self.state.project
-        );
+        const interfaceIds = selected ? collectAllInterfaceIds(data) : [];
+        const selectedSet = new Set(interfaceIds);
+        const categoryKeys = collectSelectedCategoryKeys(data, selectedSet);
+        const selectedRowKeys = Array.from(new Set([...selectedSet, ...categoryKeys]));
+        self.setState({ selectedRowKeys });
+        self.props.selectInterface(Array.from(selectedSet), self.state.project);
       },
       selectedRowKeys: self.state.selectedRowKeys
     };
@@ -153,17 +127,20 @@ export default class ImportInterface extends Component {
       {
         title: '接口名称',
         dataIndex: 'title',
-        width: '30%'
+        width: '30%',
+        render: (text, record) => (record.isCategory ? record.title : text)
       },
       {
         title: '接口路径',
         dataIndex: 'path',
-        width: '40%'
+        width: '40%',
+        render: (text, record) => (record.isCategory ? '-' : text)
       },
       {
         title: '请求方法',
         dataIndex: 'method',
-        render: item => {
+        render: (item, record) => {
+          if (record.isCategory) return '-';
           let methodColor = variable.METHOD_COLOR[item ? item.toLowerCase() : 'get'];
           return (
             <span
@@ -189,7 +166,8 @@ export default class ImportInterface extends Component {
           </span>
         ),
         dataIndex: 'status',
-        render: text => {
+        render: (text, record) => {
+          if (record.isCategory) return '';
           return (
             text &&
             (text === 'done' ? (
