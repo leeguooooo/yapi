@@ -71,7 +71,7 @@ class projectModel extends baseModel {
   }
 
   updateMember(data) {
-    return this.model.update(
+    return this.model.updateMany(
       {
         'members.uid': data.uid
       },
@@ -107,7 +107,7 @@ class projectModel extends baseModel {
     }
     
     if(isFix){
-      this.model.update(
+      this.model.updateOne(
         {
           _id: data._id
 
@@ -239,7 +239,7 @@ class projectModel extends baseModel {
 
   up(id, data) {
     data.up_time = yapi.commons.time();
-    return this.model.update(
+    return this.model.updateOne(
       {
         _id: id
       },
@@ -249,7 +249,7 @@ class projectModel extends baseModel {
   }
 
   addMember(id, data) {
-    return this.model.update(
+    return this.model.updateOne(
       {
         _id: id
       },
@@ -261,7 +261,7 @@ class projectModel extends baseModel {
   }
 
   delMember(id, uid) {
-    return this.model.update(
+    return this.model.updateOne(
       {
         _id: id
       },
@@ -279,7 +279,7 @@ class projectModel extends baseModel {
   }
 
   changeMemberRole(id, uid, role) {
-    return this.model.update(
+    return this.model.updateOne(
       {
         _id: id,
         'members.uid': uid
@@ -291,7 +291,7 @@ class projectModel extends baseModel {
   }
 
   changeMemberEmailNotice(id, uid, notice) {
-    return this.model.update(
+    return this.model.updateOne(
       {
         _id: id,
         'members.uid': uid

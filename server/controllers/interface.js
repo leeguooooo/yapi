@@ -4,7 +4,6 @@ const interfaceCaseModel = require('../models/interfaceCase.js');
 const followModel = require('../models/follow.js');
 const groupModel = require('../models/group.js');
 const _ = require('underscore');
-const url = require('url');
 const baseController = require('./base.js');
 const yapi = require('../yapi.js');
 const userModel = require('../models/user.js');
@@ -59,6 +58,24 @@ function handleHeaders(values){
       });
     }
   }
+}
+
+function parseRequestPath(rawPath) {
+  try {
+    return new URL(rawPath, 'http://yapi.local');
+  } catch (err) {
+    return null;
+  }
+}
+
+function buildQueryPath(parsedPath) {
+  return {
+    path: parsedPath.pathname,
+    params: Array.from(parsedPath.searchParams.entries()).map(([name, value]) => ({
+      name,
+      value
+    }))
+  };
 }
 
 
@@ -217,7 +234,15 @@ class interfaceController extends baseController {
     params.method = params.method.toUpperCase();
     params.req_params = params.req_params || [];
     params.res_body_type = params.res_body_type ? params.res_body_type.toLowerCase() : 'json';
-    let http_path = url.parse(params.path, true);
+    const http_path = parseRequestPath(params.path);
+
+    if (!http_path) {
+      return (ctx.body = yapi.commons.resReturn(
+        null,
+        400,
+        'path不合法，请检查路径格式'
+      ));
+    }
 
     if (!yapi.commons.verifyPath(http_path.pathname)) {
       return (ctx.body = yapi.commons.resReturn(
@@ -229,15 +254,7 @@ class interfaceController extends baseController {
 
     handleHeaders(params)
 
-    params.query_path = {};
-    params.query_path.path = http_path.pathname;
-    params.query_path.params = [];
-    Object.keys(http_path.query).forEach(item => {
-      params.query_path.params.push({
-        name: item,
-        value: http_path.query[item]
-      });
-    });
+    params.query_path = buildQueryPath(http_path);
 
     let checkRepeat = await this.Model.checkRepeat(params.project_id, params.path, params.method);
 
@@ -341,7 +358,15 @@ class interfaceController extends baseController {
     params.method = params.method || 'GET';
     params.method = params.method.toUpperCase();
 
-    let http_path = url.parse(params.path, true);
+    const http_path = parseRequestPath(params.path);
+
+    if (!http_path) {
+      return (ctx.body = yapi.commons.resReturn(
+        null,
+        400,
+        'path不合法，请检查路径格式'
+      ));
+    }
 
     if (!yapi.commons.verifyPath(http_path.pathname)) {
       return (ctx.body = yapi.commons.resReturn(
@@ -700,8 +725,15 @@ class interfaceController extends baseController {
     );
 
     if (params.path) {
-      let http_path;
-      http_path = url.parse(params.path, true);
+      const http_path = parseRequestPath(params.path);
+
+      if (!http_path) {
+        return (ctx.body = yapi.commons.resReturn(
+          null,
+          400,
+          'path不合法，请检查路径格式'
+        ));
+      }
 
       if (!yapi.commons.verifyPath(http_path.pathname)) {
         return (ctx.body = yapi.commons.resReturn(
@@ -710,15 +742,7 @@ class interfaceController extends baseController {
           'path第一位必需为 /, 只允许由 字母数字-/_:.! 组成'
         ));
       }
-      params.query_path = {};
-      params.query_path.path = http_path.pathname;
-      params.query_path.params = [];
-      Object.keys(http_path.query).forEach(item => {
-        params.query_path.params.push({
-          name: item,
-          value: http_path.query[item]
-        });
-      });
+      params.query_path = buildQueryPath(http_path);
       data.query_path = params.query_path;
     }
 

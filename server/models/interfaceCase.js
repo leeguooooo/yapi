@@ -117,11 +117,11 @@ class interfaceCase extends baseModel {
 
   up(id, data) {
     data.up_time = yapi.commons.time();
-    return this.model.update({ _id: id }, data);
+    return this.model.updateOne({ _id: id }, data);
   }
 
   upCaseIndex(id, index) {
-    return this.model.update(
+    return this.model.updateOne(
       {
         _id: id
       },

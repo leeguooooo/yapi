@@ -311,7 +311,7 @@ class interfaceModel extends baseModel {
 
   up(id, data) {
     data.up_time = yapi.commons.time();
-    return this.model.update(
+    return this.model.updateOne(
       {
         _id: id
       },
@@ -321,7 +321,7 @@ class interfaceModel extends baseModel {
   }
 
   upEditUid(id, uid) {
-    return this.model.update(
+    return this.model.updateOne(
       {
         _id: id
       },
@@ -346,7 +346,7 @@ class interfaceModel extends baseModel {
   }
 
   upIndex(id, index) {
-    return this.model.update(
+    return this.model.updateOne(
       {
         _id: id
       },

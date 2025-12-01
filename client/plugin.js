@@ -261,7 +261,7 @@ function bindHook(name, listener) {
   }
 }
 
-function emitHook(name, ...args) {
+export function emitHook(name, ...args) {
   if (!hooks[name]) {
     throw new Error('不存在的hook name');
   }

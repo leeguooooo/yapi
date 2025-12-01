@@ -13,9 +13,9 @@ import mockEditor from 'client/components/AceEditor/mockEditor';
 import AceEditor from 'client/components/AceEditor/AceEditor';
 import axios from 'axios';
 import { MOCK_SOURCE } from '../../../../constants/variable.js';
-import * as EditorLib from 'common/tui-editor/dist/tui-editor-Editor-all.min.js';
+import Editor from '@toast-ui/editor';
+import '@toast-ui/editor/dist/toastui-editor.css';
 const TabPane = Tabs.TabPane;
-const Editor = EditorLib.default || EditorLib;
 
 
 // require('common/tui-editor/dist/tui-editor.min.css'); // editor ui - 暂时注释掉

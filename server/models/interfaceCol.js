@@ -94,7 +94,7 @@ class interfaceCol extends baseModel {
 
   up(id, data) {
     data.up_time = yapi.commons.time();
-    return this.model.update(
+    return this.model.updateOne(
       {
         _id: id
       },
@@ -103,7 +103,7 @@ class interfaceCol extends baseModel {
   }
 
   upColIndex(id, index) {
-    return this.model.update(
+    return this.model.updateOne(
       {
         _id: id
       },

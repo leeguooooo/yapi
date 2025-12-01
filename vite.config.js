@@ -32,7 +32,9 @@ export default defineConfig({
   },
   
   server: {
+    host: '127.0.0.1',
     port: 4000,
+    strictPort: true,
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:3001',
@@ -61,7 +63,7 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `@import "client/styles/mixin.scss";`
+        additionalData: `@use "client/styles/mixin.scss" as *;`
       },
       less: {
         javascriptEnabled: true

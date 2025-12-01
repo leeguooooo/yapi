@@ -88,7 +88,7 @@ class userModel extends baseModel {
   }
 
   update(id, data) {
-    return this.model.update(
+    return this.model.updateOne(
       {
         _id: id
       },

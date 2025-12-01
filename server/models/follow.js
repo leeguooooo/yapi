@@ -70,7 +70,7 @@ class followModel extends baseModel {
   }
 
   updateById(id, typeid, data) {
-    return this.model.update(
+    return this.model.updateOne(
       {
         uid: id,
         projectid: typeid

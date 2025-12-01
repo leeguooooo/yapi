@@ -12,7 +12,7 @@ import {
   setColData,
   fetchCaseEnvList
 } from '../../../../reducer/modules/interfaceCol';
-import HTML5Backend from 'react-dnd-html5-backend';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { getToken, getEnv } from '../../../../reducer/modules/project';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import AceEditor from 'client/components/AceEditor/AceEditor';

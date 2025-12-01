@@ -38,6 +38,8 @@ node_modules/
 runtime/
 /prd/
 /dev/
+static/prd/
+static/dev/
 .tags
 .tags1
 tsconfig.json
