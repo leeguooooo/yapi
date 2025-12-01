@@ -1,9 +1,10 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Icon, Input, AutoComplete } from 'antd';
+import { Input, AutoComplete } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import './Search.scss';
-import { withRouter } from 'react-router';
+import { withRouter } from 'react-router-dom';
 import axios from 'axios';
 import { setCurrGroup, fetchGroupMsg } from '../../../reducer/modules/group';
 import { changeMenuItem } from '../../../reducer/modules/menu';

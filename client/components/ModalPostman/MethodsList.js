@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Row, Icon, Input, Select, Tooltip } from 'antd';
+import { Row, Input, Select, Tooltip } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import _ from 'underscore';
 const Option = Select.Option;
 

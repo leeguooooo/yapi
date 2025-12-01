@@ -3,14 +3,23 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
-  plugins: [react({
-    babel: {
-      plugins: [
-        ['@babel/plugin-proposal-decorators', { legacy: true }],
-        ['@babel/plugin-proposal-class-properties', { loose: true }]
-      ]
-    }
-  })],
+  plugins: [
+    react({
+      babel: {
+        babelrc: false,
+        configFile: false,
+        presets: [
+          ['@babel/preset-env', { loose: true, modules: false }],
+          ['@babel/preset-react', { runtime: 'automatic' }]
+        ],
+        plugins: [
+          ['@babel/plugin-proposal-decorators', { legacy: true }],
+          ['@babel/plugin-proposal-class-properties', { loose: true }],
+          ['@babel/plugin-proposal-object-rest-spread', { loose: true }]
+        ]
+      }
+    })
+  ],
   
   root: 'client',
   
@@ -40,6 +49,13 @@ export default defineConfig({
         main: 'client/index.jsx'
       }
     }
+  },
+
+  esbuild: {
+    jsx: 'transform',
+    loader: 'jsx',
+    include: /client\/.*\.[jt]sx?$/,
+    exclude: []
   },
   
   css: {

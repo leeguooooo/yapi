@@ -1,6 +1,6 @@
 import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import {
   fetchInterfaceColList,
@@ -12,7 +12,8 @@ import {
 import { fetchProjectList } from '../../../../reducer/modules/project';
 import axios from 'axios';
 import ImportInterface from './ImportInterface';
-import { Input, Icon, Button, Modal, message, Tooltip, Tree, Form } from 'antd';
+import { Input, Button, Modal, message, Tooltip, Tree, Form } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import { arrayChangeIndex } from '../../../../common.js';
 import _ from 'underscore'
 

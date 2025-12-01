@@ -2,7 +2,8 @@ import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Table, Button, Modal, message, Tooltip, Select, Icon } from 'antd';
+import { Table, Button, Modal, message, Tooltip, Select } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import AddInterfaceForm from './AddInterfaceForm';
 import {
   fetchInterfaceListMenu,

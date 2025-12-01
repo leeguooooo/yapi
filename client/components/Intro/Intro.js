@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Icon } from 'antd';
+import {  } from 'antd';
+import { Icon } from '@ant-design/compatible';
 // import './Intro.scss';
 import { OverPack } from 'rc-scroll-anim';
 import TweenOne from 'rc-tween-one';

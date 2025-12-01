@@ -1,9 +1,10 @@
 import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
-import { Modal, Collapse, Row, Col, Input, message, Button, Icon } from 'antd';
+import { Modal, Collapse, Row, Col, Input, message, Button } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { withRouter } from 'react-router';
+import { withRouter } from 'react-router-dom';
 import { fetchInterfaceColList } from '../../../../../reducer/modules/interfaceCol';
 
 const { TextArea } = Input;

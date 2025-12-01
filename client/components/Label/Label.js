@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Icon, Input, Tooltip } from 'antd';
+import { Input, Tooltip } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import PropTypes from 'prop-types';
 import './Label.scss';
 

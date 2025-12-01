@@ -1,21 +1,6 @@
 import React, { PureComponent as Component } from 'react';
-import {
-  Form,
-  Input,
-  Switch,
-  Select,
-  Icon,
-  Tooltip,
-  Button,
-  Row,
-  Col,
-  message,
-  Card,
-  Radio,
-  Alert,
-  Modal,
-  Popover
-} from 'antd';
+import { Form, Input, Switch, Select, Tooltip, Button, Row, Col, message, Card, Radio, Alert, Modal, Popover } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import PropTypes from 'prop-types';
 import {
   updateProject,
@@ -28,7 +13,7 @@ import { fetchGroupList } from '../../../../reducer/modules/group.js';
 import { setBreadcrumb } from '../../../../reducer/modules/user';
 import { connect } from 'react-redux';
 const { TextArea } = Input;
-import { withRouter } from 'react-router';
+import { withRouter } from 'react-router-dom';
 const FormItem = Form.Item;
 const RadioGroup = Radio.Group;
 const RadioButton = Radio.Button;

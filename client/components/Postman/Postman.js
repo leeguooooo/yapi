@@ -1,21 +1,7 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
-import {
-  Button,
-  Input,
-  Checkbox,
-  Modal,
-  Select,
-  Spin,
-  Icon,
-  Collapse,
-  Tooltip,
-  Tabs,
-  Switch,
-  Row,
-  Col,
-  Alert
-} from 'antd';
+import { Button, Input, Checkbox, Modal, Select, Spin, Collapse, Tooltip, Tabs, Switch, Row, Col, Alert } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import constants from '../../constants/variable.js';
 import AceEditor from 'client/components/AceEditor/AceEditor';
 import _ from 'underscore';

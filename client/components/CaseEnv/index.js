@@ -2,7 +2,8 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Select, Row, Col, Collapse, Icon, Tooltip } from 'antd';
+import { Select, Row, Col, Collapse, Tooltip } from 'antd';
+import { Icon } from '@ant-design/compatible';
 const Option = Select.Option;
 const Panel = Collapse.Panel;
 // import './index.scss';

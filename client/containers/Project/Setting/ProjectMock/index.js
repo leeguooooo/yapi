@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Form, Switch, Button, Icon, Tooltip, message } from 'antd';
+import { Form, Switch, Button, Tooltip, message } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import AceEditor from '../../../../components/AceEditor/AceEditor';
 const FormItem = Form.Item;
 import { updateProjectMock, getProject } from '../../../../reducer/modules/project';

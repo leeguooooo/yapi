@@ -1,10 +1,11 @@
 import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router';
+import { withRouter } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 //import constants from '../../../../constants/variable.js'
-import { Tooltip, Icon,Input, Button, Row, Col, Spin, Modal, message, Select, Switch, Table } from 'antd';
+import { Tooltip, Input, Button, Row, Col, Spin, Modal, message, Select, Switch, Table } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import {
   fetchInterfaceColList,
   fetchCaseList,

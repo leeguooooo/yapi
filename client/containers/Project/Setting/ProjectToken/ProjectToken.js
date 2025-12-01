@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import './ProjectToken.scss';
 import { getToken, updateToken } from '../../../../reducer/modules/project';
 import { connect } from 'react-redux';
-import { Icon, Tooltip, message, Modal } from 'antd';
+import { Tooltip, message, Modal } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import copy from 'copy-to-clipboard';
 const confirm = Modal.confirm;
 

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import './index.scss';
-import { Icon, Row, Col, Form, Input, Select, Button, AutoComplete, Tooltip } from 'antd';
+import { Row, Col, Form, Input, Select, Button, AutoComplete, Tooltip } from 'antd';
+import { Icon } from '@ant-design/compatible';
 const FormItem = Form.Item;
 const Option = Select.Option;
 import constants from 'client/constants/variable.js';

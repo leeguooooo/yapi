@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Tabs, Modal, Button } from 'antd';
 import Edit from './Edit.js';
 import View from './View.js';
-import { Prompt } from 'react-router';
+import { Prompt } from 'react-router-dom';
 import { fetchInterfaceData } from '../../../../reducer/modules/interface.js';
 import { withRouter } from 'react-router-dom';
 import Run from './Run/Run.js';

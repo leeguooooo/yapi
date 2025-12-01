@@ -7,6 +7,7 @@ import { handlePath, nameLengthLimit } from '../../../../common.js';
 import { changeEditStatus } from '../../../../reducer/modules/interface.js';
 import json5 from 'json5';
 import { message, Affix, Tabs, Modal } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import EasyDragSort from '../../../../components/EasyDragSort/EasyDragSort.js';
 import mockEditor from 'client/components/AceEditor/mockEditor';
 import AceEditor from 'client/components/AceEditor/AceEditor';
@@ -63,7 +64,6 @@ import {
   Row,
   Col,
   Radio,
-  Icon,
   AutoComplete,
   Switch
 } from 'antd';
