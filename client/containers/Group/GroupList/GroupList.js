@@ -1,7 +1,8 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Icon, Modal, Input, message,Spin,  Row, Menu, Col, Popover, Tooltip } from 'antd';
+import { Modal, Input, message, Spin, Row, Menu, Col, Popover, Tooltip } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import { autobind } from 'core-decorators';
 import axios from 'axios';
 import { withRouter } from 'react-router-dom';
@@ -13,7 +14,6 @@ import { fetchNewsData } from '../../../reducer/modules/news.js';
 import {
   fetchGroupList,
   setCurrGroup,
-  setGroupList,
   fetchGroupMsg
 } from '../../../reducer/modules/group.js';
 import _ from 'underscore';
@@ -42,7 +42,6 @@ const tip = (
   {
     fetchGroupList,
     setCurrGroup,
-    setGroupList,
     fetchNewsData,
     fetchGroupMsg
   }
@@ -54,7 +53,6 @@ export default class GroupList extends Component {
     currGroup: PropTypes.object,
     fetchGroupList: PropTypes.func,
     setCurrGroup: PropTypes.func,
-    setGroupList: PropTypes.func,
     match: PropTypes.object,
     history: PropTypes.object,
     curUserRole: PropTypes.string,

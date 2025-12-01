@@ -1,7 +1,8 @@
 import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Input, Button, message, Icon, Card, Alert, Modal, Switch, Row, Col, Tooltip } from 'antd';
+import { Input, Button, message, Card, Alert, Modal, Switch, Row, Col, Tooltip } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import { fetchNewsData } from '../../../reducer/modules/news.js';
 import {
   changeGroupMsg,

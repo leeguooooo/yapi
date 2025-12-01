@@ -1,7 +1,8 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Button, Form, Input, Icon, Tooltip, Select, message, Row, Col, Radio } from 'antd';
+import { Button, Form, Input, Tooltip, Select, message, Row, Col, Radio } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import { addProject } from '../../reducer/modules/project.js';
 import { fetchGroupList } from '../../reducer/modules/group.js';
 import { autobind } from 'core-decorators';
@@ -12,7 +13,7 @@ const Option = Select.Option;
 const RadioGroup = Radio.Group;
 import { pickRandomProperty, handlePath, nameLengthLimit } from '../../common';
 import constants from '../../constants/variable.js';
-import { withRouter } from 'react-router';
+import { withRouter } from 'react-router-dom';
 import './Addproject.scss';
 
 const formItemLayout = {

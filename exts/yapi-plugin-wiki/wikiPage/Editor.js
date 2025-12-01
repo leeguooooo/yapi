@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Checkbox } from 'antd';
-import Editor from 'common/tui-editor/dist/tui-editor-Editor-all.min.js';
+import * as EditorLib from 'common/tui-editor/dist/tui-editor-Editor-all.min.js';
+const Editor = EditorLib.default || EditorLib;
 // require('common/tui-editor/dist/tui-editor.min.css'); // editor ui - 暂时注释掉
 // require('common/tui-editor/dist/tui-editor-contents.min.css'); // editor content - 暂时注释掉
 class WikiEditor extends Component {

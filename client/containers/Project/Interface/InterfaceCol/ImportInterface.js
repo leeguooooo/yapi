@@ -1,6 +1,7 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
-import { Table, Select, Tooltip, Icon } from 'antd';
+import { Table, Select, Tooltip } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import variable from '../../../../constants/variable';
 import { connect } from 'react-redux';
 const Option = Select.Option;

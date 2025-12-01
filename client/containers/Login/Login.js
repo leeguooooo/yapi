@@ -1,9 +1,10 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Form, Button, Input, Icon, message, Radio } from 'antd';
+import { Form, Button, Input, message, Radio } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import { loginActions, loginLdapActions } from '../../reducer/modules/user';
-import { withRouter } from 'react-router';
+import { withRouter } from 'react-router-dom';
 const FormItem = Form.Item;
 const RadioGroup = Radio.Group;
 
