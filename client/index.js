@@ -15,11 +15,12 @@ import zhCN from 'antd/lib/locale-provider/zh_CN';
 // 这是因为这些库使用的是 legacy API，升级会带来破坏性变更
 const originalError = console.error;
 const originalWarn = console.warn;
-const originalLog = console.log;
 
 // 过滤函数，检查是否是需要抑制的警告
 const shouldSuppressMessage = (message) => {
   if (typeof message !== 'string') return false;
+  // 仅过滤 React 警告，避免屏蔽真实报错
+  if (!message.startsWith('Warning:')) return false;
   
   const suppressedMessages = [
     'childContextTypes API',
@@ -39,7 +40,7 @@ const shouldSuppressMessage = (message) => {
   return suppressedMessages.some(msg => message.includes(msg));
 };
 
-// 重写所有 console 方法以确保捕获所有 PropTypes 警告
+// 重写 console error/warn 以确保捕获特定的兼容性警告
 console.error = (...args) => {
   if (args.some(arg => shouldSuppressMessage(String(arg)))) {
     return;
@@ -54,16 +55,9 @@ console.warn = (...args) => {
   originalWarn.apply(console, args);
 };
 
-console.log = (...args) => {
-  if (args.some(arg => shouldSuppressMessage(String(arg)))) {
-    return;
-  }
-  originalLog.apply(console, args);
-};
-
 // 额外处理 PropTypes 警告（在某些情况下可能直接调用）
 if (typeof window !== 'undefined' && window.console) {
-  const methods = ['error', 'warn', 'log'];
+  const methods = ['error', 'warn'];
   methods.forEach(method => {
     const original = window.console[method];
     window.console[method] = (...args) => {

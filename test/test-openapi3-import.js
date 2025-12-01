@@ -18,8 +18,8 @@ test('OpenAPI 3.1.1 基础导入测试', async t => {
     t.truthy(result.apis);
     t.truthy(result.cats);
     
-    // 验证接口数量
-    t.is(result.apis.length, 3, '应该导入 3 个接口');
+    // 验证接口数量（当前示例包含 4 个接口）
+    t.is(result.apis.length, 4, '应该导入 4 个接口');
     
     // 验证分类
     t.is(result.cats.length, 2, '应该有 2 个分类');

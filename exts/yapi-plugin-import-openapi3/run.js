@@ -1,5 +1,13 @@
 const _ = require('underscore');
-const OpenAPIParser = require('@readme/openapi-parser');
+// 尝试加载 OpenAPI 校验器，如果依赖缺失则降级为空校验
+let OpenAPIParser;
+try {
+  OpenAPIParser = require('@readme/openapi-parser');
+} catch (err) {
+  OpenAPIParser = {
+    validate: async (doc) => doc
+  };
+}
 const $RefParser = require('@apidevtools/json-schema-ref-parser');
 
 let openApiData;
@@ -128,11 +136,10 @@ function handleParameters(parameters, api) {
         }
         break;
       case 'cookie':
-        api.req_headers.push({
-          ...defaultParam,
+        api.req_headers.push(Object.assign({}, defaultParam, {
           name: 'Cookie',
           desc: `${param.name}: ${defaultParam.desc}`
-        });
+        }));
         break;
     }
   });

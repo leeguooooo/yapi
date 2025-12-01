@@ -206,16 +206,33 @@ class exportOpenAPI3Controller extends baseController {
 
     buildResponses(api) {
         const responses = {};
-        
-        if (api.res_body) {
+
+        // 优先使用 schema_composition，避免组合模式丢失
+        if (api.schema_composition && api.schema_composition.type && api.schema_composition.schemas) {
+            const composition = api.schema_composition;
+            responses['200'] = {
+                description: 'Successful operation',
+                content: {
+                    'application/json': {
+                        schema: {
+                            [composition.type]: composition.schemas
+                        }
+                    }
+                }
+            };
+
+            if (composition.discriminator) {
+                responses['200'].content['application/json'].schema.discriminator = composition.discriminator;
+            }
+        } else if (api.res_body) {
             try {
                 const schema = JSON.parse(api.res_body);
-                
+
                 // 检查是否包含 _yapiComposition 标记
                 if (schema._yapiComposition) {
                     const composition = schema._yapiComposition;
                     delete schema._yapiComposition;
-                    
+
                     responses['200'] = {
                         description: 'Successful operation',
                         content: {

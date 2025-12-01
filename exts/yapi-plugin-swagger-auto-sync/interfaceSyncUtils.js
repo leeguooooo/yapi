@@ -97,13 +97,14 @@ class syncUtils {
             return;
         }
         let newSwaggerJsonData;
+        let swaggerObject;
         try {
-            newSwaggerJsonData = await this.getSwaggerContent(swaggerUrl)
-            if (!newSwaggerJsonData || typeof newSwaggerJsonData !== 'object') {
+            swaggerObject = await this.getSwaggerContent(swaggerUrl);
+            if (!swaggerObject || typeof swaggerObject !== 'object') {
                 yapi.commons.log('数据格式出错，请检查')
                 this.saveSyncLog(0, syncMode, "数据格式出错，请检查", uid, projectId);
             }
-            newSwaggerJsonData = JSON.stringify(newSwaggerJsonData)
+            newSwaggerJsonData = JSON.stringify(swaggerObject)
         } catch (e) {
             this.saveSyncLog(0, syncMode, "获取数据失败，请检查", uid, projectId);
             yapi.commons.log('获取数据失败' + e.message)
@@ -122,10 +123,10 @@ class syncUtils {
 
         // 自动检测 OpenAPI 版本，选择合适的导入器
         let importType = 'swagger';  // 默认使用 swagger
-        if (newSwaggerJsonData && typeof newSwaggerJsonData === 'object') {
-            if (newSwaggerJsonData.openapi && newSwaggerJsonData.openapi.startsWith('3.')) {
+        if (swaggerObject && typeof swaggerObject === 'object') {
+            if (swaggerObject.openapi && String(swaggerObject.openapi).startsWith('3.')) {
                 importType = 'openapi3';
-            } else if (newSwaggerJsonData.swagger && newSwaggerJsonData.swagger.startsWith('2.')) {
+            } else if (swaggerObject.swagger && String(swaggerObject.swagger).startsWith('2.')) {
                 importType = 'swagger';
             }
         }
