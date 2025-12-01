@@ -22,8 +22,8 @@ footer:
       - { name: 'YMFE', href: 'https://ymfe.org/' }
       - { name: 'YMFE Blog', href: 'https://blog.ymfe.org/' }
     Git仓库:
-      - { name: 'Github', href: 'https://github.com/YMFE/yapi' }
-      - { name: 'Github Issue', href: 'https://github.com/YMFE/yapi/issues' }
+      - { name: 'Github', href: 'https://github.com/leeguooooo/yapi' }
+      - { name: 'Github Issue', href: 'https://github.com/leeguooooo/yapi/issues' }
 
 ---
 {

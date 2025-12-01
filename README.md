@@ -1,11 +1,8 @@
 ## YApi  可视化接口管理平台
 
-体验地址：
+GitHub（维护仓库）：<a target="_blank" href="https://github.com/leeguooooo/yapi">https://github.com/leeguooooo/yapi</a>
 
-[http://yapi.smart-xwork.cn/](http://yapi.smart-xwork.cn/)
-
-文档：
-<p><a target="_blank" href="https://hellosean1025.github.io/yapi">hellosean1025.github.io/yapi</a></p>
+文档（GitHub Pages）：<a target="_blank" href="https://leeguooooo.github.io/yapi">https://leeguooooo.github.io/yapi</a>
 
 ### 平台介绍
 ![avatar](yapi-base-flow.jpg)
@@ -127,4 +124,3 @@ YApi 是<strong>高效</strong>、<strong>易用</strong>、<strong>功能强大
 
 ### License
 Apache License 2.0
-

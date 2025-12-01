@@ -1,6 +1,6 @@
 {
   "name": "yapi-vendor",
-  "version": "1.11.0",
+  "version": "2.0.0",
   "description": "YAPI",
   "main": "server/app.js",
   "scripts": {
@@ -26,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:YMFE/yapi.git"
+    "url": "git@github.com:leeguooooo/yapi.git"
   },
   "author": "",
   "license": "Apache-2.0",

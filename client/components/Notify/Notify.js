@@ -34,7 +34,7 @@ export default class Notify extends Component {
                 &nbsp;&nbsp;&nbsp;
                 <a
                   target="view_window"
-                  href="https://github.com/YMFE/yapi/blob/master/CHANGELOG.md"
+                  href="https://github.com/leeguooooo/yapi/blob/master/CHANGELOG.md"
                 >
                   版本详情
                 </a>

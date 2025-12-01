@@ -171,8 +171,8 @@ const constants = {
   ],
   IP_REGEXP: /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])(\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])){3}$/,
   docHref: {
-    adv_mock_case: 'https://hellosean1025.github.io/yapi/documents/mock.html',
-    adv_mock_script: 'https://hellosean1025.github.io/yapi/documents/adv_mock.html'
+    adv_mock_case: 'https://leeguooooo.github.io/yapi/documents/mock.html',
+    adv_mock_script: 'https://leeguooooo.github.io/yapi/documents/adv_mock.html'
   }
 };
 

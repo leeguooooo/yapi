@@ -70,7 +70,7 @@ Footer.defaultProps = {
       linkList: [
         {
           itemTitle: 'YApi 源码仓库',
-          itemLink: 'https://github.com/YMFE/yapi'
+          itemLink: 'https://github.com/leeguooooo/yapi'
         }
       ]
     },
@@ -90,11 +90,11 @@ Footer.defaultProps = {
       linkList: [
         {
           itemTitle: 'Github Issues',
-          itemLink: 'https://github.com/YMFE/yapi/issues'
+          itemLink: 'https://github.com/leeguooooo/yapi/issues'
         },
         {
           itemTitle: 'Github Pull Requests',
-          itemLink: 'https://github.com/YMFE/yapi/pulls'
+          itemLink: 'https://github.com/leeguooooo/yapi/pulls'
         }
       ]
     },
@@ -103,11 +103,11 @@ Footer.defaultProps = {
       linkList: [
         {
           itemTitle: `版本: ${version} `,
-          itemLink: 'https://github.com/YMFE/yapi/blob/master/CHANGELOG.md'
+          itemLink: 'https://github.com/leeguooooo/yapi/blob/master/CHANGELOG.md'
         },
         {
           itemTitle: '使用文档',
-          itemLink: 'https://hellosean1025.github.io/yapi/'
+          itemLink: 'https://leeguooooo.github.io/yapi/'
         }
       ]
     }
