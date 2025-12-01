@@ -1,6 +1,5 @@
-const _ = require('underscore');
-const axios = require('axios');
-
+import _ from 'underscore';
+import axios from 'axios';
 
 const isNode = typeof global == 'object' && global.global === global;
 
@@ -17,10 +16,9 @@ async function handle(
   token,
   port
 ) {
-
-  const taskNotice = _.throttle((index, len)=>{
-    messageSuccess(`正在导入，已执行任务 ${index+1} 个，共 ${len} 个`)
-  }, 3000)
+  const taskNotice = _.throttle((index, len) => {
+    messageSuccess(`正在导入，已执行任务 ${index + 1} 个，共 ${len} 个`);
+  }, 3000);
 
   const handleAddCat = async cats => {
     let catsObj = {};
@@ -63,8 +61,8 @@ async function handle(
       return;
     }
     
-    const res = info.apis;
-    let len = res.length;
+    const apis = info.apis;
+    let len = apis.length;
     let count = 0;
     let successNum = len;
     let existNum = 0;
@@ -84,11 +82,11 @@ async function handle(
         id: projectId,
         basepath: info.basePath,
         token
-      })
+      });
     }
 
-    for (let index = 0; index < res.length; index++) {
-      let item = res[index];
+    for (let index = 0; index < apis.length; index++) {
+      let item = apis[index];
       let data = Object.assign(item, {
         project_id: projectId,
         catid: selectCatid
@@ -149,11 +147,17 @@ async function handle(
         return;
       }
 
-      taskNotice(index, res.length)
+      taskNotice(index, apis.length);
     }
   };
 
   return await handleAddInterface(res);
 }
 
-module.exports = handle;
+export default handle;
+
+// CJS compatibility
+if (typeof module !== 'undefined') {
+  module.exports = handle;
+  module.exports.default = handle;
+}

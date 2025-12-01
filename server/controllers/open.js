@@ -16,7 +16,7 @@ const {
 const { handleParamsValue, ArrayToObject } = require('../../common/utils.js');
 const renderToHtml = require('../utils/reportHtml');
 const axios = require('axios');
-const HanldeImportData = require('../../common/HandleImportData');
+const HandleImportData = require('../../common/HandleImportData');
 const _ = require('underscore');
 const createContex = require('../../common/createContext')
 
@@ -137,7 +137,7 @@ class openController extends baseController {
 
     let successMessage;
     let errorMessage = [];
-    await HanldeImportData(
+    await HandleImportData(
       res,
       project_id,
       selectCatid,

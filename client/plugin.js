@@ -290,12 +290,7 @@ pluginModule = {
   bindHook: bindHook,
   emitHook: emitHook
 };
-let pluginModuleList;
-try {
-  pluginModuleList = require('./plugin-module.js');
-} catch (err) {
-  pluginModuleList = {};
-}
+import * as pluginModuleList from './plugin-module.js';
 
 Object.keys(pluginModuleList).forEach(plugin => {
   if (!pluginModuleList[plugin]) return null;
@@ -304,8 +299,4 @@ Object.keys(pluginModuleList).forEach(plugin => {
   }
 });
 
-// CJS compatibility for older plugins; ESM import gets default/exported functions.
-if (typeof module !== 'undefined') {
-  module.exports = pluginModule;
-}
 export default pluginModule;

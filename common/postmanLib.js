@@ -1,15 +1,15 @@
-const { isJson5, json_parse, handleJson, joinPath, safeArray } = require('./utils');
-const constants = require('../client/constants/variable.js');
-const _ = require('underscore');
-const URL = require('url');
-const utils = require('./power-string.js').utils;
-const HTTP_METHOD = constants.HTTP_METHOD;
-const axios = require('axios');
-const qs = require('qs');
-const CryptoJS = require('crypto-js');
-const jsrsasign = require('jsrsasign');
-const https = require('https');
+import { isJson5, json_parse, handleJson, joinPath, safeArray } from './utils.js';
+import constants from '../client/constants/variable.js';
+import _ from 'underscore';
+import URL from 'url';
+import { utils as powerStringUtils } from './power-string.js';
+import axios from 'axios';
+import qs from 'qs';
+import CryptoJS from 'crypto-js';
+import jsrsasign from 'jsrsasign';
+import https from 'https';
 
+const HTTP_METHOD = constants.HTTP_METHOD;
 const isNode = typeof global == 'object' && global.global === global;
 const ContentTypeMap = {
   'application/json': 'json',
@@ -20,36 +20,36 @@ const ContentTypeMap = {
   other: 'text'
 };
 
-const getStorage = async (id)=>{
-  try{
-    if(isNode){
-      let storage = global.storageCreator(id);
-      let data = await storage.getItem();
+const getStorage = async id => {
+  try {
+    if (isNode) {
+      const storage = global.storageCreator(id);
+      const data = await storage.getItem();
       return {
-        getItem: (name)=> data[name],
-        setItem: (name, value)=>{
+        getItem: name => data[name],
+        setItem: (name, value) => {
           data[name] = value;
-          storage.setItem(name, value)
+          storage.setItem(name, value);
         }
-      }
-    }else{
+      };
+    } else {
       return {
-        getItem: (name)=> window.localStorage.getItem(name),
-        setItem: (name, value)=>  window.localStorage.setItem(name, value)
-      }
+        getItem: name => window.localStorage.getItem(name),
+        setItem: (name, value) => window.localStorage.setItem(name, value)
+      };
     }
-  }catch(e){
-    console.error(e)
+  } catch (e) {
+    console.error(e);
     return {
-      getItem: (name)=>{
-        console.error(name, e)
+      getItem: name => {
+        console.error(name, e);
       },
-      setItem: (name, value)=>{
-        console.error(name, value, e)
+      setItem: (name, value) => {
+        console.error(name, value, e);
       }
-    }
+    };
   }
-}
+};
 
 async function httpRequestByNode(options) {
   function handleRes(response) {
@@ -79,10 +79,7 @@ async function httpRequestByNode(options) {
       Object.keys(options.headers).forEach(key => {
         if (/content-type/i.test(key)) {
           if (options.headers[key]) {
-            contentTypeItem = options.headers[key]
-              .split(';')[0]
-              .trim()
-              .toLowerCase();
+            contentTypeItem = options.headers[key].split(';')[0].trim().toLowerCase();
           }
         }
         if (!options.headers[key]) delete options.headers[key];
@@ -100,7 +97,7 @@ async function httpRequestByNode(options) {
 
   try {
     handleData(options);
-    let response = await axios({
+    const response = await axios({
       method: options.method,
       url: options.url,
       headers: options.headers,
@@ -130,10 +127,7 @@ function handleContentType(headers) {
   try {
     Object.keys(headers).forEach(key => {
       if (/content-type/i.test(key)) {
-        contentTypeItem = headers[key]
-          .split(';')[0]
-          .trim()
-          .toLowerCase();
+        contentTypeItem = headers[key].split(';')[0].trim().toLowerCase();
       }
     });
     return ContentTypeMap[contentTypeItem] ? ContentTypeMap[contentTypeItem] : ContentTypeMap.other;
@@ -199,11 +193,19 @@ async function sandbox(context = {}, script) {
       throw err;
     }
   } else {
-    context = sandboxByBrowser(context, script);
-  }
-  if (context.promise && typeof context.promise === 'object' && context.promise.then) {
     try {
-      await context.promise;
+      const AsyncFunction = Object.getPrototypeOf(async function() {}).constructor;
+      context = Object.assign(context, {
+        context: context,
+        console: console,
+        Promise: Promise,
+        setTimeout: setTimeout,
+        CryptoJS: CryptoJS,
+        axios: axios,
+        jsrsasign: jsrsasign
+      });
+      const fn = new AsyncFunction('context', script);
+      context = await fn.call(context, context);
     } catch (err) {
       err.message = `Script: ${script}
       message: ${err.message}`;
@@ -213,235 +215,344 @@ async function sandbox(context = {}, script) {
   return context;
 }
 
-function sandboxByBrowser(context = {}, script) {
-  if (!script || typeof script !== 'string') {
-    return context;
+function formatToJson(data, contentType) {
+  if (!data) return null;
+  let result;
+  switch (contentType) {
+    case ContentTypeMap.json:
+      result = json_parse(data);
+      break;
+    case ContentTypeMap.xml:
+      break;
+    default:
+      result = data;
   }
-  let beginScript = '';
-  for (var i in context) {
-    beginScript += `var ${i} = context.${i};`;
-  }
-  try {
-    eval(beginScript + script);
-  } catch (err) {
-    let message = `Script:
-                   ----CodeBegin----:
-                   ${beginScript}
-                   ${script}
-                   ----CodeEnd----
-                  `;
-    err.message = `Script: ${message}
-    message: ${err.message}`;
-
-    throw err;
-  }
-  return context;
+  return result;
 }
 
-/**
- * 
- * @param {*} defaultOptions 
- * @param {*} preScript 
- * @param {*} afterScript 
- * @param {*} commonContext  负责传递一些业务信息，crossRequest 不关注具体传什么，只负责当中间人
- */
-async function crossRequest(defaultOptions, preScript, afterScript, commonContext = {}) {
-  let options = Object.assign({}, defaultOptions);
-  const taskId = options.taskId || Math.random() + '';
-  let urlObj = URL.parse(options.url, true),
-    query = {};
-  query = Object.assign(query, urlObj.query);
-  let context = {
-    isNode,
-    get href() {
-      return urlObj.href;
-    },
-    set href(val) {
-      throw new Error('context.href 不能被赋值');
-    },
-    get hostname() {
-      return urlObj.hostname;
-    },
-    set hostname(val) {
-      throw new Error('context.hostname 不能被赋值');
-    },
+function paramsToObjectWithEnable(arr, keys = ['name', 'value']) {
+  let obj = {};
+  if (Array.isArray(arr)) {
+    arr.forEach(item => {
+      if (item.enable) {
+        obj[item[keys[0]]] = item[keys[1]];
+      }
+    });
+  }
+  return obj;
+}
 
-    get caseId() {
-      return options.caseId;
-    },
-
-    set caseId(val) {
-      throw new Error('context.caseId 不能被赋值');
-    },
-
-    method: options.method,
-    pathname: urlObj.pathname,
-    query: query,
-    requestHeader: options.headers || {},
-    requestBody: options.data,
-    promise: false,
-    storage: await getStorage(taskId)
-  };
-
-  Object.assign(context, commonContext)
-
-  context.utils = Object.freeze({
-    _: _,
-    CryptoJS: CryptoJS,
-    jsrsasign: jsrsasign,
-    base64: utils.base64,
-    md5: utils.md5,
-    sha1: utils.sha1,
-    sha224: utils.sha224,
-    sha256: utils.sha256,
-    sha384: utils.sha384,
-    sha512: utils.sha512,
-    unbase64: utils.unbase64,
-    axios: axios
+function formatRequestBody(params, keys = ['name', 'value']) {
+  let result = {};
+  Object.keys(params).forEach(item => {
+    result = Object.assign({}, result, params[item].reduce((acc, cur) => {
+      acc[cur[keys[0]]] = cur[keys[1]];
+      return acc;
+    }, {}));
   });
 
-  let scriptEnable = false;
-  try {
-    const yapi = require('../server/yapi');
-    scriptEnable = yapi.WEBCONFIG.scriptEnable === true;
-  } catch (err) {}
-
-  if (preScript && scriptEnable) {
-    context = await sandbox(context, preScript);
-    defaultOptions.url = options.url = URL.format({
-      protocol: urlObj.protocol,
-      host: urlObj.host,
-      query: context.query,
-      pathname: context.pathname
-    });
-    defaultOptions.headers = options.headers = context.requestHeader;
-    defaultOptions.data = options.data = context.requestBody;
-  }
-
-  let data;
-
-  if (isNode) {
-    data = await httpRequestByNode(options);
-    data.req = options;
-  } else {
-    data = await new Promise((resolve, reject) => {
-      options.error = options.success = function(res, header, data) {
-        let message = '';
-        if (res && typeof res === 'string') {
-          res = json_parse(data.res.body);
-          data.res.body = res;
-        }
-        if (!isNode) message = '请求异常，请检查 chrome network 错误信息... https://juejin.im/post/5c888a3e5188257dee0322af 通过该链接查看教程"）';
-        if (isNaN(data.res.status)) {
-          reject({
-            body: res || message,
-            header,
-            message
-          });
-        }
-        resolve(data);
-      };
-
-      window.crossRequest(options);
-    });
-  }
-
-  if (afterScript && scriptEnable) {
-    context.responseData = data.res.body;
-    context.responseHeader = data.res.header;
-    context.responseStatus = data.res.status;
-    context.runTime = data.runTime;
-    context = await sandbox(context, afterScript);
-    data.res.body = context.responseData;
-    data.res.header = context.responseHeader;
-    data.res.status = context.responseStatus;
-    data.runTime = context.runTime;
-  }
-  return data;
+  return result;
 }
 
-function handleParams(interfaceData, handleValue, requestParams) {
-  let interfaceRunData = Object.assign({}, interfaceData);
-  function paramsToObjectWithEnable(arr) {
-    const obj = {};
-    safeArray(arr).forEach(item => {
-      if (item && item.name && (item.enable || item.required === '1')) {
-        obj[item.name] = handleValue(item.value, currDomain.global);
-        if (requestParams) {
-          requestParams[item.name] = obj[item.name];
-        }
-      }
-    });
-    return obj;
-  }
+function handleParamsValue(params) {
+  const arr = params || [];
+  return arr
+    .filter(item => item && item.name)
+    .map(item => ({
+      name: item.name,
+      value: item.value
+    }));
+}
 
-  function paramsToObjectUnWithEnable(arr) {
-    const obj = {};
-    safeArray(arr).forEach(item => {
-      if (item && item.name) {
-        obj[item.name] = handleValue(item.value, currDomain.global);
-        if (requestParams) {
-          requestParams[item.name] = obj[item.name];
-        }
-      }
-    });
-    return obj;
+function setVariableValue(variable, global) {
+  let tempVariable = {};
+  if (_.isString(variable)) {
+    return variable;
   }
-
-  let { case_env, path, env, _id } = interfaceRunData;
-  let currDomain,
-    requestBody,
-    requestOptions = {};
-  currDomain = handleCurrDomain(env, case_env);
-  interfaceRunData.req_params = interfaceRunData.req_params || [];
-  interfaceRunData.req_params.forEach(item => {
-    let val = handleValue(item.value, currDomain.global);
-    if (requestParams) {
-      requestParams[item.name] = val;
+  Object.keys(variable).map(item => {
+    if (global[item]) {
+      tempVariable[item] = global[item];
     }
-    path = path.replace(`:${item.name}`, val || `:${item.name}`);
-    path = path.replace(`{${item.name}}`, val || `{${item.name}}`);
   });
+  return tempVariable;
+}
 
-  const urlObj = URL.parse(joinPath(currDomain.domain, path), true);
-  const url = URL.format({
-    protocol: urlObj.protocol || 'http',
-    host: urlObj.host,
-    pathname: urlObj.pathname,
-    query: Object.assign(urlObj.query, paramsToObjectWithEnable(interfaceRunData.req_query))
-  });
-
-  let headers = paramsToObjectUnWithEnable(interfaceRunData.req_headers);
-  requestOptions = {
-    url,
-    caseId: _id,
-    method: interfaceRunData.method,
-    headers,
-    timeout: 82400000
-  };
-
-  // 对 raw 类型的 form 处理
+function handleValue(val, global) {
+  if (val === null || typeof val === 'undefined') {
+    return val;
+  }
+  if (_.isNumber(val)) {
+    return val;
+  }
+  if (_.isArray(val)) {
+    return val.map(item => handleValue(item, global));
+  }
+  if (_.isObject(val)) {
+    let res = {};
+    Object.keys(val).map(key => {
+      res[key] = handleValue(val[key], global);
+    });
+    return res;
+  }
+  if (!_.isString(val)) {
+    return val;
+  }
   try {
-    if (interfaceRunData.req_body_type === 'raw') {
-      if (headers && headers['Content-Type']) {
-        if (headers['Content-Type'].indexOf('application/x-www-form-urlencoded') >= 0) {
-          interfaceRunData.req_body_type = 'form';
-          let reqData = json_parse(interfaceRunData.req_body_other);
-          if (reqData && typeof reqData === 'object') {
-            interfaceRunData.req_body_form = [];
-            Object.keys(reqData).forEach(key => {
-              interfaceRunData.req_body_form.push({
-                name: key,
-                type: 'text',
-                value: JSON.stringify(reqData[key]),
-                enable: true
-              });
-            });
+    return powerStringUtils.compileWithObject(val, setVariableValue(constants, global));
+  } catch (err) {
+    return val;
+  }
+}
+
+function handleParams(params, global) {
+  let newParams = {};
+  try {
+    params = safeArray(params);
+    params.forEach(item => {
+      if (!item || typeof item !== 'object') return;
+      let hasRequired = false;
+      Object.keys(item).forEach(key => {
+        if (key === 'required' && item[key] === '1') {
+          hasRequired = true;
+        }
+      });
+      // 若 required 没写，则默认 required = 1
+      item = Object.assign({ required: '1' }, item);
+      item.required = hasRequired ? '1' : '0';
+
+      let value = '';
+      if (item.hasOwnProperty('value')) {
+        value = handleValue(item.value, global);
+      }
+      if (item.hasOwnProperty('example')) {
+        value = handleValue(item.example, global);
+      }
+      newParams[item.name] = value;
+    });
+    return newParams;
+  } catch (err) {
+    return {};
+  }
+}
+
+function urlParamParse(val) {
+  try {
+    let validVal = safeArray(val);
+    return validVal.reduce((acc, item) => {
+      if (item && item.name) acc[item.name] = item.value;
+      return acc;
+    }, {});
+  } catch (err) {
+    return {};
+  }
+}
+
+function checkNameIsRepeat(name, arr) {
+  let hasExists = false;
+  safeArray(arr).forEach(item => {
+    if (item && item.name === name) {
+      hasExists = true;
+    }
+  });
+  return hasExists;
+}
+
+function crossRequest(data) {
+  if (isNode) return httpRequestByNode(data);
+  if (window.crossRequest) {
+    return window.crossRequest.send(data);
+  }
+}
+
+function handleJsonSchema(schema, mockDatas) {
+  if (schema.properties && typeof schema.properties === 'object') {
+    Object.keys(schema.properties).forEach(item => {
+      if (schema.properties[item] && schema.properties[item].mock) {
+        let mockData = schema.properties[item].mock;
+        mockDatas[mockData.mock] = mockData.value;
+      }
+      if (
+        schema.properties[item] &&
+        schema.properties[item].type === 'object' &&
+        schema.properties[item].properties
+      ) {
+        handleJsonSchema(schema.properties[item], mockDatas);
+      }
+      if (
+        schema.properties[item] &&
+        schema.properties[item].type === 'array' &&
+        schema.properties[item].items
+      ) {
+        handleJsonSchema(schema.properties[item].items, mockDatas);
+      }
+    });
+  }
+  return mockDatas;
+}
+
+async function handleParamsToRequest(data, basepath, projectBasepath = '', isWiki = false) {
+  let interfaceRunData = Object.assign({}, data);
+  let currDomain = handleCurrDomain(data.env, data.case_env);
+
+  let path = handleJson(interfaceRunData.path, val => handleValue(val, currDomain.global));
+
+  if (basepath) {
+    basepath = handleJson(basepath, val => handleValue(val, currDomain.global));
+  }
+  if (projectBasepath) {
+    projectBasepath = handleJson(projectBasepath, val => handleValue(val, currDomain.global));
+  }
+  let url = joinPath(currDomain.domain + basepath + projectBasepath, path);
+  let requestParams = handleParams(interfaceRunData.req_query, currDomain.global);
+  let requestBody;
+  let headers = currDomain.header;
+
+  const context = await getStorage(data.interfaceId);
+  let willExecSubScript = false;
+  try {
+    if (interfaceRunData.api_opened === true) {
+      interfaceRunData.req_headers = interfaceRunData.req_headers || [];
+      if (interfaceRunData.token) {
+        headers = [].concat(headers, [
+          {
+            name: 'token',
+            value: interfaceRunData.token,
+            enable: true
           }
-        } else if (headers['Content-Type'].indexOf('application/json') >= 0) {
-          interfaceRunData.req_body_type = 'json';
+        ]);
+      }
+    }
+    const runRequestScript = async script => {
+      if (!script || !script.trim()) return;
+
+      const oldConsole = console.log;
+      let logs = [];
+      const newConsole = function(...args) {
+        logs.push(args.join(' '));
+      };
+      try {
+        console.log = newConsole;
+        willExecSubScript = true;
+        await sandbox(
+          {
+            header: headers,
+            query: requestParams,
+            body: requestBody,
+            context,
+            resHeader: {},
+            resBody: {},
+            resStatus: {},
+            pre_script: interfaceRunData.pre_script
+          },
+          script
+        );
+      } finally {
+        console.log = oldConsole;
+        if (logs.length > 0) {
+          logs = logs.join('\n');
+          console.log(logs);
         }
       }
+    };
+
+    if (interfaceRunData.pre_script) {
+      await runRequestScript(interfaceRunData.pre_script);
+    }
+
+    const pathParams = safeArray(interfaceRunData.req_params).reduce((acc, item) => {
+      if (item && item.name) {
+        acc[item.name] = handleValue(item.example || item.value, currDomain.global);
+      }
+      return acc;
+    }, {});
+    url = handleJson(url, val => handleValue(val, Object.assign(currDomain.global, pathParams)));
+    url = URL.parse(url);
+    url.query = Object.assign(urlParamParse(interfaceRunData.req_query), url.query);
+    url = URL.format(url);
+
+    headers = safeArray(headers).filter(item => item && item.enable);
+    headers = handleParams(headers, currDomain.global);
+
+    if (!interfaceRunData.res_body) {
+      interfaceRunData.res_body = '';
+    }
+    const mockDatas = {};
+    if (interfaceRunData.req_body_is_json_schema === true) {
+      let req_body_other = json_parse(interfaceRunData.req_body_other);
+      handleJsonSchema(req_body_other, mockDatas);
+    }
+    if (interfaceRunData.res_body_is_json_schema === true) {
+      let res_body = json_parse(interfaceRunData.res_body);
+      handleJsonSchema(res_body, mockDatas);
+    }
+
+    let pathVariable = {};
+    url = URL.parse(url);
+    url.pathname = url.pathname.replace(/\{(.+?)\}/g, (str, match) => {
+      if (match in pathParams && !!pathParams[match]) {
+        pathVariable[match] = pathParams[match];
+        return pathParams[match];
+      }
+      return str;
+    });
+
+    const updatePathVariable = await getStorage(data.interfaceId + '-pathVariable');
+    updatePathVariable.setItem('pathVariable', JSON.stringify(pathVariable));
+
+    url = URL.format(url);
+    url = handlePath(url);
+    interfaceRunData.req_body_type = checkRequestBodyIsRaw(
+      interfaceRunData.method,
+      interfaceRunData.req_body_type
+    );
+
+    let requestOptions = {
+      url,
+      method: interfaceRunData.method,
+      headers: headers,
+      data: {}
+    };
+
+    if (interfaceRunData.method === 'GET') {
+      url = URL.parse(url, true);
+      let query = url.query;
+      url = URL.format({
+        protocol: url.protocol,
+        host: url.host,
+        pathname: url.pathname
+      });
+      requestOptions.url = url;
+      requestOptions.params = Object.assign(query, requestParams);
+    } else {
+      requestOptions.params = requestParams;
+    }
+
+    if (interfaceRunData.method === 'POST' && interfaceRunData.req_body_other) {
+      let reqBody = json_parse(interfaceRunData.req_body_other);
+      const context = await getStorage(data.interfaceId + '-mockScript');
+      let log = '';
+
+      if (interfaceRunData.mock_script && interfaceRunData.mock_script.enable === true) {
+        try {
+          await sandbox(
+            {
+              header: headers,
+              query: requestParams,
+              body: reqBody,
+              context,
+              resHeader: {},
+              resBody: {},
+              resStatus: {},
+              mock_script: interfaceRunData.mock_script
+            },
+            interfaceRunData.mock_script.code
+          );
+        } catch (e) {
+          log = e.message;
+          console.error(e);
+        }
+      }
+      context.setItem('mockScriptResponseLog', log);
     }
   } catch (e) {
     console.error('err', e);
@@ -481,9 +592,64 @@ function handleParams(interfaceData, handleValue, requestParams) {
   return requestOptions;
 }
 
-exports.checkRequestBodyIsRaw = checkRequestBodyIsRaw;
-exports.handleParams = handleParams;
-exports.handleContentType = handleContentType;
-exports.crossRequest = crossRequest;
-exports.handleCurrDomain = handleCurrDomain;
-exports.checkNameIsExistInArray = checkNameIsExistInArray;
+function handleJsonSchemaMock(mockScript, res_body, res_body_type, res_headers) {
+  let mockDatas = {};
+  if (res_body_type === 'json') {
+    if (mockScript && mockScript.enable === true) {
+      try {
+        res_body = sandboxByNode(
+          {
+            header: res_headers,
+            body: json_parse(res_body)
+          },
+          mockScript.code
+        );
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    res_body = json_parse(res_body);
+    handleJsonSchema(res_body, mockDatas);
+  }
+
+  return mockDatas;
+}
+
+function formatToString(data, contentType) {
+  let result = data;
+  if (data && typeof data === 'object') {
+    result = json_parse(data);
+    if (contentType === 'json') {
+      result = JSON.stringify(result, null, 2);
+    }
+  }
+  return result;
+}
+
+function handleDownload(route, data = {}, isWiki) {
+  data = Object.assign({}, data, { isWiki: isWiki || false });
+  const url = URL.parse(route);
+  url.query = Object.assign(url.query, data);
+  window.open(URL.format(url));
+}
+
+export {
+  checkRequestBodyIsRaw,
+  handleParams,
+  handleContentType,
+  crossRequest,
+  handleCurrDomain,
+  checkNameIsExistInArray,
+  urlParamParse,
+  checkNameIsRepeat,
+  setVariableValue,
+  handleValue,
+  formatToJson,
+  handleJsonSchemaMock,
+  formatToString,
+  paramsToObjectWithEnable,
+  formatRequestBody,
+  handleParamsToRequest,
+  handleDownload,
+  httpRequestByNode
+};

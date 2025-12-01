@@ -1,3 +1,7 @@
+import md5 from 'md5';
+import sha from 'sha.js';
+import { Base64 } from 'js-base64';
+
 /**
  * @author suxiaoxin
  */
@@ -7,10 +11,6 @@ const aUniqueCommaStringNotFoundInData = '___UNIQUE_COMMA___';
 const segmentSeparateChar = '|';
 const methodAndArgsSeparateChar = ':';
 const argsSeparateChar = ',';
-
-const md5 = require('md5');
-const sha = require('sha.js');
-const Base64 = require('js-base64').Base64;
 
 const stringHandles = {
   md5: function(str) {
@@ -187,16 +187,13 @@ function handleSegment(str, index) {
   };
 }
 
-module.exports = {
-  utils: stringHandles,
-  PowerString,
-  /**
-   * 类似于 angularJs的 filter 功能
-   * @params string
-   * @params fn 处理参数值函数，默认是一个返回原有参数值函数
-   *
-   * @expamle
-   * filter('string | substr: 1, 10 | md5 | concat: hello ')
-   */
-  filter: handleOriginStr
-};
+const utils = stringHandles;
+
+export { utils, PowerString, handleOriginStr };
+export default { utils, PowerString, handleOriginStr };
+
+// Preserve CJS compatibility
+if (typeof module !== 'undefined') {
+  module.exports = { utils, PowerString, handleOriginStr };
+  module.exports.default = module.exports;
+}
