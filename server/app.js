@@ -18,7 +18,8 @@ require('./utils/notice')
 const Koa = require('koa');
 const koaStatic = require('koa-static');
 // const bodyParser = require('koa-bodyparser');
-const koaBody = require('koa-body');
+const koaBodyModule = require('koa-body');
+const koaBody = koaBodyModule.default || koaBodyModule;
 const router = require('./router.js');
 
 global.storageCreator = storageCreator;

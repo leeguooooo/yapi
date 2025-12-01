@@ -1,19 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import {
-  Form,
-  Select,
-  InputNumber,
-  Switch,
-  Col,
-  message,
-  Row,
-  Input,
-  Button,
-  Icon,
-  AutoComplete,
-  Modal
-} from 'antd';
+import { Form, Icon } from '@ant-design/compatible';
+import { Select, InputNumber, Switch, Col, message, Row, Input, Button, AutoComplete, Modal } from 'antd';
 const Option = Select.Option;
 const FormItem = Form.Item;
 import { safeAssign } from 'client/common.js';

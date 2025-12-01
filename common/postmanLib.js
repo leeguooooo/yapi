@@ -1,15 +1,15 @@
-import { isJson5, json_parse, handleJson, joinPath, safeArray } from './utils.js';
-import constants from '../client/constants/variable.js';
-import _ from 'underscore';
-import URL from 'url';
-import { utils as powerStringUtils } from './power-string.js';
-import axios from 'axios';
-import qs from 'qs';
-import CryptoJS from 'crypto-js';
-import jsrsasign from 'jsrsasign';
-import https from 'https';
-
+const { isJson5, json_parse, handleJson, joinPath, safeArray } = require('./utils');
+const constants = require('../client/constants/variable.js');
+const _ = require('underscore');
+const URL = require('url');
+const { utils: powerStringUtils } = require('./power-string.js');
 const HTTP_METHOD = constants.HTTP_METHOD;
+const axios = require('axios');
+const qs = require('qs');
+const CryptoJS = require('crypto-js');
+const jsrsasign = require('jsrsasign');
+const https = require('https');
+
 const isNode = typeof global == 'object' && global.global === global;
 const ContentTypeMap = {
   'application/json': 'json',
@@ -20,36 +20,36 @@ const ContentTypeMap = {
   other: 'text'
 };
 
-const getStorage = async id => {
-  try {
-    if (isNode) {
-      const storage = global.storageCreator(id);
-      const data = await storage.getItem();
+const getStorage = async (id)=>{
+  try{
+    if(isNode){
+      let storage = global.storageCreator(id);
+      let data = await storage.getItem();
       return {
-        getItem: name => data[name],
-        setItem: (name, value) => {
+        getItem: (name)=> data[name],
+        setItem: (name, value)=>{
           data[name] = value;
-          storage.setItem(name, value);
+          storage.setItem(name, value)
         }
-      };
-    } else {
-      return {
-        getItem: name => window.localStorage.getItem(name),
-        setItem: (name, value) => window.localStorage.setItem(name, value)
-      };
-    }
-  } catch (e) {
-    console.error(e);
-    return {
-      getItem: name => {
-        console.error(name, e);
-      },
-      setItem: (name, value) => {
-        console.error(name, value, e);
       }
-    };
+    }else{
+      return {
+        getItem: (name)=> window.localStorage.getItem(name),
+        setItem: (name, value)=>  window.localStorage.setItem(name, value)
+      }
+    }
+  }catch(e){
+    console.error(e)
+    return {
+      getItem: (name)=>{
+        console.error(name, e)
+      },
+      setItem: (name, value)=>{
+        console.error(name, value, e)
+      }
+    }
   }
-};
+}
 
 async function httpRequestByNode(options) {
   function handleRes(response) {
@@ -79,7 +79,10 @@ async function httpRequestByNode(options) {
       Object.keys(options.headers).forEach(key => {
         if (/content-type/i.test(key)) {
           if (options.headers[key]) {
-            contentTypeItem = options.headers[key].split(';')[0].trim().toLowerCase();
+            contentTypeItem = options.headers[key]
+              .split(';')[0]
+              .trim()
+              .toLowerCase();
           }
         }
         if (!options.headers[key]) delete options.headers[key];
@@ -97,7 +100,7 @@ async function httpRequestByNode(options) {
 
   try {
     handleData(options);
-    const response = await axios({
+    let response = await axios({
       method: options.method,
       url: options.url,
       headers: options.headers,
@@ -127,7 +130,10 @@ function handleContentType(headers) {
   try {
     Object.keys(headers).forEach(key => {
       if (/content-type/i.test(key)) {
-        contentTypeItem = headers[key].split(';')[0].trim().toLowerCase();
+        contentTypeItem = headers[key]
+          .split(';')[0]
+          .trim()
+          .toLowerCase();
       }
     });
     return ContentTypeMap[contentTypeItem] ? ContentTypeMap[contentTypeItem] : ContentTypeMap.other;
@@ -633,7 +639,7 @@ function handleDownload(route, data = {}, isWiki) {
   window.open(URL.format(url));
 }
 
-export {
+module.exports = {
   checkRequestBodyIsRaw,
   handleParams,
   handleContentType,
@@ -653,3 +659,4 @@ export {
   handleDownload,
   httpRequestByNode
 };
+module.exports.default = module.exports;

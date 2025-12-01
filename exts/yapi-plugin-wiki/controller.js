@@ -3,7 +3,9 @@ const wikiModel = require('./wikiModel.js');
 const projectModel = require('models/project.js');
 const userModel = require('models/user.js');
 const jsondiffpatch = require('jsondiffpatch');
-const formattersHtml = jsondiffpatch.formatters.html;
+const formattersHtml = (jsondiffpatch && jsondiffpatch.formatters && jsondiffpatch.formatters.html)
+  ? jsondiffpatch.formatters.html
+  : null;
 const yapi = require('yapi.js');
 // const util = require('./util.js');
 const fs = require('fs-extra');

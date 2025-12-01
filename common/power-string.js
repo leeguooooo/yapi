@@ -1,6 +1,6 @@
-import md5 from 'md5';
-import sha from 'sha.js';
-import { Base64 } from 'js-base64';
+const md5 = require('md5');
+const sha = require('sha.js');
+const { Base64 } = require('js-base64');
 
 /**
  * @author suxiaoxin
@@ -187,13 +187,9 @@ function handleSegment(str, index) {
   };
 }
 
-const utils = stringHandles;
-
-export { utils, PowerString, handleOriginStr };
-export default { utils, PowerString, handleOriginStr };
-
-// Preserve CJS compatibility
-if (typeof module !== 'undefined') {
-  module.exports = { utils, PowerString, handleOriginStr };
-  module.exports.default = module.exports;
-}
+module.exports = {
+  utils: stringHandles,
+  PowerString,
+  handleOriginStr
+};
+module.exports.default = module.exports;

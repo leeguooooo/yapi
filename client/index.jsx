@@ -9,7 +9,6 @@ if (typeof window.setImmediate === 'undefined') {
 
 import './styles/common.scss';
 import './styles/theme.less';
-import '@ant-design/compatible/assets/index.css';
 import './plugin';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
