@@ -13,13 +13,14 @@ import CheckCrossInstall, { initCrossRequest } from './CheckCrossInstall.js';
 import ProjectEnv from '../../containers/Project/Setting/ProjectEnv/index.js';
 import json5 from 'json5';
 import { handleParamsValue, ArrayToObject, schemaValidator } from 'common/utils.js';
-import {
+import postmanLib from 'common/postmanLib.js';
+const {
   handleParams,
   checkRequestBodyIsRaw,
   handleContentType,
   crossRequest,
   checkNameIsExistInArray
-} from 'common/postmanLib.js';
+} = postmanLib;
 import createContext from 'common/createContext';
 import plugin from 'client/plugin.js';
 

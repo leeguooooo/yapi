@@ -8,6 +8,9 @@ function exportOpenAPI3(exportDataModule, pid) {
   };
 }
 
-module.exports = function() {
+const pluginModule = function() {
   this.bindHook('export_data', exportOpenAPI3);
 };
+
+module.exports = pluginModule;
+export default pluginModule;

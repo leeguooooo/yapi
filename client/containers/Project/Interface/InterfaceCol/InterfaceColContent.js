@@ -20,16 +20,17 @@ import axios from 'axios';
 import CaseReport from './CaseReport.js';
 import _ from 'underscore';
 import { initCrossRequest } from 'client/components/Postman/CheckCrossInstall.js';
-import produce from 'immer';
+import { produce } from 'immer';
 import {InsertCodeMap} from 'client/components/Postman/Postman.js'
 
 import plugin from 'client/plugin.js';
-import {
+import postmanLib from 'common/postmanLib.js';
+const {
   handleParams,
   crossRequest,
   handleCurrDomain,
   checkNameIsExistInArray
-} from 'common/postmanLib.js';
+} = postmanLib;
 import { handleParamsValue, json_parse, ArrayToObject } from 'common/utils.js';
 import CaseEnv from 'client/components/CaseEnv';
 import Label from '../../../../components/Label/Label.js';

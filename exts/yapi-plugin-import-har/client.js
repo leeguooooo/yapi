@@ -224,6 +224,9 @@ function postman(importDataModule) {
   };
 }
 
-module.exports = function() {
+const pluginModule = function() {
   this.bindHook('import_data', postman);
 };
+
+module.exports = pluginModule;
+export default pluginModule;

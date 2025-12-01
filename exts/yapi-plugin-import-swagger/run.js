@@ -324,3 +324,4 @@ const compareVersions = require('compare-versions');
 
 
 module.exports = run;
+export default run;

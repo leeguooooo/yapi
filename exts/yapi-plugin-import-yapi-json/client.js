@@ -34,6 +34,9 @@ function importData(importDataModule) {
   };
 }
 
-module.exports = function() {
+const pluginModule = function() {
   this.bindHook('import_data', importData);
 };
+
+module.exports = pluginModule;
+export default pluginModule;

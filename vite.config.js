@@ -47,7 +47,10 @@ export default defineConfig(async () => {
       alias: {
         'client': path.resolve(__dirname, 'client'),
         'common': path.resolve(__dirname, 'common'),
-        'exts': path.resolve(__dirname, 'exts')
+        'exts': path.resolve(__dirname, 'exts'),
+        // Shim legacy withRouter usage onto react-router-dom v7
+        'react-router-dom': path.resolve(__dirname, 'client/shims/react-router-dom.js'),
+        'common/postmanLib.js': path.resolve(__dirname, 'client/shims/postmanLib.js')
       }
     },
 

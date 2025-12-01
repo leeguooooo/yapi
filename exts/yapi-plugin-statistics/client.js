@@ -3,7 +3,7 @@
  */
 import StatisticsPage from './statisticsClientPage/index'
 
-module.exports = function () {
+const pluginModule = function () {
   this.bindHook('header_menu', function (menu) {
     menu.statisticsPage = {
       path: '/statistic',
@@ -21,3 +21,6 @@ module.exports = function () {
 
 
 }
+
+module.exports = pluginModule;
+export default pluginModule;

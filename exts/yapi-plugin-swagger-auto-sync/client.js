@@ -7,6 +7,9 @@ function hander(routers) {
   };
 }
 
-module.exports = function() {
+const pluginModule = function() {
   this.bindHook('sub_setting_nav', hander);
 };
+
+module.exports = pluginModule;
+export default pluginModule;

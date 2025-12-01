@@ -1,7 +1,7 @@
 import { message } from 'antd';
 import './openapi3.scss';
 
-module.exports = function() {
+const pluginModule = function() {
   this.bindHook('import_data', function(importDataModule) {
     if (!importDataModule || typeof importDataModule !== 'object') {
       console.error('importDataModule 参数Must be Object Type');
@@ -19,3 +19,6 @@ module.exports = function() {
     };
   });
 };
+
+module.exports = pluginModule;
+export default pluginModule;

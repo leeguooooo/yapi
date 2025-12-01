@@ -23,6 +23,9 @@ function exportData(exportDataModule, pid) {
   // }
 }
 
-module.exports = function() {
+const pluginModule = function() {
   this.bindHook('export_data', exportData);
 };
+
+module.exports = pluginModule;
+export default pluginModule;
