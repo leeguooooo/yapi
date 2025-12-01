@@ -6,8 +6,8 @@ import { fetchInterfaceColList, setColData, fetchCaseList, fetchCaseData } from 
 import { fetchProjectList } from '../../../../reducer/modules/project';
 import axios from 'axios';
 import ImportInterface from './ImportInterface';
-import { Input, Button, Modal, message, Tooltip, Tree, Form } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import { Form, Icon } from '@ant-design/compatible';
+import { Input, Button, Modal, message, Tooltip, Tree } from 'antd';
 import { arrayChangeIndex } from '../../../../common.js';
 import _ from 'underscore'
 

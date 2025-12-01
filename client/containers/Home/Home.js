@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import LogoSVG from '../../components/LogoSVG/index.js';
 import { changeMenuItem } from '../../reducer/modules/menu';
-const plugin = require('client/plugin.js');
+import plugin from 'client/plugin.js';
 
 const ThirdLogin = plugin.emitHook('third_login');
 const HomeGuest = () => (

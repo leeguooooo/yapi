@@ -1,21 +1,22 @@
+import Mock from 'mockjs';
+
 /**
  * @author suxiaoxin
  * @info  mockJs 功能增强脚本
  */
-var strRegex = /\${([a-zA-Z]+)\.?([a-zA-Z0-9_\.]*)\}/i;
-var varSplit = '.';
-var mockSplit = '|';
-var Mock = require('mockjs');
+const strRegex = /\${([a-zA-Z]+)\.?([a-zA-Z0-9_\.]*)\}/i;
+const varSplit = '.';
+const mockSplit = '|';
+
 Mock.Random.extend({
   timestamp: function(){
-    var time = new Date().getTime() + '';
-    return +time.substr(0, time.length - 3)
+    const time = new Date().getTime() + '';
+    return +time.substr(0, time.length - 3);
   }
-})
+});
 
-function mock(mockJSON, context) {
-  context = context || {};
-  var filtersMap = {
+function mock(mockJSON, context = {}) {
+  const filtersMap = {
     regexp: handleRegexp
   };
   if(!mockJSON || typeof mockJSON !== 'object'){
@@ -26,11 +27,11 @@ function mock(mockJSON, context) {
 
   function parse(p, c) {
     if(!c){
-      c = Array.isArray(p) ? [] :  {}
+      c = Array.isArray(p) ? [] :  {};
     }
 
-    for (var i in p) {
-      if (!p.hasOwnProperty(i)) {
+    for (const i in p) {
+      if (!Object.prototype.hasOwnProperty.call(p, i)) {
         continue;
       }
       if (p[i] && typeof p[i] === 'object') {
@@ -38,10 +39,10 @@ function mock(mockJSON, context) {
         parse(p[i], c[i]);
       } else if(p[i] && typeof p[i] === 'string'){
         p[i] = handleStr(p[i]);        
-        var filters = i.split(mockSplit), newFilters = [].concat(filters);
+        const filters = i.split(mockSplit), newFilters = [].concat(filters);
         c[i] = p[i];
         if (filters.length > 1) {
-          for (var f = 1, l = filters.length, index; f < l; f++) {
+          for (let f = 1, l = filters.length, index; f < l; f++) {
             filters[f] = filters[f].toLowerCase();
             if (filters[f] in filtersMap) {
               if ((index = newFilters.indexOf(filters[f])) !== -1) {
@@ -68,12 +69,12 @@ function mock(mockJSON, context) {
       return str;
     }
 
-    let matchs = str.match(strRegex);
+    const matchs = str.match(strRegex);
     if(matchs){
-      let name = matchs[1] + (matchs[2]? '.' + matchs[2] : '');
+      const name = matchs[1] + (matchs[2]? '.' + matchs[2] : '');
       if(!name) return str;
-      var names = name.split(varSplit);
-      var data = context;
+      const names = name.split(varSplit);
+      let data = context;
       
       if(typeof context[names[0]] === undefined){
         return str;
@@ -92,4 +93,11 @@ function mock(mockJSON, context) {
   }
 }
 
-module.exports = mock;
+export default mock;
+export { mock };
+
+// Preserve CommonJS compatibility for server-side usage
+if (typeof module !== 'undefined') {
+  module.exports = mock;
+  module.exports.default = mock;
+}

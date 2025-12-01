@@ -1,8 +1,8 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Modal, Form, Input, Tooltip, Select, message, Button, Row, Col } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import { Form, Icon } from '@ant-design/compatible';
+import { Modal, Input, Tooltip, Select, message, Button, Row, Col } from 'antd';
 import {
   updateProject,
   fetchProjectList,

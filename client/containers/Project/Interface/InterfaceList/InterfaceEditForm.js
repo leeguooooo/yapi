@@ -56,18 +56,8 @@ const validJson = json => {
   }
 };
 
-import {
-  Form,
-  Select,
-  Input,
-  Tooltip,
-  Button,
-  Row,
-  Col,
-  Radio,
-  AutoComplete,
-  Switch
-} from 'antd';
+import { Form } from '@ant-design/compatible';
+import { Select, Input, Tooltip, Button, Row, Col, Radio, AutoComplete, Switch } from 'antd';
 
 const Json5Example = `
   {

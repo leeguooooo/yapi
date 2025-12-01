@@ -5,25 +5,23 @@ import { Icon } from '@ant-design/compatible';
 import constants from '../../constants/variable.js';
 import AceEditor from 'client/components/AceEditor/AceEditor';
 import _ from 'underscore';
-import { isJson, deepCopyJson, json5_parse } from '../../common.js';
+import { isJson, deepCopyJson, json5_parse, handlePath } from '../../common.js';
 import axios from 'axios';
 import ModalPostman from '../ModalPostman/index.js';
 import CheckCrossInstall, { initCrossRequest } from './CheckCrossInstall.js';
 // import './Postman.scss';
 import ProjectEnv from '../../containers/Project/Setting/ProjectEnv/index.js';
 import json5 from 'json5';
-const { handleParamsValue, ArrayToObject, schemaValidator } = require('common/utils.js');
-const {
+import { handleParamsValue, ArrayToObject, schemaValidator } from 'common/utils.js';
+import {
   handleParams,
   checkRequestBodyIsRaw,
   handleContentType,
   crossRequest,
   checkNameIsExistInArray
-} = require('common/postmanLib.js');
-
-const plugin = require('client/plugin.js');
-
-const createContext = require('common/createContext')
+} from 'common/postmanLib.js';
+import createContext from 'common/createContext';
+import plugin from 'client/plugin.js';
 
 const HTTP_METHOD = constants.HTTP_METHOD;
 const InputGroup = Input.Group;

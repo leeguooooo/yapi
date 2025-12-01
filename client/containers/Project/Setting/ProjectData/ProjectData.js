@@ -14,11 +14,11 @@ import { fetchUpdateLogData } from '../../../../reducer/modules/news.js';
 import { handleSwaggerUrlData } from '../../../../reducer/modules/project';
 const Option = Select.Option;
 const confirm = Modal.confirm;
-const plugin = require('client/plugin.js');
+import plugin from 'client/plugin.js';
 const RadioGroup = Radio.Group;
 const importDataModule = {};
 const exportDataModule = {};
-const HandleImportData = require('common/HandleImportData');
+import HandleImportData from 'common/HandleImportData';
 function handleExportRouteParams(url, status, isWiki) {
   if (!url) {
     return;

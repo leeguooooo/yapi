@@ -1,8 +1,8 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Button, Form, Input, Tooltip, Select, message, Row, Col, Radio } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import { Form, Icon } from '@ant-design/compatible';
+import { Button, Input, Tooltip, Select, message, Row, Col, Radio } from 'antd';
 import { addProject } from '../../reducer/modules/project.js';
 import { fetchGroupList } from '../../reducer/modules/group.js';
 import { autobind } from 'core-decorators';

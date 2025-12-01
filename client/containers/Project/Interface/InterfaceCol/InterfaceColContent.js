@@ -23,19 +23,19 @@ import { initCrossRequest } from 'client/components/Postman/CheckCrossInstall.js
 import produce from 'immer';
 import {InsertCodeMap} from 'client/components/Postman/Postman.js'
 
-const plugin = require('client/plugin.js');
-const {
+import plugin from 'client/plugin.js';
+import {
   handleParams,
   crossRequest,
   handleCurrDomain,
   checkNameIsExistInArray
-} = require('common/postmanLib.js');
-const { handleParamsValue, json_parse, ArrayToObject } = require('common/utils.js');
+} from 'common/postmanLib.js';
+import { handleParamsValue, json_parse, ArrayToObject } from 'common/utils.js';
 import CaseEnv from 'client/components/CaseEnv';
 import Label from '../../../../components/Label/Label.js';
 
 const Option = Select.Option;
-const createContext = require('common/createContext')
+import createContext from 'common/createContext';
 
 import copy from 'copy-to-clipboard';
 

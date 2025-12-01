@@ -1,6 +1,6 @@
 import React, { PureComponent as Component } from 'react';
-import { Form, Input, Switch, Select, Tooltip, Button, Row, Col, message, Card, Radio, Alert, Modal, Popover } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import { Form, Icon } from '@ant-design/compatible';
+import { Input, Switch, Select, Tooltip, Button, Row, Col, message, Card, Radio, Alert, Modal, Popover } from 'antd';
 import PropTypes from 'prop-types';
 import {
   updateProject,

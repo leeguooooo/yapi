@@ -1,8 +1,8 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Form, Button, Input, message } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import { Form, Icon } from '@ant-design/compatible';
+import { Button, Input, message } from 'antd';
 import { regActions } from '../../reducer/modules/user';
 import { withRouter } from 'react-router-dom';
 const FormItem = Form.Item;
