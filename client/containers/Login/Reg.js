@@ -40,11 +40,21 @@ class Reg extends Component {
         message.error('请完整填写注册信息');
         return;
       }
+      const payload = {
+        userName: (values.userName || '').trim(),
+        email: (values.email || '').trim(),
+        password: values.password,
+        confirm: values.confirm
+      };
+      if (!payload.userName || !payload.email || !payload.password || !payload.confirm) {
+        message.error('请完整填写注册信息');
+        return;
+      }
       if (values.password !== values.confirm) {
         message.error('两次输入的密码不一致');
         return;
       }
-      this.props.regActions(values).then(res => {
+      this.props.regActions(payload).then(res => {
         if (res.payload.data.errcode == 0) {
           this.props.history.replace('/group');
           message.success('注册成功! ');
