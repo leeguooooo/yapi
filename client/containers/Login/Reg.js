@@ -35,23 +35,23 @@ class Reg extends Component {
 
   handleSubmit = e => {
     if (e && e.preventDefault) e.preventDefault();
-    const form = this.props.form;
-    const values = form.getFieldsValue();
-    if (!values.userName || !values.email || !values.password || !values.confirm) {
-      message.error('请完整填写注册信息');
-      return;
-    }
-    if (values.password !== values.confirm) {
-      message.error('两次输入的密码不一致');
-      return;
-    }
-    this.props.regActions(values).then(res => {
-      if (res.payload.data.errcode == 0) {
-        this.props.history.replace('/group');
-        message.success('注册成功! ');
-      } else {
-        message.error(res.payload.data.errmsg || '注册失败');
+    this.props.form.validateFields((err, values) => {
+      if (err) {
+        message.error('请完整填写注册信息');
+        return;
       }
+      if (values.password !== values.confirm) {
+        message.error('两次输入的密码不一致');
+        return;
+      }
+      this.props.regActions(values).then(res => {
+        if (res.payload.data.errcode == 0) {
+          this.props.history.replace('/group');
+          message.success('注册成功! ');
+        } else {
+          message.error(res.payload.data.errmsg || '注册失败');
+        }
+      });
     });
   };
 
