@@ -9,6 +9,34 @@ $color-black-lighter: #404040;
 $color-text-dark: #2e2e5a;
 $color-text-light: #6d7c90;
 $color-bg-lightblue: #c6e2ff;
+
+// --- Animation Keyframes ---
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+// --- Animation Classes ---
+.animate-fade-in {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+// For scroll animations, we can use a simple fallback:
+// Just animate them on load or keep them visible if we don't have JS intersection observer setup.
+// To keep it simple without adding JS logic, we will animate them with delay or just let them appear.
+// A better approach for "animate-on-scroll" without JS is hard, so we will make them appear smoothly.
+.animate-on-scroll {
+  animation: fadeInUp 1s ease-out forwards;
+  animation-delay: 0.2s; // Slight delay so it doesn't flash if already in view
+}
+
+
 .g-body {
   position: relative;
 }
@@ -327,8 +355,9 @@ $color-bg-lightblue: #c6e2ff;
       height: .48rem;
       background-image: linear-gradient(-20deg, #21d4fd 0%, #b721ff 100%);
       border-radius: 50%;
-      text-align: center;
-      line-height: .48rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       font-size: .24rem;
       color: #fff;
       margin-bottom: .24rem;
@@ -459,8 +488,9 @@ $color-bg-lightblue: #c6e2ff;
     .icon {
       width: .72rem;
       height: .72rem;
-      line-height: .72rem;
-      text-align: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       background-color: #5f48fe;
       border-radius: 50%;
       font-size: .4rem;

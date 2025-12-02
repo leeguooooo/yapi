@@ -3,7 +3,12 @@ import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Row, Col, Button, Card } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import { 
+  AppstoreOutlined, 
+  ApiOutlined, 
+  DatabaseOutlined, 
+  TeamOutlined 
+} from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import LogoSVG from '../../components/LogoSVG/index.js';
@@ -11,6 +16,7 @@ import { changeMenuItem } from '../../reducer/modules/menu';
 import plugin from 'client/plugin.js';
 
 const ThirdLogin = plugin.emitHook('third_login');
+
 const HomeGuest = () => (
   <div className="g-body">
     <div className="m-bg">
@@ -19,14 +25,13 @@ const HomeGuest = () => (
       <div className="m-bg-mask m-bg-mask2" />
       <div className="m-bg-mask m-bg-mask3" />
     </div>
+    
     <div className="main-one">
       <div className="container">
         <Row>
           <Col span={24}>
             <div className="home-header">
-              <a href="#" className="item">
-                YAPI
-              </a>
+              <a href="#" className="item">YAPI</a>
               <a
                 target="_blank"
                 rel="noopener noreferrer"
@@ -40,7 +45,7 @@ const HomeGuest = () => (
         </Row>
         <Row>
           <Col lg={9} xs={24}>
-            <div className="home-des">
+            <div className="home-des animate-fade-in">
               <div className="logo">
                 <LogoSVG length="72px" />
                 <span className="name">YAPI</span>
@@ -67,40 +72,42 @@ const HomeGuest = () => (
         </Row>
       </div>
     </div>
+
     <div className="feat-part section-feature">
-      <div className="container home-section">
+      <div className="container home-section animate-on-scroll">
         <h3 className="title">为API开发者设计的管理平台</h3>
         <span className="desc">
           YApi让接口开发更简单高效，让接口的管理更具可读性、可维护性，让团队协作更合理。
         </span>
         <Row key="feat-motion-row">
-          <Col span={8} className="section-item" key="feat-wrapper-1">
-            <Icon type="appstore-o" className="img" />
+          <Col span={8} className="section-item">
+            <AppstoreOutlined className="img" />
             <h4 className="title">项目管理</h4>
             <span className="desc">提供基本的项目分组，项目管理，接口管理功能</span>
           </Col>
-          <Col span={8} className="section-item" key="feat-wrapper-2">
-            <Icon type="api" className="img" />
+          <Col span={8} className="section-item">
+            <ApiOutlined className="img" />
             <h4 className="title">接口管理</h4>
             <span className="desc">
               友好的接口文档，基于websocket的多人协作接口编辑功能和类postman测试工具，让多人协作成倍提升开发效率
             </span>
           </Col>
-          <Col span={8} className="section-item" key="feat-wrapper-3">
-            <Icon type="database" className="img" />
+          <Col span={8} className="section-item">
+            <DatabaseOutlined className="img" />
             <h4 className="title">MockServer</h4>
             <span className="desc">基于Mockjs，使用简单功能强大</span>
           </Col>
         </Row>
       </div>
     </div>
+
     <div className="feat-part m-mock m-skew home-section">
       <div className="m-skew-bg">
         <div className="m-bg-mask m-bg-mask0" />
         <div className="m-bg-mask m-bg-mask1" />
         <div className="m-bg-mask m-bg-mask2" />
       </div>
-      <div className="container skew-container">
+      <div className="container skew-container animate-on-scroll">
         <h3 className="title">功能强大的 Mock 服务</h3>
         <span className="desc">你想要的 Mock 服务都在这里</span>
         <Row className="row-card">
@@ -280,8 +287,9 @@ const HomeGuest = () => (
         </Row>
       </div>
     </div>
+
     <div className="home-section section-manage">
-      <div className="container">
+      <div className="container animate-on-scroll">
         <Row className="row-card" style={{ marginBottom: '.48rem' }}>
           <Col lg={7} xs={10} className="section-card">
             <Card>
@@ -305,7 +313,7 @@ const HomeGuest = () => (
             </Card>
           </Col>
           <Col lg={17} xs={14} className="section-card manage-word">
-            <Icon type="team" className="icon" />
+            <TeamOutlined className="icon" />
             <h3 className="title">扁平化管理模式</h3>
             <p className="desc">
               接口管理的逻辑较为复杂，操作频率高，层层审批将严重拖慢生产效率，因此传统的金字塔管理模式并不适用。
@@ -320,6 +328,7 @@ const HomeGuest = () => (
     </div>
   </div>
 );
+
 HomeGuest.propTypes = {
   introList: PropTypes.array
 };
@@ -384,27 +393,5 @@ class Home extends Component {
     );
   }
 }
-
-// Home.defaultProps={
-//   introList:[{
-//     title:"接口管理",
-//     des:"满足你的所有接口管理需求。不再需要为每个项目搭建独立的接口管理平台和编写离线的接口文档，其权限管理和项目日志让协作开发不再痛苦。",
-//     detail:[
-//       {title:"团队协作",des:"多成员协作，掌握项目进度",iconType:"team"},
-//       {title:"权限管理",des:"设置每个成员的操作权限",iconType:"usergroup-add"},
-//       {title:"项目日志",des:"推送项目情况，掌握更新动态",iconType:"schedule"}
-//     ],
-//     img:"./image/demo-img.jpg"
-//   },{
-//     title:"接口测试",
-//     des:"一键即可得到返回结果。根据用户的输入接口信息如协议、URL、接口名、请求头、请求参数、mock规则生成Mock接口，这些接口会自动生成模拟数据。",
-//     detail:[
-//       {title:"编辑接口",des:"团队开发时任何人都可以在权限许可下创建、修改接口",iconType:"tags-o"},
-//       {title:"mock请求",des:"创建者可以自由构造需要的数据，支持复杂的生成逻辑",iconType:"fork"}
-//     ],
-//     img:"./image/demo-img.jpg"
-//   }
-//   ]
-// };
 
 export default Home;

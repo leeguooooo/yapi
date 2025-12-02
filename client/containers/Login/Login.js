@@ -2,7 +2,7 @@ import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Form } from 'client/components/LegacyForm';
-import { Icon } from '@ant-design/compatible';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { Button, Input, message, Radio } from 'antd';
 import { loginActions, loginLdapActions } from '../../reducer/modules/user';
 import { withRouter } from 'react-router-dom';
@@ -41,7 +41,7 @@ class Login extends Component {
   };
 
   handleSubmit = e => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     const form = this.props.form;
     const values = form.getFieldsValue();
     if (!values.email || !values.password) {
@@ -101,8 +101,9 @@ class Login extends Component {
         <FormItem>
           {getFieldDecorator('email', { rules: [emailRule] })(
             <Input
-              prefix={<Icon type="user" />}
+              prefix={<UserOutlined />}
               placeholder="Email"
+              className="modern-input"
             />
           )}
         </FormItem>
@@ -113,9 +114,10 @@ class Login extends Component {
             rules: [{ required: true, message: '请输入密码!' }]
           })(
             <Input
-              prefix={<Icon type="lock" />}
+              prefix={<LockOutlined />}
               type="password"
               placeholder="Password"
+              className="modern-input"
             />
           )}
         </FormItem>

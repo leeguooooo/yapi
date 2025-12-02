@@ -6,31 +6,24 @@ class LoginContainer extends Component {
   render() {
     return (
       <div className="g-body login-body">
-        <div className="login-container">
-          <div className="login-left">
-            <div className="login-left-content">
-              <div className="login-logo-block">
-                <div className="logo-icon">
-                  <LogoSVG length="48px" />
+        <div className="aurora-bg">
+          <div className="aurora-blob blob-1"></div>
+          <div className="aurora-blob blob-2"></div>
+          <div className="aurora-blob blob-3"></div>
+        </div>
+
+        <div className="login-content">
+            <div className="brand-container">
+                <div className="logo-box">
+                    <LogoSVG length="80px" />
                 </div>
-                <span className="logo-text">YApi</span>
-              </div>
-              <div className="login-welcome-text">
-                <h2>YApi 2.0</h2>
-                <p>高效、易用、功能强大的可视化接口管理平台</p>
-                <p className="sub-text">Efficient, Easy-to-Use, Visual Interface Management Platform</p>
-              </div>
+                <h1 className="site-title">YApi <span className="version-tag">2.0</span></h1>
+                <p className="site-desc">Next Generation API Management</p>
             </div>
-            <div className="login-bg-decoration">
-              <div className="shape shape-1"></div>
-              <div className="shape shape-2"></div>
+            
+            <div className="login-panel">
+                <Login />
             </div>
-          </div>
-          <div className="login-right">
-            <div className="login-form-container">
-              <Login />
-            </div>
-          </div>
         </div>
       </div>
     );

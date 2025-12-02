@@ -34,7 +34,7 @@ class Reg extends Component {
   };
 
   handleSubmit = e => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     const form = this.props.form;
     const values = form.getFieldsValue();
     if (!values.userName || !values.email || !values.password || !values.confirm) {

@@ -1,0 +1,15 @@
+@keyframes logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.yapi-logo-svg {
+  // General style for the logo
+  overflow: visible; // Allow shadows to spill out
+  
+  .yapi-logo-core {
+    // The blades rotate independently if we want, or the whole SVG rotates.
+    // Currently, Login.scss rotates the whole <svg>, so we don't need animation here by default.
+    // But adding a hover effect is nice.
+  }
+}

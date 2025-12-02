@@ -1,251 +1,263 @@
 @use '../../styles/common.scss' as *;
 
+// --- Design Tokens (Modern Light / Enterprise Polish) ---
+$bg-color: #F5F7FA; // Very light cool gray
+$card-bg: #FFFFFF;
+$text-primary: #1F2937; // Dark gray, almost black
+$text-secondary: #6B7280; // Medium gray
+$brand-blue: #2395f1; // YApi Primary Blue
+$accent-glow: #E0F2FE; // Light blue glow
+$border-color: #E5E7EB;
+
+// --- Animations ---
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes float-slow {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(30px, -50px) rotate(10deg); }
+  66% { transform: translate(-20px, 20px) rotate(-5deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .login-body {
+  position: relative;
+  width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: #fff;
+  background-color: $bg-color;
+  color: $text-primary;
   display: flex;
-  flex-direction: column;
-}
-
-.login-container {
-  display: flex;
-  width: 100%;
-  flex: 1;
-  height: 100%;
-}
-
-// Left Side - Brand
-.login-left {
-  flex: 0 0 40%;
-  background: linear-gradient(135deg, #2b32b2 0%, #1488cc 100%);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 0 8%;
-  color: #fff;
-  overflow: hidden;
-
-  .login-left-content {
-    position: relative;
-    z-index: 2;
-  }
-
-  .login-logo-block {
-    display: flex;
-    align-items: center;
-    margin-bottom: 40px;
-
-    .logo-icon {
-      margin-right: 16px;
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      padding: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      
-      // Make svg fit nicely
-      svg {
-        display: block;
-      }
-    }
-
-    .logo-text {
-      font-size: 36px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: #fff;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-  }
-
-  .login-welcome-text {
-    h2 {
-      font-size: 48px;
-      font-weight: 600;
-      margin-bottom: 24px;
-      color: #fff;
-      line-height: 1.2;
-    }
-    p {
-      font-size: 20px;
-      line-height: 1.6;
-      opacity: 0.95;
-      margin-bottom: 8px;
-      font-weight: 400;
-    }
-    .sub-text {
-        font-size: 14px;
-        opacity: 0.7;
-        margin-top: 12px;
-    }
-  }
-
-  // Background Shapes
-  .login-bg-decoration {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    pointer-events: none;
-
-    .shape {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-    }
-
-    .shape-1 {
-      width: 500px;
-      height: 500px;
-      top: -150px;
-      right: -100px;
-    }
-
-    .shape-2 {
-      width: 300px;
-      height: 300px;
-      bottom: -80px;
-      left: -80px;
-    }
-  }
-}
-
-// Right Side - Form
-.login-right {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: #fff;
-  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.login-form-container {
+// --- Background (Subtle Pastel Mesh) ---
+.aurora-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 440px;
-  padding: 0 40px;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(circle at top left, #f0f9ff, transparent 40%),
+              radial-gradient(circle at bottom right, #eff6ff, transparent 40%);
 
-  // Antd Overrides for Login Form
-  .ant-tabs-nav {
-    margin-bottom: 40px;
+  .aurora-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.6;
+    animation: float-slow 20s infinite ease-in-out;
+  }
+
+  .blob-1 {
+    top: -10%;
+    right: -5%;
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, #BAE6FD, transparent 70%); // Light Sky Blue
+    animation-delay: 0s;
+  }
+  
+  .blob-2 {
+    bottom: -10%;
+    left: -10%;
+    width: 45vw;
+    height: 45vw;
+    background: radial-gradient(circle, #DDD6FE, transparent 70%); // Pale Violet
+    animation-delay: -5s;
+  }
+  
+  .blob-3 {
+    top: 40%;
+    left: 40%;
+    width: 30vw;
+    height: 30vw;
+    background: radial-gradient(circle, #E0F2FE, transparent 70%); // Very pale blue
+    opacity: 0.4;
+    animation-delay: -10s;
+  }
+}
+
+// --- Content Layout ---
+.login-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  padding: 0 24px;
+  animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+// --- Brand ---
+.brand-container {
+  text-align: center;
+  margin-bottom: 40px;
+  
+  .logo-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
     
-    &::before {
-      border-bottom: 1px solid #f0f0f0;
+    svg {
+        // Ensure logo looks good on light bg
+        filter: drop-shadow(0 4px 6px rgba(35, 149, 241, 0.2));
+        animation: spin 20s linear infinite;
     }
+  }
+
+  .site-title {
+    font-size: 30px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: #111827; // Almost black
+    letter-spacing: -0.02em;
     
+    .version-tag {
+      font-size: 12px;
+      font-weight: 600;
+      background: #E0F2FE;
+      color: $brand-blue;
+      padding: 2px 8px;
+      border-radius: 12px;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+  }
+
+  .site-desc {
+    font-size: 14px;
+    color: $text-secondary;
+    font-weight: 400;
+  }
+}
+
+// --- Login Panel (Clean White Card) ---
+.login-panel {
+  width: 100%;
+  background: $card-bg;
+  border-radius: 16px;
+  padding: 40px 32px;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.05), 
+    0 2px 4px -1px rgba(0, 0, 0, 0.03),
+    0 0 0 1px rgba(0,0,0,0.03); // Subtle border
+  
+  // Tabs
+  .ant-tabs-nav {
+    margin-bottom: 24px;
+    &::before {
+      border-bottom: 1px solid $border-color;
+    }
+
     .ant-tabs-tab {
+      color: $text-secondary;
+      font-size: 15px;
       padding: 12px 0;
-      font-size: 20px;
-      color: #8c92a4;
-      margin-right: 40px;
-      transition: all 0.3s;
-      background: transparent;
-      border: none;
+      transition: color 0.2s;
 
       &:hover {
-        color: #32363a;
+        color: $brand-blue;
       }
 
       &.ant-tabs-tab-active {
         .ant-tabs-tab-btn {
-             color: #2395f1;
-             font-weight: 600;
+          color: $brand-blue;
+          font-weight: 500;
         }
       }
     }
+    
     .ant-tabs-ink-bar {
-        background: #2395f1;
-        height: 3px;
-        border-radius: 3px;
+      background: $brand-blue;
+      height: 2px;
     }
-  }
-  
-  // Fix tab alignment if needed
-  .ant-tabs-top > .ant-tabs-nav {
-      margin: 0 0 32px 0;
   }
 
   .ant-form-item {
     margin-bottom: 24px;
   }
 
-  .ant-input-prefix {
-    color: #b0b0b0;
-    margin-right: 10px;
-  }
-
-  .ant-input {
-    padding: 12px 0;
-    font-size: 16px;
-    border: none;
-    box-shadow: none;
-    
-    &:focus {
-        box-shadow: none;
-    }
-  }
-  
-  .ant-input-affix-wrapper {
-    padding: 4px 11px;
-    border: 1px solid #e8e8e8;
+  // --- Modern Inputs (Light) ---
+  .modern-input.ant-input-affix-wrapper {
+    background: #fff !important;
+    border: 1px solid $border-color !important;
     border-radius: 8px;
-    transition: all 0.3s;
-    background: #f9f9f9;
-    
-    &:hover, &:focus-within {
-        border-color: #2395f1;
-        background: #fff;
-        box-shadow: 0 0 0 2px rgba(35, 149, 241, 0.1);
+    padding: 10px 12px;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+
+    &:hover {
+      border-color: darken($border-color, 10%) !important;
+    }
+
+    &:focus, &:focus-within {
+      border-color: $brand-blue !important;
+      box-shadow: 0 0 0 3px rgba(35, 149, 241, 0.15) !important;
+    }
+
+    .ant-input {
+      background: transparent !important;
+      color: $text-primary;
+      font-size: 14px;
+      &::placeholder {
+        color: #9CA3AF;
+      }
+    }
+
+    .anticon {
+      color: #9CA3AF;
     }
   }
 
+  // --- Submit Button ---
   .login-form-button {
-    height: 50px;
-    font-size: 18px;
-    font-weight: 500;
-    background: linear-gradient(to right, #2395f1, #1a7fd3);
-    border: none;
+    height: 44px;
     border-radius: 8px;
-    box-shadow: 0 8px 16px rgba(35, 149, 241, 0.2);
-    margin-top: 12px;
+    background: $brand-blue;
+    border: none;
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    margin-top: 8px;
     width: 100%;
-    transition: all 0.3s;
+    box-shadow: 0 4px 6px rgba(35, 149, 241, 0.25); // Colored shadow
+    transition: all 0.2s;
     
     &:hover {
-        background: linear-gradient(to right, #1a7fd3, #2395f1);
-        transform: translateY(-1px);
-        box-shadow: 0 10px 20px rgba(35, 149, 241, 0.3);
+      background: darken($brand-blue, 5%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 10px rgba(35, 149, 241, 0.3);
     }
+  }
+  
+  // Radio Group
+  .ant-radio-wrapper {
+    color: $text-secondary;
     
-    &:active {
-        transform: translateY(1px);
+    .ant-radio-inner {
+        border-color: #D1D5DB;
+        &::after {
+            background-color: $brand-blue;
+        }
     }
-  }
-}
-
-// Mobile Responsive
-@media (max-width: 768px) {
-  .login-left {
-    display: none;
-  }
-  
-  .login-right {
-    justify-content: flex-start;
-    padding-top: 10vh;
-    background: #fff;
-  }
-  
-  .login-form-container {
-    max-width: 100%;
-    padding: 32px;
+    .ant-radio-checked .ant-radio-inner {
+        border-color: $brand-blue;
+    }
   }
 }
