@@ -6,7 +6,7 @@ import GroupLog from './GroupLog/GroupLog.js';
 import GroupSetting from './GroupSetting/GroupSetting.js';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Route, Switch, Redirect } from 'react-router-dom';
+// Legacy router imports removed from render (we render content directly)
 import { Tabs, Layout, Spin } from 'antd';
 const { Content, Sider } = Layout;
 import { fetchNewsData } from '../../reducer/modules/news.js';
@@ -66,7 +66,7 @@ export default class Group extends Component {
   //   // }
   // }
   render() {
-    if(this.state.groupId === -1)return <Spin />
+    if (this.state.groupId === -1) return <Spin />;
     const GroupContent = (
       <Layout style={{ minHeight: 'calc(100vh - 100px)', marginLeft: '24px', marginTop: '24px' }}>
         <Sider style={{ height: '100%' }} width={300}>
@@ -106,13 +106,6 @@ export default class Group extends Component {
         </Layout>
       </Layout>
     );
-    return (
-      <div className="projectGround">
-        <Switch>
-          <Redirect exact from="/group" to={"/group/" + this.state.groupId} />
-          <Route path="/group/:groupId" render={() => GroupContent} />
-        </Switch>
-      </div>
-    );
+    return <div className="projectGround">{GroupContent}</div>;
   }
 }

@@ -1,7 +1,6 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { Tabs, Layout } from 'antd';
-import { Route, Switch, matchPath } from 'react-router-dom';
 import { connect } from 'react-redux';
 const { Content, Sider } = Layout;
 
@@ -16,38 +15,6 @@ import InterfaceColContent from './InterfaceCol/InterfaceColContent.js';
 import InterfaceCaseContent from './InterfaceCol/InterfaceCaseContent.js';
 import { getProject } from '../../../reducer/modules/project';
 import { setColData } from '../../../reducer/modules/interfaceCol.js';
-const contentRouter = {
-  path: '/project/:id/interface/:action/:actionId',
-  exact: true
-};
-
-const InterfaceRoute = props => {
-  let C;
-  if (props.match.params.action === 'api') {
-    if (!props.match.params.actionId) {
-      C = InterfaceList;
-    } else if (!isNaN(props.match.params.actionId)) {
-      C = InterfaceContent;
-    } else if (props.match.params.actionId.indexOf('cat_') === 0) {
-      C = InterfaceList;
-    }
-  } else if (props.match.params.action === 'col') {
-    C = InterfaceColContent;
-  } else if (props.match.params.action === 'case') {
-    C = InterfaceCaseContent;
-  } else {
-    const params = props.match.params;
-    props.history.replace('/project/' + params.id + '/interface/api');
-    return null;
-  }
-  return <C {...props} />;
-};
-
-InterfaceRoute.propTypes = {
-  match: PropTypes.object,
-  history: PropTypes.object
-};
-
 @connect(
   state => {
     return {
@@ -84,16 +51,40 @@ class Interface extends Component {
     }
     this.props.history.push('/project/' + params.id + '/interface/' + action);
   };
-  async componentWillMount() {
+  componentDidMount() {
     this.props.setColData({
       isShowCol: true
     });
     // await this.props.fetchInterfaceColList(this.props.match.params.id)
   }
   render() {
-    const { action } = this.props.match.params;
+    const pathname = this.props.location?.pathname || '';
+    const match = pathname.match(/project\/(\d+)\/interface\/(\w+)(?:\/([^/]+))?/);
+    const params = {
+      id: this.props.match.params.id,
+      action: match ? match[2] : 'api',
+      actionId: match ? match[3] : undefined
+    };
+    const { action, actionId } = params;
     // const activeKey = this.state.curkey;
     const activeKey = action === 'api' ? 'api' : 'colOrCase';
+
+    let ContentComponent = InterfaceList;
+    if (action === 'api') {
+      if (actionId && !isNaN(actionId)) {
+        ContentComponent = InterfaceContent;
+      } else if (actionId && actionId.indexOf('cat_') === 0) {
+        ContentComponent = InterfaceList;
+      } else {
+        ContentComponent = InterfaceList;
+      }
+    } else if (action === 'col') {
+      ContentComponent = InterfaceColContent;
+    } else if (action === 'case') {
+      ContentComponent = InterfaceCaseContent;
+    } else {
+      this.props.history.replace('/project/' + params.id + '/interface/api');
+    }
 
     return (
       <Layout style={{ minHeight: 'calc(100vh - 156px)', marginLeft: '24px', marginTop: '24px' }}>
@@ -111,13 +102,13 @@ class Interface extends Component {
             />
             {activeKey === 'api' ? (
               <InterfaceMenu
-                router={matchPath(this.props.location.pathname, contentRouter)}
-                projectId={this.props.match.params.id}
+                router={{ params }}
+                projectId={params.id}
               />
             ) : (
               <InterfaceColMenu
-                router={matchPath(this.props.location.pathname, contentRouter)}
-                projectId={this.props.match.params.id}
+                router={{ params }}
+                projectId={params.id}
               />
             )}
           </div>
@@ -132,10 +123,11 @@ class Interface extends Component {
             }}
           >
             <div className="right-content">
-              <Switch>
-                <Route exact path="/project/:id/interface/:action" component={InterfaceRoute} />
-                <Route {...contentRouter} component={InterfaceRoute} />
-              </Switch>
+              <ContentComponent
+                {...this.props}
+                match={{ params }}
+                router={{ params }}
+              />
             </div>
           </Content>
         </Layout>

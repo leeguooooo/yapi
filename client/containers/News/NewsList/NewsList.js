@@ -56,6 +56,11 @@ class NewsList extends Component {
     });
   }
   render() {
+    const items = logList.map((item, i) => ({
+      key: `${i}`,
+      className: 'log-item',
+      label: item.name
+    }));
     return (
       <div className="logList">
         <h3>日志类型</h3>
@@ -63,15 +68,8 @@ class NewsList extends Component {
           mode="inline"
           selectedKeys={[`${this.state.selectedKeys}`]}
           onClick={this.getLogData.bind(this)}
-        >
-          {logList.map((item, i) => {
-            return (
-              <Menu.Item key={i} className="log-item">
-                {item.name}
-              </Menu.Item>
-            );
-          })}
-        </Menu>
+          items={items}
+        />
       </div>
     );
   }

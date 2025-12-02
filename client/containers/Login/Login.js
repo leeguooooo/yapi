@@ -103,7 +103,7 @@ class Login extends Component {
             <Input
               prefix={<UserOutlined />}
               placeholder="Email"
-              className="modern-input"
+              autoComplete="email"
             />
           )}
         </FormItem>
@@ -117,7 +117,7 @@ class Login extends Component {
               prefix={<LockOutlined />}
               type="password"
               placeholder="Password"
-              className="modern-input"
+              autoComplete="current-password"
             />
           )}
         </FormItem>

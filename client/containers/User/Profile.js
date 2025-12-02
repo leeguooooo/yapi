@@ -85,12 +85,13 @@ class Profile extends Component {
     this.handleUserinfo(this.props);
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (!nextProps.match.params.uid) {
+  componentDidUpdate(prevProps) {
+    if (!this.props.match.params.uid) {
       return;
     }
-    if (this._uid !== nextProps.match.params.uid) {
-      this.handleUserinfo(nextProps);
+    if (this._uid !== this.props.match.params.uid) {
+      this._uid = this.props.match.params.uid;
+      this.handleUserinfo(this.props);
     }
   }
 

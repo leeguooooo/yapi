@@ -39,11 +39,11 @@ let AppRoute = {
     component: Home
   },
   group: {
-    path: '/group',
+    path: '/group/:groupId?/*',
     component: Group
   },
   project: {
-    path: '/project/:id',
+    path: '/project/:id/*',
     component: Project
   },
   user: {

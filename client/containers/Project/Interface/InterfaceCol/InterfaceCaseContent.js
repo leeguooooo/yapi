@@ -78,34 +78,28 @@ export default class InterfaceCaseContent extends Component {
     return currColId;
   }
 
-  async componentWillMount() {
-    const result = await this.props.fetchInterfaceColList(this.props.match.params.id);
-    let { currCaseId } = this.props;
-    const params = this.props.match.params;
+  loadCase = async props => {
+    const result = await props.fetchInterfaceColList(props.match.params.id);
+    let { currCaseId } = props;
+    const params = props.match.params;
     const { actionId } = params;
     currCaseId = +actionId || +currCaseId || result.payload.data.data[0].caseList[0]._id;
     let currColId = this.getColId(result.payload.data.data, currCaseId);
-    // this.props.history.push('/project/' + params.id + '/interface/case/' + currCaseId);
-    await this.props.fetchCaseData(currCaseId);
-    this.props.setColData({ currCaseId: +currCaseId, currColId, isShowCol: false });
-    // 获取当前case 下的环境变量
-    await this.props.getEnv(this.props.currCase.project_id);
-    // await this.getCurrEnv()
+    await props.fetchCaseData(currCaseId);
+    props.setColData({ currCaseId: +currCaseId, currColId, isShowCol: false });
+    await props.getEnv(props.currCase.project_id);
+    this.setState({ editCasename: props.currCase.casename });
+  };
 
-    this.setState({ editCasename: this.props.currCase.casename });
+  async componentDidMount() {
+    await this.loadCase(this.props);
   }
 
-  async componentWillReceiveProps(nextProps) {
-    const oldCaseId = this.props.match.params.actionId;
-    const newCaseId = nextProps.match.params.actionId;
-    const { interfaceColList } = nextProps;
-    let currColId = this.getColId(interfaceColList, newCaseId);
+  async componentDidUpdate(prevProps) {
+    const oldCaseId = prevProps.match.params.actionId;
+    const newCaseId = this.props.match.params.actionId;
     if (oldCaseId !== newCaseId) {
-      await this.props.fetchCaseData(newCaseId);
-      this.props.setColData({ currCaseId: +newCaseId, currColId, isShowCol: false });
-      await this.props.getEnv(this.props.currCase.project_id);
-      // await this.getCurrEnv()
-      this.setState({ editCasename: this.props.currCase.casename });
+      await this.loadCase(this.props);
     }
   }
 

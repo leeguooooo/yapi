@@ -32,37 +32,37 @@ let HeaderMenu = {
 
 plugin.emitHook('header_menu', HeaderMenu);
 
-const MenuUser = props => (
-  <Menu theme="dark" className="user-menu">
-    {Object.keys(HeaderMenu).map(key => {
+const MenuUser = props => {
+  const items = Object.keys(HeaderMenu)
+    .map(key => {
       let item = HeaderMenu[key];
       const isAdmin = props.role === 'admin';
-      if (item.adminFlag && !isAdmin) {
-        return null;
-      }
-      return (
-        <Menu.Item key={key}>
-          {item.name === '个人中心' ? (
-            <Link to={item.path + `/${props.uid}`}>
-              <Icon type={item.icon} />
-              {item.name}
-            </Link>
-          ) : (
-            <Link to={item.path}>
-              <Icon type={item.icon} />
-              {item.name}
-            </Link>
-          )}
-        </Menu.Item>
-      );
-    })}
-    <Menu.Item key="9">
+      if (item.adminFlag && !isAdmin) return null;
+      const content =
+        item.name === '个人中心' ? (
+          <Link to={item.path + `/${props.uid}`}>
+            <Icon type={item.icon} />
+            {item.name}
+          </Link>
+        ) : (
+          <Link to={item.path}>
+            <Icon type={item.icon} />
+            {item.name}
+          </Link>
+        );
+      return { key, label: content };
+    })
+    .filter(Boolean);
+  items.push({
+    key: 'logout',
+    label: (
       <a onClick={props.logout}>
         <Icon type="logout" />退出
       </a>
-    </Menu.Item>
-  </Menu>
-);
+    )
+  });
+  return <Menu theme="dark" className="user-menu" items={items} />;
+};
 
 const tipFollow = (
   <div className="title-container">
@@ -301,7 +301,7 @@ export default class HeaderCom extends Component {
           <Link onClick={this.relieveLink} to="/group" className="logo">
             <div className="href">
               <span className="img">
-                <LogoSVG length="32px" />
+                <LogoSVG length="40px" />
               </span>
             </div>
           </Link>

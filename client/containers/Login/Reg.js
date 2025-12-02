@@ -84,6 +84,7 @@ class Reg extends Component {
             <Input
               prefix={<Icon type="user" />}
               placeholder="Username"
+              autoComplete="username"
             />
           )}
         </FormItem>
@@ -102,6 +103,7 @@ class Reg extends Component {
             <Input
               prefix={<Icon type="mail" />}
               placeholder="Email"
+              autoComplete="email"
             />
           )}
         </FormItem>
@@ -123,6 +125,7 @@ class Reg extends Component {
               prefix={<Icon type="lock" />}
               type="password"
               placeholder="Password"
+              autoComplete="new-password"
             />
           )}
         </FormItem>
@@ -144,6 +147,7 @@ class Reg extends Component {
               prefix={<Icon type="lock" />}
               type="password"
               placeholder="Confirm Password"
+              autoComplete="new-password"
             />
           )}
         </FormItem>

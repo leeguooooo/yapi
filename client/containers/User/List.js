@@ -64,10 +64,6 @@ class List extends Component {
     });
   }
 
-  componentDidMount() {
-    this.getUserList();
-  }
-
   confirm = uid => {
     axios
       .post('/api/user/del', {
@@ -94,8 +90,9 @@ class List extends Component {
       );
   };
 
-  async componentWillMount() {
+  async componentDidMount() {
     this.props.setBreadcrumb([{ name: '用户管理' }]);
+    this.getUserList();
   }
 
   handleSearch = value => {

@@ -2,6 +2,7 @@ import './ProjectCard.scss';
 import React, { PureComponent as Component } from 'react';
 import { Card, Tooltip, Modal, Alert, Input, message } from 'antd';
 import { Icon } from '@ant-design/compatible';
+import { FolderOpenOutlined } from '@ant-design/icons';
 import { connect } from 'react-redux';
 import { delFollow, addFollow } from '../../reducer/modules/follow';
 import PropTypes from 'prop-types';
@@ -141,14 +142,15 @@ class ProjectCard extends Component {
             this.props.history.push('/project/' + (projectData.projectid || projectData._id))
           }
         >
-          <Icon
-            type={projectData.icon || 'star-o'}
+          <div
             className="ui-logo"
             style={{
               backgroundColor:
                 constants.PROJECT_COLOR[projectData.color] || constants.PROJECT_COLOR.blue
             }}
-          />
+          >
+            <FolderOpenOutlined />
+          </div>
           <h4 className="ui-title">{projectData.name || projectData.projectname}</h4>
         </Card>
         <div

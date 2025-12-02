@@ -4,25 +4,44 @@ import PropTypes from 'prop-types';
 import { Tabs } from 'antd';
 import LoginForm from './Login';
 import RegForm from './Reg';
+import { loginTypeAction } from '../../reducer/modules/user';
 import './Login.scss';
 
 @connect(state => ({
   loginWrapActiveKey: state.user.loginWrapActiveKey,
   canRegister: state.user.canRegister
-}))
+}), { loginTypeAction })
 export default class LoginWrap extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      activeKey: props.loginWrapActiveKey || '1'
+    };
   }
 
   static propTypes = {
     form: PropTypes.object,
     loginWrapActiveKey: PropTypes.string,
-    canRegister: PropTypes.bool
+    canRegister: PropTypes.bool,
+    loginTypeAction: PropTypes.func
+  };
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.loginWrapActiveKey !== this.props.loginWrapActiveKey) {
+      this.setState({ activeKey: this.props.loginWrapActiveKey || '1' });
+    }
+  }
+
+  handleTabChange = key => {
+    this.setState({ activeKey: key });
+    if (this.props.loginTypeAction) {
+      this.props.loginTypeAction(key);
+    }
   };
 
   render() {
-    const { loginWrapActiveKey, canRegister } = this.props;
+    const { canRegister } = this.props;
+    const { activeKey } = this.state;
     {/** show only login when register is disabled */}
     const items = [
       { key: '1', label: '登录', children: <LoginForm /> },
@@ -38,7 +57,8 @@ export default class LoginWrap extends Component {
     ];
     return (
       <Tabs
-        defaultActiveKey={loginWrapActiveKey || '1'}
+        activeKey={activeKey}
+        onChange={this.handleTabChange}
         className="login-form"
         tabBarStyle={{ border: 'none' }}
         items={items}

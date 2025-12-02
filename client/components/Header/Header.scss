@@ -42,10 +42,8 @@
     }
     .img {
       position: absolute;
-      left: 0;
-      top: 50%;
       left: 50%;
-      transform: translate(-16px,-17px);
+      transform: translate(-50%, -50%);
     }
     .ui-badge {
       position: absolute;

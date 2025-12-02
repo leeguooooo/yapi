@@ -102,7 +102,7 @@ class GroupSetting extends Component {
     });
   };
 
-  componentWillMount() {
+  componentDidMount() {
     // console.log('custom_field1',this.props.currGroup.custom_field1)
     this.initState(this.props);
   }
@@ -194,7 +194,7 @@ class GroupSetting extends Component {
     });
   };
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(nextProps) {
     // 切换分组时，更新分组信息并关闭删除分组操作
     if (this.props.currGroup._id !== nextProps.currGroup._id) {
       this.initState(nextProps);

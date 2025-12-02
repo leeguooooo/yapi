@@ -23,7 +23,6 @@ import { arrayChangeIndex } from '../../../../common.js';
 import './interfaceMenu.scss';
 
 const confirm = Modal.confirm;
-const TreeNode = Tree.TreeNode;
 const headHeight = 240; // menu顶部到网页顶部部分的高度
 
 const catKey = id => `cat_${id}`;
@@ -168,11 +167,11 @@ class InterfaceMenu extends Component {
     });
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.handleRequest();
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(nextProps) {
     if (this.props.list !== nextProps.list) {
       // console.log('next', nextProps.list)
       this.setState({
@@ -502,8 +501,8 @@ class InterfaceMenu extends Component {
   };
 
   onDrop = async info => {
-    const dragData = info.dragNode.props.dataRef || {};
-    const dropData = info.node.props.dataRef || {};
+    const dragData = info.dragNode?.dataRef || {};
+    const dropData = info.node?.dataRef || {};
     if (!dragData.nodeType) return;
     if (dragData.nodeType === 'cat') {
       await this.handleCatDrop(info, dragData, dropData);
@@ -515,6 +514,44 @@ class InterfaceMenu extends Component {
   filterList = list => {
     const { tree, expandedKeys } = filterTreeByKeyword(list, this.state.filter);
     return { menuList: tree, arr: expandedKeys };
+  };
+
+  buildTreeData = (nodes = []) => {
+    const formatCat = cat => ({
+      title: (
+        <span>
+          <Icon type="folder-open" /> {cat.name}
+        </span>
+      ),
+      key: catKey(cat._id),
+      dataRef: { ...cat, nodeType: 'cat', catid: cat._id },
+      children: [
+        ...(cat.children || []).map(child => formatCat(child)),
+        ...(cat.list || []).map(api => ({
+          title: (
+            <span>
+              <Icon type="api" /> {api.title}
+            </span>
+          ),
+          key: `${api._id}`,
+          isLeaf: true,
+          dataRef: { ...api, nodeType: 'api', catid: cat._id }
+        }))
+      ]
+    });
+
+    const treeData = nodes.map(formatCat);
+    // prepend root node
+    treeData.unshift({
+      title: (
+        <span>
+          <Icon type="home" /> 全部接口
+        </span>
+      ),
+      key: 'root',
+      dataRef: { nodeType: 'root' }
+    });
+    return treeData;
   };
 
   render() {
@@ -618,140 +655,14 @@ class InterfaceMenu extends Component {
       };
     };
 
-    const itemInterfaceCreate = item => {
-      return (
-        <TreeNode
-          title={
-            <div
-              className="container-title"
-              onMouseEnter={() => this.enterItem(item._id)}
-              onMouseLeave={this.leaveItem}
-            >
-              <Link
-                className="interface-item"
-                onClick={e => e.stopPropagation()}
-                to={'/project/' + matchParams.id + '/interface/api/' + item._id}
-              >
-                {item.title}
-              </Link>
-              <div className="btns">
-                <Tooltip title="删除接口">
-                  <Icon
-                    type="delete"
-                    className="interface-delete-icon"
-                    onClick={e => {
-                      e.stopPropagation();
-                      this.showConfirm(item);
-                    }}
-                    style={{ display: this.state.delIcon == item._id ? 'block' : 'none' }}
-                  />
-                </Tooltip>
-                <Tooltip title="复制接口">
-                  <Icon
-                    type="copy"
-                    className="interface-delete-icon"
-                    onClick={e => {
-                      e.stopPropagation();
-                      this.copyInterface(item._id);
-                    }}
-                    style={{ display: this.state.delIcon == item._id ? 'block' : 'none' }}
-                  />
-                </Tooltip>
-              </div>
-            </div>
-          }
-          key={'' + item._id}
-          dataRef={{ ...item, nodeType: 'api', catid: item.catid }}
-        />
-      );
-    };
-
-    const renderCategoryNode = item => {
-      return (
-        <TreeNode
-          title={
-            <div
-              className="container-title"
-              onMouseEnter={() => this.enterItem(item._id)}
-              onMouseLeave={this.leaveItem}
-            >
-              <Link
-                className="interface-item"
-                onClick={e => {
-                  e.stopPropagation();
-                  this.changeExpands();
-                }}
-                to={'/project/' + matchParams.id + '/interface/api/cat_' + item._id}
-              >
-                <Icon type="folder-open" style={{ marginRight: 5 }} />
-                {item.name}
-              </Link>
-              <div className="btns">
-                <Tooltip title="删除分类">
-                  <Icon
-                    type="delete"
-                    className="interface-delete-icon"
-                    onClick={e => {
-                      e.stopPropagation();
-                      this.showDelCatConfirm(item._id);
-                    }}
-                    style={{ display: this.state.delIcon == item._id ? 'block' : 'none' }}
-                  />
-                </Tooltip>
-                <Tooltip title="修改分类">
-                  <Icon
-                    type="edit"
-                    className="interface-delete-icon"
-                    style={{ display: this.state.delIcon == item._id ? 'block' : 'none' }}
-                    onClick={e => {
-                      e.stopPropagation();
-                      this.changeModal('change_cat_modal_visible', true);
-                      this.setState({
-                        curCatdata: item
-                      });
-                    }}
-                  />
-                </Tooltip>
-                <Tooltip title="添加接口">
-                  <Icon
-                    type="plus"
-                    className="interface-delete-icon"
-                    style={{ display: this.state.delIcon == item._id ? 'block' : 'none' }}
-                    onClick={e => {
-                      e.stopPropagation();
-                      this.changeModal('visible', true);
-                      this.setState({
-                        curCatid: item._id
-                      });
-                    }}
-                  />
-                </Tooltip>
-              </div>
-            </div>
-          }
-          key={catKey(item._id)}
-          dataRef={{ ...item, nodeType: 'cat' }}
-          className={`interface-item-nav ${
-            (item.children && item.children.length) || (item.list && item.list.length)
-              ? ''
-              : 'cat_switch_hidden'
-          }`}
-        >
-          {(item.children || []).map(child => renderCategoryNode(child))}
-          {(item.list || []).map(itemInterfaceCreate)}
-        </TreeNode>
-      );
-    };
-
-    let currentKes = defaultExpandedKeys();
-    let menuList;
+    const currentKes = defaultExpandedKeys();
+    let menuList = this.state.list;
     if (this.state.filter) {
-      let res = this.filterList(this.state.list);
+      const res = this.filterList(this.state.list);
       menuList = res.menuList;
       currentKes.expands = res.arr;
-    } else {
-      menuList = this.state.list;
     }
+    const treeData = this.buildTreeData(menuList);
 
     return (
       <div>
@@ -771,26 +682,8 @@ class InterfaceMenu extends Component {
               onExpand={this.onExpand}
               draggable
               onDrop={this.onDrop}
-            >
-              <TreeNode
-                className="item-all-interface"
-                title={
-                  <Link
-                    onClick={e => {
-                      e.stopPropagation();
-                      this.changeExpands();
-                    }}
-                    to={'/project/' + matchParams.id + '/interface/api'}
-                  >
-                    <Icon type="folder" style={{ marginRight: 5 }} />
-                    全部接口
-                  </Link>
-                }
-                key="root"
-                dataRef={{ nodeType: 'root', _id: 0 }}
-              />
-              {menuList.map(renderCategoryNode)}
-            </Tree>
+              treeData={treeData}
+            />
           </div>
         ) : null}
       </div>

@@ -23,8 +23,8 @@ export default class Label extends Component {
   handleChange = event => {
     this.setState({ inputValue: event.target.value });
   };
-  componentWillReceiveProps(nextProps) {
-    if (this.props.desc === nextProps.desc) {
+  componentDidUpdate(prevProps) {
+    if (this.props.desc === prevProps.desc) {
       this.setState({
         inputShow: false
       });

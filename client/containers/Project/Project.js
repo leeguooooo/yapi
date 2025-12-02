@@ -1,7 +1,7 @@
 import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Route, Switch, Redirect, matchPath } from 'react-router-dom';
+// 内部使用 pathname 手动切换，避免 v6 路由匹配不到造成内容空白
 import { Subnav } from '../../components/index';
 import { fetchGroupMsg } from '../../reducer/modules/group';
 import { setBreadcrumb } from '../../reducer/modules/user';
@@ -41,62 +41,50 @@ export default class Project extends Component {
     super(props);
   }
 
-  async componentWillMount() {
-    await this.props.getProject(this.props.match.params.id);
-    await this.props.fetchGroupMsg(this.props.curProject.group_id);
-
-    this.props.setBreadcrumb([
+  loadData = async props => {
+    await props.getProject(props.match.params.id);
+    await props.fetchGroupMsg(props.curProject.group_id);
+    props.setBreadcrumb([
       {
-        name: this.props.currGroup.group_name,
-        href: '/group/' + this.props.currGroup._id
+        name: props.currGroup.group_name,
+        href: '/group/' + props.currGroup._id
       },
       {
-        name: this.props.curProject.name
+        name: props.curProject.name
       }
     ]);
+  };
+
+  async componentDidMount() {
+    await this.loadData(this.props);
   }
 
-  async componentWillReceiveProps(nextProps) {
-    const currProjectId = this.props.match.params.id;
-    const nextProjectId = nextProps.match.params.id;
-    if (currProjectId !== nextProjectId) {
-      await this.props.getProject(nextProjectId);
-      await this.props.fetchGroupMsg(this.props.curProject.group_id);
-      this.props.setBreadcrumb([
-        {
-          name: this.props.currGroup.group_name,
-          href: '/group/' + this.props.currGroup._id
-        },
-        {
-          name: this.props.curProject.name
-        }
-      ]);
+  async componentDidUpdate(prevProps) {
+    if (prevProps.match.params.id !== this.props.match.params.id) {
+      await this.loadData(this.props);
     }
   }
 
   render() {
     const { match, location } = this.props;
+    const pathname = location?.pathname || '';
+    const basePath = `/project/${match.params.id}`;
     let routers = {
-      interface: { name: '接口', path: '/project/:id/interface/:action', component: Interface },
-      activity: { name: '动态', path: '/project/:id/activity', component: Activity },
-      data: { name: '数据管理', path: '/project/:id/data', component: ProjectData },
-      members: { name: '成员管理', path: '/project/:id/members', component: ProjectMember },
-      setting: { name: '设置', path: '/project/:id/setting', component: Setting }
+      interface: { name: '接口', path: `${basePath}/interface/api`, component: Interface },
+      activity: { name: '动态', path: `${basePath}/activity`, component: Activity },
+      data: { name: '数据管理', path: `${basePath}/data`, component: ProjectData },
+      members: { name: '成员管理', path: `${basePath}/members`, component: ProjectMember },
+      setting: { name: '设置', path: `${basePath}/setting`, component: Setting }
     };
 
     plugin.emitHook('sub_nav', routers);
 
-    let key, defaultName;
-    for (key in routers) {
-      if (
-        matchPath(location.pathname, {
-          path: routers[key].path
-        }) !== null
-      ) {
-        defaultName = routers[key].name;
-        break;
-      }
-    }
+    let defaultName;
+    if (pathname.includes('/interface/')) defaultName = routers.interface.name;
+    else if (pathname.includes('/activity')) defaultName = routers.activity.name;
+    else if (pathname.includes('/data')) defaultName = routers.data.name;
+    else if (pathname.includes('/members')) defaultName = routers.members.name;
+    else if (pathname.includes('/setting')) defaultName = routers.setting.name;
 
     // let subnavData = [{
     //   name: routers.interface.name,
@@ -119,17 +107,10 @@ export default class Project extends Component {
     Object.keys(routers).forEach(key => {
       let item = routers[key];
       let value = {};
-      if (key === 'interface') {
-        value = {
-          name: item.name,
-          path: `/project/${match.params.id}/interface/api`
-        };
-      } else {
-        value = {
-          name: item.name,
-          path: item.path.replace(/\:id/gi, match.params.id)
-        };
-      }
+      value = {
+        name: item.name,
+        path: item.path
+      };
       subnavData.push(value);
     });
 
@@ -143,32 +124,18 @@ export default class Project extends Component {
       return <Loading visible />;
     }
 
+    // 手动选择渲染内容，避免嵌套路由不匹配导致空白
+    let content = <Interface {...this.props} />;
+    if (pathname.includes('/activity')) content = <Activity {...this.props} />;
+    else if (pathname.includes('/data')) content = <ProjectData {...this.props} />;
+    else if (pathname.includes('/members') && this.props.currGroup.type !== 'private')
+      content = <ProjectMember {...this.props} />;
+    else if (pathname.includes('/setting')) content = <Setting {...this.props} />;
+
     return (
       <div>
         <Subnav default={defaultName} data={subnavData} />
-        <Switch>
-          <Redirect exact from="/project/:id" to={`/project/${match.params.id}/interface/api`} />
-          {/* <Route path={routers.activity.path} component={Activity} />
-          
-          <Route path={routers.setting.path} component={Setting} />
-          {this.props.currGroup.type !== 'private' ?
-            <Route path={routers.members.path} component={routers.members.component}/>
-            : null
-          }
-
-          <Route path={routers.data.path} component={ProjectData} /> */}
-          {Object.keys(routers).map(key => {
-            let item = routers[key];
-
-            return key === 'members' ? (
-              this.props.currGroup.type !== 'private' ? (
-                <Route path={item.path} component={item.component} key={key} />
-              ) : null
-            ) : (
-              <Route path={item.path} component={item.component} key={key} />
-            );
-          })}
-        </Switch>
+        <div className="project-content">{content}</div>
       </div>
     );
   }

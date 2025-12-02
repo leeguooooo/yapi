@@ -4,7 +4,6 @@ import { Tree } from 'antd';
 import { connect } from 'react-redux';
 import { fetchVariableParamsList } from '../../reducer/modules/interfaceCol.js';
 
-const TreeNode = Tree.TreeNode;
 const CanSelectPathPrefix = 'CanSelectPath-';
 
 function deleteLastObject(str) {
@@ -76,9 +75,15 @@ class VariablesSelect extends Component {
     }
   }
 
-  async componentWillReceiveProps(nextProps) {
-    if (this.records && nextProps.id && this.id !== nextProps.id) {
-      this.handleRecordsData(nextProps.id);
+  async componentDidUpdate(prevProps) {
+    if (this.records && this.props.id && this.id !== this.props.id) {
+      this.handleRecordsData(this.props.id);
+    }
+    if (prevProps.currColId !== this.props.currColId) {
+      const result = await this.props.fetchVariableParamsList(this.props.currColId);
+      const records = result.payload.data.data;
+      this.records = records.sort((a, b) => a.index - b.index);
+      this.handleRecordsData(this.props.id);
     }
   }
 
@@ -103,7 +108,7 @@ class VariablesSelect extends Component {
   render() {
     const pathSelctByTree = (data, elementKeyPrefix = '$', deepLevel = 0) => {
       let keys = Object.keys(data);
-      let TreeComponents = keys.map((key, index) => {
+      return keys.map((key, index) => {
         let item = data[key],
           casename;
         if (deepLevel === 0) {
@@ -127,17 +132,21 @@ class VariablesSelect extends Component {
         }
         if (item && typeof item === 'object') {
           const isDisable = Array.isArray(item) && item.length === 0;
-          return (
-            <TreeNode key={elementKeyPrefix} disabled={isDisable} title={casename || key}>
-              {pathSelctByTree(item, elementKeyPrefix, deepLevel + 1)}
-            </TreeNode>
-          );
+          return {
+            key: elementKeyPrefix,
+            disabled: isDisable,
+            title: casename || key,
+            children: pathSelctByTree(item, elementKeyPrefix, deepLevel + 1)
+          };
         }
-        return <TreeNode key={CanSelectPathPrefix + elementKeyPrefix} title={key} />;
+        return {
+          key: CanSelectPathPrefix + elementKeyPrefix,
+          title: key,
+          isLeaf: true
+        };
       });
-
-      return TreeComponents;
     };
+    const treeData = pathSelctByTree(this.state.records);
 
     return (
       <div className="modal-postman-form-variable">
@@ -146,9 +155,8 @@ class VariablesSelect extends Component {
           selectedKeys={this.state.selectedKeys}
           onSelect={([key]) => this.handleSelect(key)}
           onExpand={this.onExpand}
-        >
-          {pathSelctByTree(this.state.records)}
-        </Tree>
+          treeData={treeData}
+        />
       </div>
     );
   }

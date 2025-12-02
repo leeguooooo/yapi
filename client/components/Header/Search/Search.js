@@ -10,8 +10,6 @@ import { setCurrGroup, fetchGroupMsg } from '../../../reducer/modules/group';
 import { changeMenuItem } from '../../../reducer/modules/menu';
 
 import { fetchInterfaceListMenu } from '../../../reducer/modules/interface';
-const Option = AutoComplete.Option;
-
 @connect(
   state => ({
     groupList: state.group.groupList,
@@ -29,7 +27,7 @@ export default class Srch extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      dataSource: []
+      options: []
     };
   }
 
@@ -46,17 +44,18 @@ export default class Srch extends Component {
   };
 
   onSelect = async (value, option) => {
-    if (option.props.type === '分组') {
+    const { type } = option;
+    if (type === '分组') {
       this.props.changeMenuItem('/group');
-      this.props.history.push('/group/' + option.props['id']);
-      this.props.setCurrGroup({ group_name: value, _id: option.props['id'] - 0 });
-    } else if (option.props.type === '项目') {
-      await this.props.fetchGroupMsg(option.props['groupId']);
-      this.props.history.push('/project/' + option.props['id']);
-    } else if (option.props.type === '接口') {
-      await this.props.fetchInterfaceListMenu(option.props['projectId']);
+      this.props.history.push('/group/' + option.id);
+      this.props.setCurrGroup({ group_name: value, _id: option.id - 0 });
+    } else if (type === '项目') {
+      await this.props.fetchGroupMsg(option.groupId);
+      this.props.history.push('/project/' + option.id);
+    } else if (type === '接口') {
+      await this.props.fetchInterfaceListMenu(option.projectId);
       this.props.history.push(
-        '/project/' + option.props['projectId'] + '/interface/api/' + option.props['id']
+        '/project/' + option.projectId + '/interface/api/' + option.id
       );
     }
   };
@@ -66,45 +65,35 @@ export default class Srch extends Component {
       .get('/api/project/search?q=' + value)
       .then(res => {
         if (res.data && res.data.errcode === 0) {
-          const dataSource = [];
+          const options = [];
           for (let title in res.data.data) {
             res.data.data[title].map(item => {
               switch (title) {
                 case 'group':
-                  dataSource.push(
-                    <Option
-                      key={`分组${item._id}`}
-                      type="分组"
-                      value={`${item.groupName}`}
-                      id={`${item._id}`}
-                    >
-                      {`分组: ${item.groupName}`}
-                    </Option>
-                  );
+                  options.push({
+                    label: `分组: ${item.groupName}`,
+                    value: `${item.groupName}`,
+                    type: '分组',
+                    id: `${item._id}`
+                  });
                   break;
                 case 'project':
-                  dataSource.push(
-                    <Option
-                      key={`项目${item._id}`}
-                      type="项目"
-                      id={`${item._id}`}
-                      groupId={`${item.groupId}`}
-                    >
-                      {`项目: ${item.name}`}
-                    </Option>
-                  );
+                  options.push({
+                    label: `项目: ${item.name}`,
+                    value: `${item.name}`,
+                    type: '项目',
+                    id: `${item._id}`,
+                    groupId: `${item.groupId}`
+                  });
                   break;
                 case 'interface':
-                  dataSource.push(
-                    <Option
-                      key={`接口${item._id}`}
-                      type="接口"
-                      id={`${item._id}`}
-                      projectId={`${item.projectId}`}
-                    >
-                      {`接口: ${item.title}`}
-                    </Option>
-                  );
+                  options.push({
+                    label: `接口: ${item.title}`,
+                    value: `${item.title}`,
+                    type: '接口',
+                    id: `${item._id}`,
+                    projectId: `${item.projectId}`
+                  });
                   break;
                 default:
                   break;
@@ -112,7 +101,7 @@ export default class Srch extends Component {
             });
           }
           this.setState({
-            dataSource: dataSource
+            options
           });
         } else {
           console.log('查询项目或分组失败');
@@ -132,17 +121,18 @@ export default class Srch extends Component {
   // }
 
   render() {
-    const { dataSource } = this.state;
+    const { options } = this.state;
 
     return (
       <div className="search-wrapper">
         <AutoComplete
           className="search-dropdown"
-          dataSource={dataSource}
+          options={options}
           style={{ width: '100%' }}
           defaultActiveFirstOption={false}
           onSelect={this.onSelect}
           onSearch={this.handleSearch}
+          filterOption={false}
           // filterOption={(inputValue, option) =>
           //   option.props.children.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
           // }

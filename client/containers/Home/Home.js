@@ -347,7 +347,7 @@ class Home extends Component {
     super(props);
   }
 
-  componentWillMount() {
+  componentDidMount() {
     if (this.props.login) {
       this.props.history.push('/group/261');
     }

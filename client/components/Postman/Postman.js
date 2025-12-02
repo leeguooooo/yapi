@@ -256,7 +256,7 @@ export default class Run extends Component {
     );
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this._crossRequestInterval = initCrossRequest(hasPlugin => {
       this.setState({
         hasPlugin: hasPlugin
@@ -269,15 +269,15 @@ export default class Run extends Component {
     clearInterval(this._crossRequestInterval);
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.checkInterfaceData(nextProps.data) && this.checkInterfaceData(this.props.data)) {
-      if (nextProps.data._id !== this.props.data._id) {
-        this.initState(nextProps.data);
-      } else if (nextProps.data.interface_up_time !== this.props.data.interface_up_time) {
-        this.initState(nextProps.data);
+  componentDidUpdate(prevProps) {
+    if (this.checkInterfaceData(prevProps.data) && this.checkInterfaceData(this.props.data)) {
+      if (prevProps.data._id !== this.props.data._id) {
+        this.initState(this.props.data);
+      } else if (prevProps.data.interface_up_time !== this.props.data.interface_up_time) {
+        this.initState(this.props.data);
       }
-      if (nextProps.data.env !== this.props.data.env) {
-        this.initEnvState(this.state.case_env, nextProps.data.env);
+      if (prevProps.data.env !== this.props.data.env) {
+        this.initEnvState(this.state.case_env, this.props.data.env);
       }
     }
   }

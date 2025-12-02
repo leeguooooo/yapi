@@ -12,7 +12,6 @@ import { Input, Button, Modal, message, Tooltip, Tree } from 'antd';
 import { arrayChangeIndex } from '../../../../common.js';
 import _ from 'underscore'
 
-const TreeNode = Tree.TreeNode;
 const FormItem = Form.Item;
 const confirm = Modal.confirm;
 const headHeight = 240; // menu顶部到网页顶部部分的高度
@@ -97,11 +96,11 @@ export default class InterfaceColMenu extends Component {
     super(props);
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.getList();
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(nextProps) {
     if (this.props.interfaceColList !== nextProps.interfaceColList) {
       this.setState({
         list: nextProps.interfaceColList
@@ -145,24 +144,20 @@ export default class InterfaceColMenu extends Component {
 
   onSelect = _.debounce(keys => {
     if (keys.length) {
-      const type = keys[0].split('_')[0];
-      const id = keys[0].split('_')[1];
+      const key = keys[0];
+      const { nodeType, id } = key.startsWith('col_') || key.startsWith('case_')
+        ? { nodeType: key.split('_')[0], id: key.split('_')[1] }
+        : {};
       const project_id = this.props.match.params.id;
-      if (type === 'col') {
-        this.props.setColData({
-          isRander: false
-        });
+      if (nodeType === 'col') {
+        this.props.setColData({ isRander: false });
         this.props.history.push('/project/' + project_id + '/interface/col/' + id);
-      } else {
-        this.props.setColData({
-          isRander: false
-        });
+      } else if (nodeType === 'case') {
+        this.props.setColData({ isRander: false });
         this.props.history.push('/project/' + project_id + '/interface/case/' + id);
       }
     }
-    this.setState({
-      expands: null
-    });
+    this.setState({ expands: null });
   }, 500);
 
   showDelColConfirm = colId => {
@@ -343,35 +338,48 @@ export default class InterfaceColMenu extends Component {
     });
   };
 
-  onDrop = async e => {
-    // const projectId = this.props.match.params.id;
+  onDrop = async info => {
+    const dragKey = info.dragNode?.key || '';
+    const dropKey = info.node?.key || '';
     const { interfaceColList } = this.props;
-    const dropColIndex = e.node.props.pos.split('-')[1];
-    const dropColId = interfaceColList[dropColIndex]._id;
-    const id = e.dragNode.props.eventKey;
-    const dragColIndex = e.dragNode.props.pos.split('-')[1];
-    const dragColId = interfaceColList[dragColIndex]._id;
+    const dragParts = dragKey.split('_');
+    const dropParts = dropKey.split('_');
+    const dragType = dragParts[0];
+    const dropType = dropParts[0];
+    const dragId = dragParts[1];
+    const dropId = dropParts[1];
 
-    const dropPos = e.node.props.pos.split('-');
-    const dropIndex = Number(dropPos[dropPos.length - 1]);
-    const dragPos = e.dragNode.props.pos.split('-');
-    const dragIndex = Number(dragPos[dragPos.length - 1]);
+    // 拖集合
+    if (dragType === 'col' && dropType === 'col') {
+      const dragIndex = interfaceColList.findIndex(c => `${c._id}` === dragId);
+      const dropIndex = interfaceColList.findIndex(c => `${c._id}` === dropId);
+      if (dragIndex === -1 || dropIndex === -1) return;
+      const changes = arrayChangeIndex(interfaceColList, dragIndex, dropIndex);
+      await axios.post('/api/col/up_col_index', changes);
+      this.getList();
+      return;
+    }
 
-    if (id.indexOf('col') === -1) {
-      if (dropColId === dragColId) {
-        // 同一个测试集合下的接口交换顺序
+    // 拖用例
+    if (dragType === 'case') {
+      const dragColIndex = info.dragNode?.parent?.pos?.split('-')[1];
+      const dropColIndex = info.node?.parent?.pos?.split('-')[1];
+      if (dragColIndex === undefined || dropColIndex === undefined) return;
+      const dropColId = interfaceColList[dropColIndex]?._id;
+      const dragColId = interfaceColList[dragColIndex]?._id;
+      if (!dropColId || !dragColId) return;
+
+      const dropIndex = Number(info.node?.pos?.split('-').pop());
+      const dragIndex = Number(info.dragNode?.pos?.split('-').pop());
+
+      if (dropType === 'case' && dropColId === dragColId) {
         let caseList = interfaceColList[dropColIndex].caseList;
         let changes = arrayChangeIndex(caseList, dragIndex, dropIndex);
-        axios.post('/api/col/up_case_index', changes).then();
+        await axios.post('/api/col/up_case_index', changes);
       }
-      await axios.post('/api/col/up_case', { id: id.split('_')[1], col_id: dropColId });
-      // this.props.fetchInterfaceColList(projectId);
-      this.getList();
+      await axios.post('/api/col/up_case', { id: dragId, col_id: dropColId });
+      await this.getList();
       this.props.setColData({ isRander: true });
-    } else {
-      let changes = arrayChangeIndex(interfaceColList, dragIndex, dropIndex);
-      axios.post('/api/col/up_col_index', changes).then();
-      this.getList();
     }
   };
 
@@ -435,75 +443,135 @@ export default class InterfaceColMenu extends Component {
       }
     };
 
-    const itemInterfaceColCreate = interfaceCase => {
-      return (
-        <TreeNode
-          style={{ width: '100%' }}
-          key={'case_' + interfaceCase._id}
-          title={
+    const buildTreeData = list => {
+      const colNodes = list.map(col => {
+        const children =
+          (col.caseList || []).map(cs => ({
+            key: `case_${cs._id}`,
+            title: (
+              <div
+                className="menu-title"
+                onMouseEnter={() => this.enterItem(cs._id)}
+                onMouseLeave={this.leaveItem}
+                title={cs.casename}
+              >
+                <span className="casename">{cs.casename}</span>
+                <div className="btns">
+                  <Tooltip title="删除用例">
+                    <Icon
+                      type="delete"
+                      className="interface-delete-icon"
+                      onClick={e => {
+                        e.stopPropagation();
+                        this.showDelCaseConfirm(cs._id);
+                      }}
+                      style={{ display: this.state.delIcon == cs._id ? 'block' : 'none' }}
+                    />
+                  </Tooltip>
+                  <Tooltip title="克隆用例">
+                    <Icon
+                      type="copy"
+                      className="interface-delete-icon"
+                      onClick={e => {
+                        e.stopPropagation();
+                        this.caseCopy(cs._id);
+                      }}
+                      style={{ display: this.state.delIcon == cs._id ? 'block' : 'none' }}
+                    />
+                  </Tooltip>
+                </div>
+              </div>
+            ),
+            dataRef: { ...cs, nodeType: 'case', col_id: col._id }
+          })) || [];
+
+        return {
+          key: `col_${col._id}`,
+          title: (
             <div
               className="menu-title"
-              onMouseEnter={() => this.enterItem(interfaceCase._id)}
+              onMouseEnter={() => this.enterItem(col._id)}
               onMouseLeave={this.leaveItem}
-              title={interfaceCase.casename}
             >
-              <span className="casename">{interfaceCase.casename}</span>
+              <span className="casename">{col.name}</span>
               <div className="btns">
-                <Tooltip title="删除用例">
+                <Tooltip title="删除集合">
                   <Icon
                     type="delete"
                     className="interface-delete-icon"
                     onClick={e => {
                       e.stopPropagation();
-                      this.showDelCaseConfirm(interfaceCase._id);
+                      list.length > 1 ? this.showDelColConfirm(col._id) : this.showNoDelColConfirm();
                     }}
-                    style={{ display: this.state.delIcon == interfaceCase._id ? 'block' : 'none' }}
+                    style={{ display: this.state.delIcon == col._id ? 'block' : 'none' }}
                   />
                 </Tooltip>
-                <Tooltip title="克隆用例">
+                <Tooltip title="修改集合">
+                  <Icon
+                    type="edit"
+                    className="interface-delete-icon"
+                    style={{ display: this.state.delIcon == col._id ? 'block' : 'none' }}
+                    onClick={e => {
+                      e.stopPropagation();
+                      this.showColModal('edit', col);
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip title="克隆集合">
                   <Icon
                     type="copy"
                     className="interface-delete-icon"
+                    style={{ display: this.state.delIcon == col._id ? 'block' : 'none' }}
                     onClick={e => {
                       e.stopPropagation();
-                      this.caseCopy(interfaceCase._id);
+                      this.copyInterface(col);
                     }}
-                    style={{ display: this.state.delIcon == interfaceCase._id ? 'block' : 'none' }}
+                  />
+                </Tooltip>
+                <Tooltip title="导入接口">
+                  <Icon
+                    type="import"
+                    className="interface-delete-icon"
+                    style={{ display: this.state.delIcon == col._id ? 'block' : 'none' }}
+                    onClick={e => {
+                      e.stopPropagation();
+                      this.showImportInterfaceModal(col._id);
+                    }}
                   />
                 </Tooltip>
               </div>
             </div>
-          }
-        />
-      );
+          ),
+          children,
+          dataRef: { ...col, nodeType: 'col' }
+        };
+      });
+      return colNodes;
     };
 
-    let currentKes = defaultExpandedKeys();
-    // console.log('currentKey', currentKes)
-
+    const currentKes = defaultExpandedKeys();
     let list = this.state.list;
 
     if (this.state.filterValue) {
       let arr = [];
       list = list.filter(item => {
-
-        item.caseList = item.caseList.filter(inter => {
-          if (inter.casename.indexOf(this.state.filterValue) === -1 
-          && inter.path.indexOf(this.state.filterValue) === -1
+        item.caseList = (item.caseList || []).filter(inter => {
+          if (
+            inter.casename.indexOf(this.state.filterValue) === -1 &&
+            inter.path.indexOf(this.state.filterValue) === -1
           ) {
             return false;
           }
           return true;
         });
-
         arr.push('col_' + item._id);
         return true;
       });
-      // console.log('arr', arr);
       if (arr.length > 0) {
         currentKes.expands = arr;
       }
     }
+    const treeData = buildTreeData(list);
 
     // console.log('list', list);
     // console.log('currentKey', currentKes)
@@ -535,68 +603,8 @@ export default class InterfaceColMenu extends Component {
             draggable
             onExpand={this.onExpand}
             onDrop={this.onDrop}
-          >
-            {list.map(col => (
-              <TreeNode
-                key={'col_' + col._id}
-                title={
-                  <div className="menu-title">
-                    <span>
-                      <Icon type="folder-open" style={{ marginRight: 5 }} />
-                      <span>{col.name}</span>
-                    </span>
-                    <div className="btns">
-                      <Tooltip title="删除集合">
-                        <Icon
-                          type="delete"
-                          style={{ display: list.length > 1 ? '' : 'none' }}
-                          className="interface-delete-icon"
-                          onClick={() => {
-                            this.showDelColConfirm(col._id);
-                          }}
-                        />
-                      </Tooltip>
-                      <Tooltip title="编辑集合">
-                        <Icon
-                          type="edit"
-                          className="interface-delete-icon"
-                          onClick={e => {
-                            e.stopPropagation();
-                            this.showColModal('edit', col);
-                          }}
-                        />
-                      </Tooltip>
-                      <Tooltip title="导入接口">
-                        <Icon
-                          type="plus"
-                          className="interface-delete-icon"
-                          onClick={e => {
-                            e.stopPropagation();
-                            this.showImportInterfaceModal(col._id);
-                          }}
-                        />
-                      </Tooltip>
-                      <Tooltip title="克隆集合">
-                        <Icon
-                          type="copy"
-                          className="interface-delete-icon"
-                          onClick={e => {
-                            e.stopPropagation();
-                            this.copyInterface(col);
-                          }}
-                        />
-                      </Tooltip>
-                    </div>
-                    {/*<Dropdown overlay={menu(col)} trigger={['click']} onClick={e => e.stopPropagation()}>
-                      <Icon className="opts-icon" type='ellipsis'/>
-                    </Dropdown>*/}
-                  </div>
-                }
-              >
-                {col.caseList.map(itemInterfaceColCreate)}
-              </TreeNode>
-            ))}
-          </Tree>
+            treeData={treeData}
+          />
         </div>
         <ColModalForm
           ref={this.saveFormRef}
