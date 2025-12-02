@@ -45,7 +45,7 @@ class AdvMock extends Component {
     });
   };
 
-  componentWillMount() {
+  componentDidMount() {
     this.getAdvMockData();
   }
 
@@ -155,6 +155,8 @@ class AdvMock extends Component {
   }
 }
 
-const WrappedAdvMock = Form.create()(withRouter(AdvMock));
+const WrappedAdvMock = withRouter(AdvMock);
 export default WrappedAdvMock;
-module.exports = WrappedAdvMock;
+if (typeof module !== 'undefined') {
+  module.exports = WrappedAdvMock;
+}

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { formatTime } from '../../../common.js';
 import { fetchNewsData } from '../../../reducer/modules/news.js';
-import { timeago } from '../../../../common/utils';
+import { timeago } from 'common/utils.browser.js';
 // timeago(new Date().getTime() - 40);
 
 @connect(
@@ -47,7 +47,7 @@ class NewsTimeline extends Component {
     });
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.props.fetchNewsData(21, 'project', this.props.curpage, 8);
   }
 

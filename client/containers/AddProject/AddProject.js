@@ -1,7 +1,8 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Form, Icon } from '@ant-design/compatible';
+import { Form } from 'client/components/LegacyForm';
+import { Icon } from '@ant-design/compatible';
 import { Button, Input, Tooltip, Select, message, Row, Col, Radio } from 'antd';
 import { addProject } from '../../reducer/modules/project.js';
 import { fetchGroupList } from '../../reducer/modules/group.js';
@@ -90,7 +91,7 @@ class ProjectList extends Component {
     });
   }
 
-  async componentWillMount() {
+  async componentDidMount() {
     this.props.setBreadcrumb([{ name: '新建项目' }]);
     if (!this.props.currGroup._id) {
       await this.props.fetchGroupList();

@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { formatTime } from 'client/common.js';
-import { Form, Switch, Button, Tooltip, message, Input, Select } from 'antd';
+import { Form } from 'client/components/LegacyForm';
+import { Switch, Button, Tooltip, message, Input, Select } from 'antd';
 import { Icon } from '@ant-design/compatible';
 import {handleSwaggerUrlData} from 'client/reducer/modules/project';
 const FormItem = Form.Item;
@@ -32,18 +33,7 @@ const tailFormItemLayout = {
   }
 };
 
-@connect(
-  state => {
-    return {
-      projectMsg: state.project.currProject
-    };
-  },
-  {
-    handleSwaggerUrlData
-  }
-)
-@Form.create()
-export default class ProjectInterfaceSync extends Component {
+class ProjectInterfaceSync extends Component {
   static propTypes = {
     form: PropTypes.object,
     match: PropTypes.object,
@@ -94,7 +84,7 @@ export default class ProjectInterfaceSync extends Component {
     callback()
   }
 
-  componentWillMount() {
+  componentDidMount() {
     //查询同步任务
     this.setState({
       sync_data: {}
@@ -238,3 +228,11 @@ export default class ProjectInterfaceSync extends Component {
     );
   }
 }
+
+const mapStateToProps = state => ({
+  projectMsg: state.project.currProject
+});
+
+export default connect(mapStateToProps, { handleSwaggerUrlData })(
+  Form.create()(ProjectInterfaceSync)
+);

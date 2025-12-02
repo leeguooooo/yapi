@@ -1,8 +1,7 @@
-const _ = require('underscore');
-const axios = require('axios');
+import _ from 'underscore';
+import axios from 'axios';
 
-const isNode = typeof global == 'object' && global.global === global;
-
+// Browser-friendly rewrite of the legacy CJS importer.
 async function handle(
   res,
   projectId,
@@ -13,36 +12,29 @@ async function handle(
   messageError,
   messageSuccess,
   callback,
-  token,
-  port
+  token
 ) {
-  const taskNotice = _.throttle((index, len)=>{
-    messageSuccess(`正在导入，已执行任务 ${index+1} 个，共 ${len} 个`)
-  }, 3000)
+  const taskNotice = _.throttle((index, len) => {
+    messageSuccess(`正在导入，已执行任务 ${index + 1} 个，共 ${len} 个`);
+  }, 3000);
 
   const handleAddCat = async cats => {
-    let catsObj = {};
-    if (cats && Array.isArray(cats)) {
+    const catsObj = {};
+    if (Array.isArray(cats)) {
       for (let i = 0; i < cats.length; i++) {
-        let cat = cats[i];
-        let findCat = _.find(menuList, menu => menu.name === cat.name);
+        const cat = cats[i];
+        const findCat = _.find(menuList, menu => menu.name === cat.name);
         catsObj[cat.name] = cat;
         if (findCat) {
           cat.id = findCat._id;
         } else {
-          let apipath = '/api/interface/add_cat';
-          if (isNode) {
-            apipath = 'http://127.0.0.1:' + port + apipath;
-          }
-
-          let data = {
+          const data = {
             name: cat.name,
             project_id: projectId,
             desc: cat.desc,
             token
           };
-          let result = await axios.post(apipath, data);
-
+          const result = await axios.post('/api/interface/add_cat', data);
           if (result.data.errcode) {
             messageError(result.data.errmsg);
             callback({ showLoading: false });
@@ -60,34 +52,29 @@ async function handle(
     if (cats === false) {
       return;
     }
-    
-    const apis = info.apis;
-    let len = apis.length;
+
+    const apis = info.apis || [];
+    const len = apis.length;
     let count = 0;
     let successNum = len;
     let existNum = 0;
     if (len === 0) {
-      messageError(`解析数据为空`);
+      messageError('解析数据为空');
       callback({ showLoading: false });
       return;
     }
 
-    if(info.basePath){
-      let projectApiPath = '/api/project/up';
-      if (isNode) {
-        projectApiPath = 'http://127.0.0.1:' + port + projectApiPath;
-      }
-
-      await axios.post(projectApiPath, {
+    if (info.basePath) {
+      await axios.post('/api/project/up', {
         id: projectId,
         basepath: info.basePath,
         token
-      })
+      });
     }
 
     for (let index = 0; index < apis.length; index++) {
-      let item = apis[index];
-      let data = Object.assign(item, {
+      const item = apis[index];
+      const data = Object.assign(item, {
         project_id: projectId,
         catid: selectCatid
       });
@@ -108,12 +95,8 @@ async function handle(
       if (dataSync !== 'normal') {
         // 开启同步功能
         count++;
-        let apipath = '/api/interface/save';
-        if (isNode) {
-          apipath = 'http://127.0.0.1:' + port + apipath;
-        }
         data.dataSync = dataSync;
-        let result = await axios.post(apipath, data);
+        const result = await axios.post('/api/interface/save', data);
         if (result.data.errcode) {
           successNum--;
           callback({ showLoading: false });
@@ -124,17 +107,13 @@ async function handle(
       } else {
         // 未开启同步功能
         count++;
-        let apipath = '/api/interface/add';
-        if (isNode) {
-          apipath = 'http://127.0.0.1:' + port + apipath;
-        }
-        let result = await axios.post(apipath, data);
+        const result = await axios.post('/api/interface/add', data);
         if (result.data.errcode) {
           successNum--;
-          if (result.data.errcode == 40022) {
+          if (result.data.errcode === 40022) {
             existNum++;
           }
-          if (result.data.errcode == 40033) {
+          if (result.data.errcode === 40033) {
             callback({ showLoading: false });
             messageError('没有权限');
             break;
@@ -147,14 +126,11 @@ async function handle(
         return;
       }
 
-      taskNotice(index, apis.length)
+      taskNotice(index, apis.length);
     }
   };
 
   return await handleAddInterface(res);
 }
 
-module.exports = handle;
-module.exports.default = handle;
-module.exports.__esModule = true;
-exports.default = handle;
+export default handle;

@@ -1,7 +1,7 @@
 import { message } from 'antd';
 import URL from 'url';
-const GenerateSchema = require('generate-schema/src/schemas/json.js');
-import { json_parse, unbase64 } from '../../common/utils.js';
+import GenerateSchema from 'generate-schema/src/schemas/json.js';
+import { json_parse, unbase64 } from 'common/utils.browser.js';
 
 const transformJsonToSchema = json => {
   json = json || {};
@@ -228,5 +228,6 @@ const pluginModule = function() {
   this.bindHook('import_data', postman);
 };
 
-module.exports = pluginModule;
 export default pluginModule;
+if (typeof module !== 'undefined') {
+}

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import './index.scss';
-import { Form, Icon } from '@ant-design/compatible';
+import { Form } from 'client/components/LegacyForm';
+import { Icon } from '@ant-design/compatible';
 import { Row, Col, Input, Select, Button, AutoComplete, Tooltip } from 'antd';
 const FormItem = Form.Item;
 const Option = Select.Option;

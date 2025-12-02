@@ -11,5 +11,6 @@ const pluginModule = function() {
   this.bindHook('sub_setting_nav', hander);
 };
 
-module.exports = pluginModule;
 export default pluginModule;
+if (typeof module !== 'undefined') {
+}

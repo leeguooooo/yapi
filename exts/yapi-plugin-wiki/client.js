@@ -11,5 +11,6 @@ const pluginModule = function() {
   });
 };
 
-module.exports = pluginModule;
 export default pluginModule;
+if (typeof module !== 'undefined') {
+}

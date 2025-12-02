@@ -7,7 +7,7 @@ import MockList from './MockList.js';
 import MethodsList from './MethodsList.js';
 import VariablesSelect from './VariablesSelect.js';
 import { trim } from '../../common.js';
-import { handleParamsValue } from 'common/utils.js';
+import { handleParamsValue } from 'common/utils.browser.js';
 
 const Panel = Collapse.Panel;
 

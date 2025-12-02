@@ -5,6 +5,8 @@ function hander(routers) {
   };
 }
 
-module.exports = function() {
+export default function() {
+if (typeof module !== "undefined") { module.exports = exports.default; }
+
   this.bindHook('sub_setting_nav', hander);
 };

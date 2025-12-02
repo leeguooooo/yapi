@@ -1,64 +1,251 @@
 @use '../../styles/common.scss' as *;
 
-// .login-body {
-//   background-color: #fff;
-// }
-.login-container {
-  padding-bottom: .6rem;
-}
-
-.login-form-button {
-  background-image: linear-gradient(to right, #6d69fe 0%, #48a0fa 100%) !important;
-  border: none !important;
-  margin-top: .2rem;
-  width: 100%;
-}
-
-.ant-form-item {
-  margin-bottom: .1rem;
-}
-
-.qsso-breakline{
+.login-body {
+  height: 100vh;
+  overflow: hidden;
+  background: #fff;
   display: flex;
-  align-items: center;
-  color: #6d7c90;
-  margin: .2rem auto;
-  &:before, &:after{
-    content: "";
-    display: inline-block;
-    height: .02rem;
-    flex: 1;
-    border-top: .01rem solid #6d7c90;
+  flex-direction: column;
+}
+
+.login-container {
+  display: flex;
+  width: 100%;
+  flex: 1;
+  height: 100%;
+}
+
+// Left Side - Brand
+.login-left {
+  flex: 0 0 40%;
+  background: linear-gradient(135deg, #2b32b2 0%, #1488cc 100%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 8%;
+  color: #fff;
+  overflow: hidden;
+
+  .login-left-content {
+    position: relative;
+    z-index: 2;
   }
-  .qsso-breakword{
-    padding: 0 .1rem;
+
+  .login-logo-block {
+    display: flex;
+    align-items: center;
+    margin-bottom: 40px;
+
+    .logo-icon {
+      margin-right: 16px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      
+      // Make svg fit nicely
+      svg {
+        display: block;
+      }
+    }
+
+    .logo-text {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  }
+
+  .login-welcome-text {
+    h2 {
+      font-size: 48px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #fff;
+      line-height: 1.2;
+    }
+    p {
+      font-size: 20px;
+      line-height: 1.6;
+      opacity: 0.95;
+      margin-bottom: 8px;
+      font-weight: 400;
+    }
+    .sub-text {
+        font-size: 14px;
+        opacity: 0.7;
+        margin-top: 12px;
+    }
+  }
+
+  // Background Shapes
+  .login-bg-decoration {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+
+    .shape {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+    }
+
+    .shape-1 {
+      width: 500px;
+      height: 500px;
+      top: -150px;
+      right: -100px;
+    }
+
+    .shape-2 {
+      width: 300px;
+      height: 300px;
+      bottom: -80px;
+      left: -80px;
+    }
   }
 }
 
-.card-login {
-  margin-top: 1.6rem;
-  margin-bottom: 1.6rem;
-  border-radius: .04rem;
+// Right Side - Form
+.login-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
   position: relative;
-  .login-logo {
-    font-size: 0;
-    position: absolute;
-    left: 50%;
-    top: 0;
-    background-image: linear-gradient(-20deg, #21d4fd 0%, #b721ff 100%);
-    transform: translate(-50%, -50%);
-    padding: .16rem;
-    border-radius: 50%;
-    box-shadow: 0 4px 6px rgba(50,50,93,.11), 0 1px 3px rgba(0,0,0,.08);
+}
+
+.login-form-container {
+  width: 100%;
+  max-width: 440px;
+  padding: 0 40px;
+
+  // Antd Overrides for Login Form
+  .ant-tabs-nav {
+    margin-bottom: 40px;
+    
+    &::before {
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .ant-tabs-tab {
+      padding: 12px 0;
+      font-size: 20px;
+      color: #8c92a4;
+      margin-right: 40px;
+      transition: all 0.3s;
+      background: transparent;
+      border: none;
+
+      &:hover {
+        color: #32363a;
+      }
+
+      &.ant-tabs-tab-active {
+        .ant-tabs-tab-btn {
+             color: #2395f1;
+             font-weight: 600;
+        }
+      }
+    }
+    .ant-tabs-ink-bar {
+        background: #2395f1;
+        height: 3px;
+        border-radius: 3px;
+    }
   }
-  .login-title {
-    text-align: center;
-    padding-top: .5rem;
-    font-size: .4rem;
-    font-weight: 200;
-    color: #2e2e5a;
+  
+  // Fix tab alignment if needed
+  .ant-tabs-top > .ant-tabs-nav {
+      margin: 0 0 32px 0;
   }
-  .svg {
-    animation: spin 5s linear infinite;
+
+  .ant-form-item {
+    margin-bottom: 24px;
+  }
+
+  .ant-input-prefix {
+    color: #b0b0b0;
+    margin-right: 10px;
+  }
+
+  .ant-input {
+    padding: 12px 0;
+    font-size: 16px;
+    border: none;
+    box-shadow: none;
+    
+    &:focus {
+        box-shadow: none;
+    }
+  }
+  
+  .ant-input-affix-wrapper {
+    padding: 4px 11px;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    transition: all 0.3s;
+    background: #f9f9f9;
+    
+    &:hover, &:focus-within {
+        border-color: #2395f1;
+        background: #fff;
+        box-shadow: 0 0 0 2px rgba(35, 149, 241, 0.1);
+    }
+  }
+
+  .login-form-button {
+    height: 50px;
+    font-size: 18px;
+    font-weight: 500;
+    background: linear-gradient(to right, #2395f1, #1a7fd3);
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(35, 149, 241, 0.2);
+    margin-top: 12px;
+    width: 100%;
+    transition: all 0.3s;
+    
+    &:hover {
+        background: linear-gradient(to right, #1a7fd3, #2395f1);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(35, 149, 241, 0.3);
+    }
+    
+    &:active {
+        transform: translateY(1px);
+    }
+  }
+}
+
+// Mobile Responsive
+@media (max-width: 768px) {
+  .login-left {
+    display: none;
+  }
+  
+  .login-right {
+    justify-content: flex-start;
+    padding-top: 10vh;
+    background: #fff;
+  }
+  
+  .login-form-container {
+    max-width: 100%;
+    padding: 32px;
   }
 }

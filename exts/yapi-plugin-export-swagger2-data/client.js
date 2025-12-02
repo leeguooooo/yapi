@@ -10,5 +10,6 @@ const pluginModule = function() {
     this.bindHook('export_data', exportData);
 };
 
-module.exports = pluginModule;
 export default pluginModule;
+if (typeof module !== 'undefined') {
+}

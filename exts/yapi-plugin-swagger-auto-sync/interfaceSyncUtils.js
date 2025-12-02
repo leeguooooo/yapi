@@ -75,6 +75,40 @@ class syncUtils {
         jobMap.set(projectId, scheduleItem);
     }
 
+    normalizeSwagger(swaggerObject) {
+        if (!swaggerObject || typeof swaggerObject !== 'object') return swaggerObject;
+        // 1) 补全路径前缀，避免 “path第一位必需为 /” 校验失败
+        if (swaggerObject.paths && typeof swaggerObject.paths === 'object') {
+            const normalizedPaths = {};
+            Object.keys(swaggerObject.paths).forEach(rawPath => {
+                const sanitizePath = value => {
+                    let cleaned = (value || '').trim();
+                    cleaned = cleaned.replace(/\{([^}]+)\}/g, ':$1');
+                    if (!cleaned.startsWith('/')) cleaned = `/${cleaned}`;
+                    cleaned = cleaned.replace(/[^\w\-/:.!]/g, '-').replace(/\/+/g, '/');
+                    return cleaned;
+                };
+                const fixedPath = sanitizePath(rawPath);
+                normalizedPaths[fixedPath] = swaggerObject.paths[rawPath];
+                const pathItem = normalizedPaths[fixedPath];
+                if (pathItem && typeof pathItem === 'object') {
+                    Object.values(pathItem).forEach(op => {
+                        if (!op || typeof op !== 'object') return;
+                        if (Array.isArray(op.parameters)) {
+                            op.parameters.forEach(param => {
+                                if (param && typeof param.example !== 'undefined' && typeof param.example !== 'string') {
+                                    param.example = String(param.example);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            swaggerObject.paths = normalizedPaths;
+        }
+        return swaggerObject;
+    }
+
     //同步接口
     async syncInterface(projectId, swaggerUrl, syncMode, uid, projectToken) {
         yapi.commons.log('定时器触发, syncJsonUrl:' + swaggerUrl + ",合并模式:" + syncMode);
@@ -100,6 +134,7 @@ class syncUtils {
         let swaggerObject;
         try {
             swaggerObject = await this.getSwaggerContent(swaggerUrl);
+            swaggerObject = this.normalizeSwagger(swaggerObject);
             if (!swaggerObject || typeof swaggerObject !== 'object') {
                 yapi.commons.log('数据格式出错，请检查')
                 this.saveSyncLog(0, syncMode, "数据格式出错，请检查", uid, projectId);

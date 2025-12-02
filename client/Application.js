@@ -2,7 +2,7 @@ import React, { PureComponent as Component } from 'react';
 import { createRoot } from 'react-dom/client';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Route, BrowserRouter as Router } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 import { Home, Group, Project, Follows, AddProject, Login } from './containers/index';
 import { Alert } from 'antd';
 import User from './containers/User/User.js';
@@ -117,20 +117,22 @@ export default class App extends Component {
               {alertContent()}
               {this.props.loginState !== 1 ? <Header /> : null}
               <div className="router-container">
-                {Object.keys(AppRoute).map(key => {
-                  let item = AppRoute[key];
-                  return key === 'login' ? (
-                    <Route key={key} path={item.path} component={item.component} />
-                  ) : key === 'home' ? (
-                    <Route key={key} exact path={item.path} component={item.component} />
-                  ) : (
-                    <Route
-                      key={key}
-                      path={item.path}
-                      component={requireAuthentication(item.component)}
-                    />
-                  );
-                })}
+                <Switch>
+                  {Object.keys(AppRoute).map(key => {
+                    let item = AppRoute[key];
+                    return key === 'login' ? (
+                      <Route key={key} path={item.path} component={item.component} />
+                    ) : key === 'home' ? (
+                      <Route key={key} exact path={item.path} component={item.component} />
+                    ) : (
+                      <Route
+                        key={key}
+                        path={item.path}
+                        component={requireAuthentication(item.component)}
+                      />
+                    );
+                  })}
+                </Switch>
               </div>
               {/* <div className="router-container">
                 <Route exact path="/" component={Home} />

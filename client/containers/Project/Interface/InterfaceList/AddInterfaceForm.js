@@ -1,6 +1,6 @@
 import React, { PureComponent as Component } from 'react'
 import PropTypes from 'prop-types'
-import { Form } from '@ant-design/compatible';
+import { Form } from 'client/components/LegacyForm';
 import { Input, Select, Button, TreeSelect } from 'antd';
 
 import constants from '../../../../constants/variable.js'

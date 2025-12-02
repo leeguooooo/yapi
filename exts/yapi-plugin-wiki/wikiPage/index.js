@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import axios from 'axios';
 import PropTypes from 'prop-types';
 import './index.scss';
-import { timeago } from '../../../common/utils';
+import { timeago } from 'common/utils.browser.js';
 import { Link } from 'react-router-dom';
 import WikiView from './View.js';
 import WikiEditor from './Editor.js';

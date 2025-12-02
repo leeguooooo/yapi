@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Form, Icon } from '@ant-design/compatible';
+import { Form } from 'client/components/LegacyForm';
+import { Icon } from '@ant-design/compatible';
 import { Switch, Button, Tooltip, message } from 'antd';
 import AceEditor from '../../../../components/AceEditor/AceEditor';
 const FormItem = Form.Item;

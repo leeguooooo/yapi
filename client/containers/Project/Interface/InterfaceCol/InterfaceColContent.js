@@ -24,14 +24,14 @@ import { produce } from 'immer';
 import {InsertCodeMap} from 'client/components/Postman/Postman.js'
 
 import plugin from 'client/plugin.js';
-import postmanLib from 'common/postmanLib.js';
+import postmanLib from 'common/postmanLib.browser.js';
 const {
   handleParams,
   crossRequest,
   handleCurrDomain,
   checkNameIsExistInArray
 } = postmanLib;
-import { handleParamsValue, json_parse, ArrayToObject } from 'common/utils.js';
+import { handleParamsValue, json_parse, ArrayToObject } from 'common/utils.browser.js';
 import CaseEnv from 'client/components/CaseEnv';
 import Label from '../../../../components/Label/Label.js';
 

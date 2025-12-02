@@ -29,31 +29,31 @@ class Setting extends Component {
     plugin.emitHook('sub_setting_nav', routers);
     return (
       <div className="g-row">
-        <Tabs type="card" className="has-affix-footer tabs-large">
-          <TabPane tab="项目配置" key="1">
-            <ProjectMessage projectId={+id} />
-          </TabPane>
-          <TabPane tab="环境配置" key="2">
-            <ProjectEnv projectId={+id} />
-          </TabPane>
-          <TabPane tab="请求配置" key="3">
-            <ProjectRequest projectId={+id} />
-          </TabPane>
-          {this.props.curProjectRole !== 'guest' ? (
-            <TabPane tab="token配置" key="4">
-              <ProjectToken projectId={+id} curProjectRole={this.props.curProjectRole} />
-            </TabPane>
-          ) : null}
-          <TabPane tab="全局mock脚本" key="5">
-            <ProjectMock projectId={+id} />
-          </TabPane>
-          {Object.keys(routers).map(key=>{
-            const C = routers[key].component;
-            return <TabPane tab={routers[key].name} key={routers[key].name}>
-              <C projectId={+id} />
-            </TabPane>
-          })}
-        </Tabs>
+        <Tabs
+          type="card"
+          className="has-affix-footer tabs-large"
+          items={[
+            { key: '1', label: '项目配置', children: <ProjectMessage projectId={+id} /> },
+            { key: '2', label: '环境配置', children: <ProjectEnv projectId={+id} /> },
+            { key: '3', label: '请求配置', children: <ProjectRequest projectId={+id} /> },
+            ...(this.props.curProjectRole !== 'guest'
+              ? [
+                  {
+                    key: '4',
+                    label: 'token配置',
+                    children: (
+                      <ProjectToken projectId={+id} curProjectRole={this.props.curProjectRole} />
+                    )
+                  }
+                ]
+              : []),
+            { key: '5', label: '全局mock脚本', children: <ProjectMock projectId={+id} /> },
+            ...Object.keys(routers).map(key => {
+              const C = routers[key].component;
+              return { key: routers[key].name, label: routers[key].name, children: <C projectId={+id} /> };
+            })
+          ]}
+        />
       </div>
     );
   }

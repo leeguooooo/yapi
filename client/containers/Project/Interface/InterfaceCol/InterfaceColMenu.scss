@@ -38,7 +38,7 @@
   }
 }
 
-.container {
+.col-list-tree .container {
   display: block;
   width: 100%;
   padding: 10px;
@@ -47,33 +47,33 @@
  * note that styling gu-mirror directly is a bad practice because it's too generic.
  * you're better off giving the draggable elements a unique class and styling that directly!
  */
-.gu-mirror {
+.col-list-tree .gu-mirror {
   padding: 10px;
   background-color: rgba(0, 0, 0, 0.2);
   transition: opacity 0.4s ease-in-out;
 }
-.container div {
+.col-list-tree .container div {
   cursor: move;
   cursor: grab;
   cursor: -moz-grab;
   cursor: -webkit-grab;
   margin-bottom: 10px;
 }
-.container div:last-child {
+.col-list-tree .container div:last-child {
   margin-bottom: 0;
 }
-.gu-mirror {
+.col-list-tree .gu-mirror {
   cursor: grabbing;
   cursor: -moz-grabbing;
   cursor: -webkit-grabbing;
 }
-.container .ex-moved {
+.col-list-tree .container .ex-moved {
   background-color: #e74c3c;
 }
-.container.ex-over {
+.col-list-tree .container.ex-over {
   background-color: rgba(255, 255, 255, 0.3);
 }
-.handle {
+.col-list-tree .handle {
   padding: 0 5px;
   margin-right: 5px;
   background-color: rgba(0, 0, 0, 0.4);

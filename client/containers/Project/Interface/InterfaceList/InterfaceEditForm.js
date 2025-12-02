@@ -15,12 +15,12 @@ import axios from 'axios';
 import { MOCK_SOURCE } from '../../../../constants/variable.js';
 import Editor from '@toast-ui/editor';
 import '@toast-ui/editor/dist/toastui-editor.css';
+import './editor.css';
 const TabPane = Tabs.TabPane;
 
 
 // require('common/tui-editor/dist/tui-editor.min.css'); // editor ui - 暂时注释掉
 // require('common/tui-editor/dist/tui-editor-contents.min.css'); // editor content - 暂时注释掉
-require('./editor.css');
 
 
 function checkIsJsonSchema(json) {
@@ -56,7 +56,7 @@ const validJson = json => {
   }
 };
 
-import { Form } from '@ant-design/compatible';
+import { Form } from 'client/components/LegacyForm';
 import { Select, Input, Tooltip, Button, Row, Col, Radio, AutoComplete, Switch } from 'antd';
 
 const Json5Example = `

@@ -1,18 +1,12 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Form, Icon } from '@ant-design/compatible';
+import { Form } from 'client/components/LegacyForm';
+import { Icon } from '@ant-design/compatible';
 import { Button, Input, message } from 'antd';
 import { regActions } from '../../reducer/modules/user';
 import { withRouter } from 'react-router-dom';
 const FormItem = Form.Item;
-const formItemStyle = {
-  marginBottom: '.16rem'
-};
-
-const changeHeight = {
-  height: '.42rem'
-};
 
 @connect(
   state => {
@@ -42,14 +36,21 @@ class Reg extends Component {
   handleSubmit = e => {
     e.preventDefault();
     const form = this.props.form;
-    form.validateFieldsAndScroll((err, values) => {
-      if (!err) {
-        this.props.regActions(values).then(res => {
-          if (res.payload.data.errcode == 0) {
-            this.props.history.replace('/group');
-            message.success('注册成功! ');
-          }
-        });
+    const values = form.getFieldsValue();
+    if (!values.userName || !values.email || !values.password || !values.confirm) {
+      message.error('请完整填写注册信息');
+      return;
+    }
+    if (values.password !== values.confirm) {
+      message.error('两次输入的密码不一致');
+      return;
+    }
+    this.props.regActions(values).then(res => {
+      if (res.payload.data.errcode == 0) {
+        this.props.history.replace('/group');
+        message.success('注册成功! ');
+      } else {
+        message.error(res.payload.data.errmsg || '注册失败');
       }
     });
   };
@@ -76,20 +77,19 @@ class Reg extends Component {
     return (
       <Form onSubmit={this.handleSubmit}>
         {/* 用户名 */}
-        <FormItem style={formItemStyle}>
+        <FormItem>
           {getFieldDecorator('userName', {
             rules: [{ required: true, message: '请输入用户名!' }]
           })(
             <Input
-              style={changeHeight}
-              prefix={<Icon type="user" style={{ fontSize: 13 }} />}
+              prefix={<Icon type="user" />}
               placeholder="Username"
             />
           )}
         </FormItem>
 
         {/* Emaiil */}
-        <FormItem style={formItemStyle}>
+        <FormItem>
           {getFieldDecorator('email', {
             rules: [
               {
@@ -100,15 +100,14 @@ class Reg extends Component {
             ]
           })(
             <Input
-              style={changeHeight}
-              prefix={<Icon type="mail" style={{ fontSize: 13 }} />}
+              prefix={<Icon type="mail" />}
               placeholder="Email"
             />
           )}
         </FormItem>
 
         {/* 密码 */}
-        <FormItem style={formItemStyle}>
+        <FormItem>
           {getFieldDecorator('password', {
             rules: [
               {
@@ -121,8 +120,7 @@ class Reg extends Component {
             ]
           })(
             <Input
-              style={changeHeight}
-              prefix={<Icon type="lock" style={{ fontSize: 13 }} />}
+              prefix={<Icon type="lock" />}
               type="password"
               placeholder="Password"
             />
@@ -130,7 +128,7 @@ class Reg extends Component {
         </FormItem>
 
         {/* 密码二次确认 */}
-        <FormItem style={formItemStyle}>
+        <FormItem>
           {getFieldDecorator('confirm', {
             rules: [
               {
@@ -143,8 +141,7 @@ class Reg extends Component {
             ]
           })(
             <Input
-              style={changeHeight}
-              prefix={<Icon type="lock" style={{ fontSize: 13 }} />}
+              prefix={<Icon type="lock" />}
               type="password"
               placeholder="Confirm Password"
             />
@@ -152,11 +149,10 @@ class Reg extends Component {
         </FormItem>
 
         {/* 注册按钮 */}
-        <FormItem style={formItemStyle}>
+        <FormItem>
           <Button
-            style={changeHeight}
             type="primary"
-            htmlType="submit"
+            onClick={this.handleSubmit}
             className="login-form-button"
           >
             注册

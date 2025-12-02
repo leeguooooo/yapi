@@ -1,3 +1,17 @@
+// Capture early errors for debugging CJS/ESM migration.
+if (typeof window !== 'undefined' && !window.__caughtErrors) {
+  window.__caughtErrors = [];
+  window.addEventListener('error', e => {
+    window.__caughtErrors.push({
+      message: e.message,
+      filename: e.filename,
+      lineno: e.lineno,
+      colno: e.colno,
+      stack: e.error && e.error.stack
+    });
+  });
+}
+
 // Polyfill global/setImmediate for CJS dependencies running in the browser.
 if (typeof global === 'undefined') {
   // eslint-disable-next-line no-undef

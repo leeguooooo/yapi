@@ -12,5 +12,6 @@ const pluginModule = function() {
   this.bindHook('export_data', exportOpenAPI3);
 };
 
-module.exports = pluginModule;
 export default pluginModule;
+if (typeof module !== 'undefined') {
+}

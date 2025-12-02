@@ -18,7 +18,7 @@ import plugin from 'client/plugin.js';
 const RadioGroup = Radio.Group;
 const importDataModule = {};
 const exportDataModule = {};
-import HandleImportData from 'common/HandleImportData';
+import HandleImportData from 'client/shims/HandleImportData.browser.js';
 function handleExportRouteParams(url, status, isWiki) {
   if (!url) {
     return;

@@ -1,5 +1,6 @@
 import React, { PureComponent as Component } from 'react';
-import { Form, Icon } from '@ant-design/compatible';
+import { Form } from 'client/components/LegacyForm';
+import { Icon } from '@ant-design/compatible';
 import { Input, Switch, Select, Tooltip, Button, Row, Col, message, Card, Radio, Alert, Modal, Popover } from 'antd';
 import PropTypes from 'prop-types';
 import {

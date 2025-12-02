@@ -1,5 +1,26 @@
 import React from 'react';
-import * as RRD from 'react-router-dom';
+import * as RRD from 'react-router-dom-original';
+
+function renderRouteElement(props) {
+  const { component: Component, render, children, element, ...rest } = props;
+  const Element = () => {
+    const location = RRD.useLocation();
+    const navigate = RRD.useNavigate();
+    const params = RRD.useParams();
+    const match = { params };
+    const injected = {
+      history: { push: navigate, replace: (...args) => navigate(...args) },
+      location,
+      match,
+      params
+    };
+    if (Component) return <Component {...props} {...injected} />;
+    if (render) return render({ ...props, ...injected });
+    if (typeof children === 'function') return children({ ...props, ...injected });
+    return children || null;
+  };
+  return <RRD.Route {...rest} element={element || <Element />} />;
+}
 
 // Shim for legacy HOC usage across the codebase. It injects router props using v7 hooks.
 export function withRouter(Component) {
@@ -28,24 +49,7 @@ export function Redirect({ to, replace = true, state }) {
 
 // Legacy Route shim that supports `component` / `render` / function children.
 export function Route(props) {
-  const { component: Component, render, children, element, ...rest } = props;
-  const Element = () => {
-    const location = RRD.useLocation();
-    const navigate = RRD.useNavigate();
-    const params = RRD.useParams();
-    const match = { params };
-    const injected = {
-      history: { push: navigate, replace: (...args) => navigate(...args) },
-      location,
-      match,
-      params
-    };
-    if (Component) return <Component {...props} {...injected} />;
-    if (render) return render({ ...props, ...injected });
-    if (typeof children === 'function') return children({ ...props, ...injected });
-    return children || null;
-  };
-  return <RRD.Route {...rest} element={element || <Element />} />;
+  return renderRouteElement(props);
 }
 
 // Legacy Switch shim built on top of Routes.
@@ -56,7 +60,7 @@ export function Switch({ children }) {
       const { to, ...rest } = child.props;
       return <RRD.Route key={`redirect-${to}`} path="*" element={<Redirect to={to} {...rest} />} />;
     }
-    return child;
+    return renderRouteElement(child.props || {});
   });
   return <RRD.Routes>{normalized}</RRD.Routes>;
 }

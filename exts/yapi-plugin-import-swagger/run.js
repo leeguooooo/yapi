@@ -1,6 +1,6 @@
-const _ = require('underscore')
-const swagger = require('swagger-client');
-const compareVersions = require('compare-versions');
+import _ from 'underscore';
+import swagger from 'swagger-client';
+import { compareVersions } from 'compare-versions';
 
   var SwaggerData, isOAS3;
   function handlePath(path) {
@@ -323,5 +323,4 @@ const compareVersions = require('compare-versions');
 
 
 
-module.exports = run;
 export default run;

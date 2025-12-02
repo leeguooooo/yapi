@@ -2,6 +2,10 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import * as sass from 'sass'
+import { createRequire } from 'module'
+
+const require = createRequire(import.meta.url)
+const pkg = require('./package.json')
 
 // Silence Dart Sass legacy API warnings until upstream tooling moves to the new API
 process.env.SASS_SILENCE_DEPRECATIONS = 'legacy-js-api,import,slash-div'
@@ -48,22 +52,42 @@ export default defineConfig(async () => {
         'client': path.resolve(__dirname, 'client'),
         'common': path.resolve(__dirname, 'common'),
         'exts': path.resolve(__dirname, 'exts'),
+        '@ant-design/compatible': path.resolve(__dirname, 'client/shims/antd-compatible.js'),
         // Shim legacy withRouter usage onto react-router-dom v7
         'react-router-dom': path.resolve(__dirname, 'client/shims/react-router-dom.js'),
-        'common/postmanLib.js': path.resolve(__dirname, 'client/shims/postmanLib.js'),
-        'common/postmanLib': path.resolve(__dirname, 'client/shims/postmanLib.js'),
-        '/common/postmanLib.js': path.resolve(__dirname, 'client/shims/postmanLib.js')
+        'react-router-dom-original': path.resolve(
+          __dirname,
+          'node_modules/react-router-dom/dist/index.js'
+        ),
+        'common/postmanLib.js': path.resolve(__dirname, 'common/postmanLib.browser.js'),
+        'common/postmanLib': path.resolve(__dirname, 'common/postmanLib.browser.js'),
+        'common/utils': path.resolve(__dirname, 'common/utils.browser.js'),
+        'common/utils.js': path.resolve(__dirname, 'common/utils.browser.js'),
+        'common/HandleImportData.js': path.resolve(__dirname, 'client/shims/HandleImportData.browser.js'),
+        '/@fs/Users/leo/github.com/yapi/common/HandleImportData.js': path.resolve(
+          __dirname,
+          'client/shims/HandleImportData.browser.js'
+        ),
+        'common/power-string.js': path.resolve(__dirname, 'common/power-string.browser.js'),
+        'common/power-string': path.resolve(__dirname, 'common/power-string.browser.js')
       }
     },
 
     define: {
-      global: 'window'
+      global: 'window',
+      'process.env': {
+        version: pkg.version
+      }
     },
 
     server: {
       host: '127.0.0.1',
       port: 4000,
       strictPort: true,
+      fs: {
+        // allow transforming shared server-side utilities referenced from client
+        allow: [__dirname]
+      },
       proxy: {
         '/api': {
           target: 'http://127.0.0.1:3001',

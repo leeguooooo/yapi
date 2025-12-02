@@ -38,5 +38,6 @@ const pluginModule = function() {
   this.bindHook('import_data', importData);
 };
 
-module.exports = pluginModule;
 export default pluginModule;
+if (typeof module !== 'undefined') {
+}

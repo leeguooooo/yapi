@@ -12,8 +12,8 @@ import CheckCrossInstall, { initCrossRequest } from './CheckCrossInstall.js';
 // import './Postman.scss';
 import ProjectEnv from '../../containers/Project/Setting/ProjectEnv/index.js';
 import json5 from 'json5';
-import { handleParamsValue, ArrayToObject, schemaValidator } from 'common/utils.js';
-import postmanLib from 'common/postmanLib.js';
+import { handleParamsValue, ArrayToObject, schemaValidator } from 'common/utils.browser.js';
+import postmanLib from 'common/postmanLib.browser.js';
 const {
   handleParams,
   checkRequestBodyIsRaw,
@@ -902,134 +902,148 @@ export default class Run extends Component {
           </Panel>
         </Collapse>
 
-        <Tabs size="large" defaultActiveKey="res" className="response-tab">
-          <Tabs.TabPane tab="Response" key="res">
-            <Spin spinning={this.state.loading}>
-              <h2
-                style={{ display: this.state.resStatusCode ? '' : 'none' }}
-                className={
-                  'res-code ' +
-                  (this.state.resStatusCode >= 200 &&
-                  this.state.resStatusCode < 400 &&
-                  !this.state.loading
-                    ? 'success'
-                    : 'fail')
-                }
-              >
-                {this.state.resStatusCode + '  ' + this.state.resStatusText}
-              </h2>
-              <div>
-                <a rel="noopener noreferrer"  target="_blank" href="https://juejin.im/post/5c888a3e5188257dee0322af">YApi 新版如何查看 http 请求数据</a>
-              </div>
-              {this.state.test_valid_msg && (
-                <Alert
-                  message={
-                    <span>
-                      Warning &nbsp;
-                      <Tooltip title="针对定义为 json schema 的返回数据进行格式校验">
-                        <Icon type="question-circle-o" />
-                      </Tooltip>
-                    </span>
-                  }
-                  type="warning"
-                  showIcon
-                  description={this.state.test_valid_msg}
-                />
-              )}
+        <Tabs
+          size="large"
+          defaultActiveKey="res"
+          className="response-tab"
+          items={[
+            {
+              key: 'res',
+              label: 'Response',
+              children: (
+                <Spin spinning={this.state.loading}>
+                  <h2
+                    style={{ display: this.state.resStatusCode ? '' : 'none' }}
+                    className={
+                      'res-code ' +
+                      (this.state.resStatusCode >= 200 &&
+                      this.state.resStatusCode < 400 &&
+                      !this.state.loading
+                        ? 'success'
+                        : 'fail')
+                    }
+                  >
+                    {this.state.resStatusCode + '  ' + this.state.resStatusText}
+                  </h2>
+                  <div>
+                    <a rel="noopener noreferrer"  target="_blank" href="https://juejin.im/post/5c888a3e5188257dee0322af">YApi 新版如何查看 http 请求数据</a>
+                  </div>
+                  {this.state.test_valid_msg && (
+                    <Alert
+                      message={
+                        <span>
+                          Warning &nbsp;
+                          <Tooltip title="针对定义为 json schema 的返回数据进行格式校验">
+                            <Icon type="question-circle-o" />
+                          </Tooltip>
+                        </span>
+                      }
+                      type="warning"
+                      showIcon
+                      description={this.state.test_valid_msg}
+                    />
+                  )}
 
-              <div className="container-header-body">
-                <div className="header">
-                  <div className="container-title">
-                    <h4>Headers</h4>
-                  </div>
-                  <AceEditor
-                    callback={editor => {
-                      editor.renderer.setShowGutter(false);
-                    }}
-                    readOnly={true}
-                    className="pretty-editor-header"
-                    data={this.state.test_res_header}
-                    mode="json"
-                  />
-                </div>
-                <div className="resizer">
-                  <div className="container-title">
-                    <h4 style={{ visibility: 'hidden' }}>1</h4>
-                  </div>
-                </div>
-                <div className="body">
-                  <div className="container-title">
-                    <h4>Body</h4>
-                    <Checkbox
-                      checked={this.state.autoPreviewHTML}
-                      onChange={e => this.setState({ autoPreviewHTML: e.target.checked })}>
-                      <span>自动预览HTML</span>
-                    </Checkbox>
-                  </div>
-                  {
-                    this.state.autoPreviewHTML && this.testResponseBodyIsHTML
-                      ? <iframe
-                          className="pretty-editor-body"
-                          srcDoc={this.state.test_res_body}
-                        />
-                      : <AceEditor
-                          readOnly={true}
-                          className="pretty-editor-body"
-                          data={this.state.test_res_body}
-                          mode={handleContentType(this.state.test_res_header)}
+                  <div className="container-header-body">
+                    <div className="header">
+                      <div className="container-title">
+                        <h4>Headers</h4>
+                      </div>
+                      <AceEditor
+                        callback={editor => {
+                          editor.renderer.setShowGutter(false);
+                        }}
+                        readOnly={true}
+                        className="pretty-editor-header"
+                        data={this.state.test_res_header}
+                        mode="json"
                       />
-                  }
-                </div>
-              </div>
-            </Spin>
-          </Tabs.TabPane>
-          {this.props.type === 'case' ? (
-            <Tabs.TabPane
-              className="response-test"
-              tab={<Tooltip title="测试脚本，可断言返回结果，使用方法请查看文档">Test</Tooltip>}
-              key="test"
-            >
-              <h3 style={{ margin: '5px' }}>
-                &nbsp;是否开启:&nbsp;
-                <Switch
-                  checked={this.state.enable_script}
-                  onChange={e => this.setState({ enable_script: e })}
-                />
-              </h3>
-              <p style={{ margin: '10px' }}>注：Test 脚本只有做自动化测试才执行</p>
-              <Row>
-                <Col span="18">
-                  <AceEditor
-                    onChange={this.onOpenTest}
-                    className="case-script"
-                    data={this.state.test_script}
-                    ref={aceEditor => {
-                      this.aceEditor = aceEditor;
-                    }}
-                  />
-                </Col>
-                <Col span="6">
-                  <div className="insert-code">
-                    {InsertCodeMap.map(item => {
-                      return (
-                        <div
-                          style={{ cursor: 'pointer' }}
-                          className="code-item"
-                          key={item.title}
-                          onClick={() => {
-                            this.handleInsertCode('\n' + item.code);
-                          }}
-                        >
-                          {item.title}
-                        </div>
-                      );
-                    })}
+                    </div>
+                    <div className="resizer">
+                      <div className="container-title">
+                        <h4 style={{ visibility: 'hidden' }}>1</h4>
+                      </div>
+                    </div>
+                    <div className="body">
+                      <div className="container-title">
+                        <h4>Body</h4>
+                        <Checkbox
+                          checked={this.state.autoPreviewHTML}
+                          onChange={e => this.setState({ autoPreviewHTML: e.target.checked })}>
+                          <span>自动预览HTML</span>
+                        </Checkbox>
+                      </div>
+                      {
+                        this.state.autoPreviewHTML && this.testResponseBodyIsHTML
+                          ? <iframe
+                              className="pretty-editor-body"
+                              srcDoc={this.state.test_res_body}
+                            />
+                          : <AceEditor
+                              readOnly={true}
+                              className="pretty-editor-body"
+                              data={this.state.test_res_body}
+                              mode={handleContentType(this.state.test_res_header)}
+                          />
+                      }
+                    </div>
                   </div>
-                </Col>
-              </Row>
-            </Tabs.TabPane>
-          ) : null}
-        </Tabs>
+                </Spin>
+              )
+            },
+            ...(this.props.type === 'case'
+              ? [
+                  {
+                    key: 'test',
+                    label: <Tooltip title="测试脚本，可断言返回结果，使用方法请查看文档">Test</Tooltip>,
+                    className: 'response-test',
+                    children: (
+                      <>
+                        <h3 style={{ margin: '5px' }}>
+                          &nbsp;是否开启:&nbsp;
+                          <Switch
+                            checked={this.state.enable_script}
+                            onChange={e => this.setState({ enable_script: e })}
+                          />
+                        </h3>
+                        <p style={{ margin: '10px' }}>注：Test 脚本只有做自动化测试才执行</p>
+                        <Row>
+                          <Col span="18">
+                            <AceEditor
+                              onChange={this.onOpenTest}
+                              className="case-script"
+                              data={this.state.test_script}
+                              ref={aceEditor => {
+                                this.aceEditor = aceEditor;
+                              }}
+                            />
+                          </Col>
+                          <Col span="6">
+                            <div className="insert-code">
+                              {InsertCodeMap.map(item => {
+                                return (
+                                  <div
+                                    style={{ cursor: 'pointer' }}
+                                    className="code-item"
+                                    key={item.title}
+                                    onClick={() => {
+                                      this.handleInsertCode('\\n' + item.code);
+                                    }}
+                                  >
+                                    {item.title}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </Col>
+                        </Row>
+                      </>
+                    )
+                  }
+                ]
+              : [])
+          ]}
+        />
       </div>
     );
   }

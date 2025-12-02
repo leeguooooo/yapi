@@ -1,8 +1,8 @@
 import { message } from 'antd';
 import URL from 'url';
 import _ from 'underscore';
-const GenerateSchema = require('generate-schema/src/schemas/json.js');
-import { json_parse } from '../../common/utils.js';
+import GenerateSchema from 'generate-schema/src/schemas/json.js';
+import { json_parse } from 'common/utils.browser.js';
 
 function postman(importDataModule) {
   var folders = [];
@@ -266,5 +266,6 @@ const pluginModule = function() {
   this.bindHook('import_data', postman);
 };
 
-module.exports = pluginModule;
 export default pluginModule;
+if (typeof module !== 'undefined') {
+}

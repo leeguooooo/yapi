@@ -1,7 +1,7 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Form } from '@ant-design/compatible';
+import { Form } from 'client/components/LegacyForm';
 import { Button, message } from 'antd';
 const FormItem = Form.Item;
 import './project-request.scss';
