@@ -13,7 +13,8 @@ const initialState = {
 export default (state = initialState, action) => {
   switch (action.type) {
     case FETCH_NEWS_DATA: {
-      const list = action.payload.data.data.list;
+      const list = action.payload?.data?.data?.list || [];
+      const total = action.payload?.data?.data?.total || 0;
       state.newsData.list = list;
       state.curpage = 1;
       state.newsData.list.sort(function(a, b) {
@@ -22,13 +23,14 @@ export default (state = initialState, action) => {
       return {
         ...state,
         newsData: {
-          total: action.payload.data.data.total,
+          total,
           list: state.newsData.list
         }
       };
     }
     case FETCH_MORE_NEWS: {
-      const list = action.payload.data.data.list;
+      const list = action.payload?.data?.data?.list || [];
+      const total = action.payload?.data?.data?.total || 0;
       state.newsData.list.push(...list);
       state.newsData.list.sort(function(a, b) {
         return b.add_time - a.add_time;
@@ -39,7 +41,7 @@ export default (state = initialState, action) => {
       return {
         ...state,
         newsData: {
-          total: action.payload.data.data.total,
+          total,
           list: state.newsData.list
         }
       };
