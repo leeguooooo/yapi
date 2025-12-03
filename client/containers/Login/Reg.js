@@ -41,7 +41,7 @@ class Reg extends Component {
         return;
       }
       const payload = {
-        userName: (values.userName || '').trim(),
+        username: (values.username || values.userName || '').trim(),
         email: (values.email || '').trim(),
         password: values.password,
         confirm: values.confirm
@@ -88,7 +88,7 @@ class Reg extends Component {
       <Form onSubmit={this.handleSubmit}>
         {/* 用户名 */}
         <FormItem>
-          {getFieldDecorator('userName', {
+          {getFieldDecorator('username', {
             rules: [{ required: true, message: '请输入用户名!' }]
           })(
             <Input
