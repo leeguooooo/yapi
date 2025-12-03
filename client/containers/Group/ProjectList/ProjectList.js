@@ -186,7 +186,7 @@ class ProjectList extends Component {
             )}
           </Col>
         </Row>
-        <Row gutter={[24, 24]} className="project-list-content">
+        <Row gutter={[24, 24]} className="project-list-content" justify="center">
           {this.props.currGroup.type === 'private' ? (
             <OwnerSpace />
           ) : projectData.length ? (
