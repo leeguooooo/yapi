@@ -169,6 +169,7 @@ const ToolUser = props => {
           placement="bottomRight"
           trigger={['click']}
           menu={{ items: menuItems, onClick: handleMenuClick }}
+          overlayClassName="user-menu"
         >
           <a className="dropdown-link" onClick={e => e.preventDefault()}>
             <span className="avatar-image">

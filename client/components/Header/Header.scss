@@ -11,6 +11,9 @@
 .user-menu.ant-menu-dark .ant-menu-item-selected > a {
   color: rgba(255, 255, 255, 0.67);
 }
+.user-menu .ant-dropdown-menu-title-content .anticon {
+  margin-right: 6px;
+}
 
 /* .header-box.css */
 .header-box {
@@ -32,7 +35,11 @@
     }
     .href {
       text-decoration: none;
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      width: 100%;
     }
     .logo-name {
       color: $color-white;
@@ -42,6 +49,7 @@
     }
     .img {
       position: absolute;
+      top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
     }
