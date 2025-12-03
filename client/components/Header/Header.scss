@@ -23,6 +23,9 @@
   .logo {
     position: relative;
     float: left;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     line-height: .56rem;
     height: .56rem;
     width: 56px;
@@ -48,10 +51,8 @@
       margin-left: .38rem;
     }
     .img {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      position: static;
+      transform: none;
     }
     .ui-badge {
       position: absolute;
