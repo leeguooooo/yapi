@@ -16,7 +16,6 @@ import { MOCK_SOURCE } from '../../../../constants/variable.js';
 import Editor from '@toast-ui/editor';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import './editor.css';
-const TabPane = Tabs.TabPane;
 
 
 // require('common/tui-editor/dist/tui-editor.min.css'); // editor ui - 暂时注释掉
@@ -1198,10 +1197,15 @@ class InterfaceEditForm extends Component {
               }}
             >
               <Col>
-                <Tabs size="large" defaultActiveKey="tpl" onChange={this.handleJsonType}>
-                  <TabPane tab="模板" key="tpl" />
-                  <TabPane tab="预览" key="preview" />
-                </Tabs>
+                <Tabs
+                  size="large"
+                  defaultActiveKey="tpl"
+                  onChange={this.handleJsonType}
+                  items={[
+                    { key: 'tpl', label: '模板' },
+                    { key: 'preview', label: '预览' }
+                  ]}
+                />
                 <div style={{ marginTop: '10px' }}>
                   {!this.props.form.getFieldValue('res_body_is_json_schema') ? (
                     <div style={{ padding: '10px 0', fontSize: '15px' }}>

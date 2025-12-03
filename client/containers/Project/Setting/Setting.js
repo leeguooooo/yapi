@@ -7,7 +7,6 @@ import ProjectRequest from './ProjectRequest/ProjectRequest';
 import ProjectToken from './ProjectToken/ProjectToken';
 import ProjectMock from './ProjectMock/index.js';
 import { connect } from 'react-redux';
-const TabPane = Tabs.TabPane;
 import plugin from 'client/plugin.js';
 
 const routers = {}
