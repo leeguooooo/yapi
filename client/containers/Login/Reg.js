@@ -166,6 +166,7 @@ class Reg extends Component {
         <FormItem>
           <Button
             type="primary"
+            htmlType="submit"
             onClick={this.handleSubmit}
             className="login-form-button"
           >

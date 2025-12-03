@@ -127,6 +127,7 @@ class Login extends Component {
           <Button
             type="primary"
             htmlType="submit"
+            onClick={this.handleSubmit}
             className="login-form-button"
           >
             登录
