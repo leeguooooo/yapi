@@ -1,7 +1,7 @@
 import './index.scss';
 import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
-import { Route } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 import List from './List.js';
 import PropTypes from 'prop-types';
 import Profile from './Profile.js';
@@ -33,8 +33,10 @@ class User extends Component {
       <div>
         <div className="g-doc">
           <Row className="user-box">
-            <Route path={this.props.match.path + '/list'} component={List} />
-            <Route path={this.props.match.path + '/profile/:uid'} component={Profile} />
+            <Switch>
+              <Route path="list" component={List} />
+              <Route path="profile/:uid" component={Profile} />
+            </Switch>
           </Row>
         </div>
       </div>

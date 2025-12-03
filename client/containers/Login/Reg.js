@@ -4,20 +4,15 @@ import { connect } from 'react-redux';
 import { Form } from 'client/components/LegacyForm';
 import { Icon } from '@ant-design/compatible';
 import { Button, Input, message } from 'antd';
-import { regActions } from '../../reducer/modules/user';
+import axios from 'axios';
 import { withRouter } from 'react-router-dom';
 const FormItem = Form.Item;
 
-@connect(
-  state => {
-    return {
-      loginData: state.user
-    };
-  },
-  {
-    regActions
-  }
-)
+@connect(state => {
+  return {
+    loginData: state.user
+  };
+})
 @withRouter
 class Reg extends Component {
   constructor(props) {
@@ -29,40 +24,71 @@ class Reg extends Component {
 
   static propTypes = {
     form: PropTypes.object,
-    history: PropTypes.object,
-    regActions: PropTypes.func
+    history: PropTypes.object
   };
 
   handleSubmit = e => {
     if (e && e.preventDefault) e.preventDefault();
-    this.props.form.validateFields((err, values) => {
-      if (err) {
-        message.error('请完整填写注册信息');
-        return;
-      }
-      const payload = {
-        username: (values.username || values.userName || '').trim(),
-        email: (values.email || '').trim(),
-        password: values.password,
-        confirm: values.confirm
+    let values = this.props.form.getFieldsValue();
+    // 兜底：如果未收集到值（受控注册问题），直接从 DOM 读取输入框
+    if (!values || Object.keys(values).length === 0) {
+      const pick = sel => {
+        const el = document.querySelector(sel);
+        return el ? el.value : '';
       };
-      if (!payload.userName || !payload.email || !payload.password || !payload.confirm) {
-        message.error('请完整填写注册信息');
-        return;
-      }
-      if (values.password !== values.confirm) {
-        message.error('两次输入的密码不一致');
-        return;
-      }
-      this.props.regActions(payload).then(res => {
-        if (res.payload.data.errcode == 0) {
-          this.props.history.replace('/group');
+      values = {
+        username: pick('input[placeholder=\"Username\"]'),
+        email: pick('input[placeholder=\"Email\"]'),
+        password: pick('input[placeholder=\"Password\"]'),
+        confirm: pick('input[placeholder=\"Confirm Password\"]')
+      };
+    }
+
+    const username = (values.username || values.userName || '').trim();
+    const email = (values.email || '').trim();
+    const password = values.password;
+    const confirm = values.confirm;
+
+    if (!username || !email || !password || !confirm) {
+      message.error('请完整填写注册信息');
+      return;
+    }
+
+    const emailPattern = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{1,})+$/;
+    if (!emailPattern.test(email)) {
+      message.error('请输入正确的邮箱');
+      return;
+    }
+
+    if (password !== confirm) {
+      message.error('两次输入的密码不一致');
+      return;
+    }
+
+    const payload = {
+      username,
+      userName: username,
+      email,
+      password,
+      confirm
+    };
+
+    axios
+      .post('/api/user/reg', payload)
+      .then(res => {
+        const { data } = res;
+        if (data?.errcode === 0) {
           message.success('注册成功! ');
+          this.props.history.replace('/group');
         } else {
-          message.error(res.payload.data.errmsg || '注册失败');
+          message.error(data?.errmsg || '注册失败');
         }
+      })
+      .catch(err => {
+        // eslint-disable-next-line no-console
+        console.error('register failed', err);
+        message.error('注册失败');
       });
-    });
   };
 
   checkPassword = (rule, value, callback) => {

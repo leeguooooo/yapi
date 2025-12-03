@@ -47,7 +47,7 @@ let AppRoute = {
     component: Project
   },
   user: {
-    path: '/user',
+    path: '/user/*',
     component: User
   },
   follow: {

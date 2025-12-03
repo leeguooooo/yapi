@@ -28,6 +28,8 @@ export function requireAuthentication(Component) {
       }
     }
     render() {
+      // eslint-disable-next-line no-console
+      console.log('Auth render', { isAuthenticated: this.props.isAuthenticated, path: this.props.location?.pathname });
       return <div>{this.props.isAuthenticated ? <Component {...this.props} /> : null}</div>;
     }
   }

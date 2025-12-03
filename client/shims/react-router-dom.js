@@ -7,7 +7,7 @@ function renderRouteElement(props) {
     const location = RRD.useLocation();
     const navigate = RRD.useNavigate();
     const params = RRD.useParams();
-    const match = { params };
+    const match = { params, path: props.path, url: props.path };
     const injected = {
       history: { push: navigate, replace: (...args) => navigate(...args) },
       location,
@@ -28,13 +28,14 @@ export function withRouter(Component) {
     const location = RRD.useLocation();
     const navigate = RRD.useNavigate();
     const params = RRD.useParams();
+    const path = props.path || props.match?.path;
     return (
       <Component
         {...props}
         router={{ location, navigate, params }}
         history={{ push: navigate, replace: (...args) => navigate(...args) }}
         location={location}
-        match={{ params }}
+        match={{ params, path, url: path }}
       />
     );
   }

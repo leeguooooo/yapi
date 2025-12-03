@@ -3,7 +3,7 @@ import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { Layout, Menu, Dropdown, message, Tooltip, Popover, Tag } from 'antd';
+import { Layout, Dropdown, message, Tooltip, Popover, Tag } from 'antd';
 import { Icon } from '@ant-design/compatible';
 import { checkLoginState, logoutActions, loginTypeAction } from '../../reducer/modules/user';
 import { changeMenuItem } from '../../reducer/modules/menu';
@@ -32,7 +32,7 @@ let HeaderMenu = {
 
 plugin.emitHook('header_menu', HeaderMenu);
 
-const MenuUser = props => {
+const buildUserMenuItems = props => {
   const items = Object.keys(HeaderMenu)
     .map(key => {
       let item = HeaderMenu[key];
@@ -56,12 +56,13 @@ const MenuUser = props => {
   items.push({
     key: 'logout',
     label: (
-      <a onClick={props.logout}>
-        <Icon type="logout" />退出
+      <a onClick={e => e.preventDefault()}>
+        <Icon type="logout" />
+        退出
       </a>
     )
   });
-  return <Menu theme="dark" className="user-menu" items={items} />;
+  return items;
 };
 
 const tipFollow = (
@@ -95,17 +96,14 @@ const tipDoc = (
   </div>
 );
 
-MenuUser.propTypes = {
-  user: PropTypes.string,
-  msg: PropTypes.string,
-  role: PropTypes.string,
-  uid: PropTypes.number,
-  relieveLink: PropTypes.func,
-  logout: PropTypes.func
-};
-
 const ToolUser = props => {
   let imageUrl = props.imageUrl ? props.imageUrl : `/api/user/avatar?uid=${props.uid}`;
+  const menuItems = buildUserMenuItems(props);
+  const handleMenuClick = info => {
+    if (info.key === 'logout') {
+      props.logout(info.domEvent);
+    }
+  };
   return (
     <ul>
       <li className="toolbar-li item-search">
@@ -163,18 +161,9 @@ const ToolUser = props => {
         <Dropdown
           placement="bottomRight"
           trigger={['click']}
-          overlay={
-            <MenuUser
-              user={props.user}
-              msg={props.msg}
-              uid={props.uid}
-              role={props.role}
-              relieveLink={props.relieveLink}
-              logout={props.logout}
-            />
-          }
+          menu={{ items: menuItems, onClick: handleMenuClick }}
         >
-          <a className="dropdown-link">
+          <a className="dropdown-link" onClick={e => e.preventDefault()}>
             <span className="avatar-image">
               <img src={imageUrl} />
             </span>

@@ -15,7 +15,7 @@ const EditButton = props => {
     }
     return (
       <Button
-        icon="edit"
+        icon={<i className="anticon anticon-edit" />}
         onClick={() => {
           onClick(name, true);
         }}
@@ -27,7 +27,7 @@ const EditButton = props => {
     // 管理员
     return (
       <Button
-        icon="edit"
+        icon={<i className="anticon anticon-edit" />}
         onClick={() => {
           onClick(name, true);
         }}
@@ -342,7 +342,7 @@ class Profile extends Component {
       if (userType) {
         btn = (
           <Button
-            icon="edit"
+            icon={<i className="anticon anticon-edit" />}
             onClick={() => {
               this.handleEdit('secureEdit', true);
             }}
