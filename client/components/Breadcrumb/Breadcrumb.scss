@@ -19,6 +19,10 @@
     color: #fff;
     font-weight: normal;
   }
+  .ant-breadcrumb-link,
+  .ant-breadcrumb-link > a {
+    color: #fff !important;
+  }
   .ant-breadcrumb-separator {
     color: #fff;
     font-weight: normal;
