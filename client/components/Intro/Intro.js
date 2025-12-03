@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {  } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import { CheckCircleOutlined, SmileOutlined, TrophyOutlined, StarOutlined } from '@ant-design/icons';
 // import './Intro.scss';
 import { OverPack } from 'rc-scroll-anim';
 import TweenOne from 'rc-tween-one';
@@ -10,7 +10,12 @@ import QueueAnim from 'rc-queue-anim';
 const IntroPart = props => (
   <li className="switch-content">
     <div className="icon-switch">
-      <Icon type={props.iconType} />
+      {{
+        check: <CheckCircleOutlined />,
+        smile: <SmileOutlined />,
+        trophy: <TrophyOutlined />,
+        star: <StarOutlined />
+      }[props.iconType] || null}
     </div>
     <div className="text-switch">
       <p>

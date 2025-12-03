@@ -4,6 +4,13 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Layout, Dropdown, message, Tooltip, Popover, Tag } from 'antd';
+import {
+  LogoutOutlined,
+  StarFilled,
+  PlusCircleOutlined,
+  QuestionCircleOutlined,
+  DownOutlined
+} from '@ant-design/icons';
 import { Icon } from '@ant-design/compatible';
 import { checkLoginState, logoutActions, loginTypeAction } from '../../reducer/modules/user';
 import { changeMenuItem } from '../../reducer/modules/menu';
@@ -41,12 +48,12 @@ const buildUserMenuItems = props => {
       const content =
         item.name === '个人中心' ? (
           <Link to={item.path + `/${props.uid}`}>
-            <Icon type={item.icon} />
+            {item.icon === 'logout' ? <LogoutOutlined /> : <Icon type={item.icon} />}
             {item.name}
           </Link>
         ) : (
           <Link to={item.path}>
-            <Icon type={item.icon} />
+            {item.icon === 'logout' ? <LogoutOutlined /> : <Icon type={item.icon} />}
             {item.name}
           </Link>
         );
@@ -68,7 +75,7 @@ const buildUserMenuItems = props => {
 const tipFollow = (
   <div className="title-container">
     <h3 className="title">
-      <Icon type="star" /> 关注
+      <StarFilled /> 关注
     </h3>
     <p>这里是你的专属收藏夹，便于你找到自己的项目</p>
   </div>
@@ -76,7 +83,7 @@ const tipFollow = (
 const tipAdd = (
   <div className="title-container">
     <h3 className="title">
-      <Icon type="plus-circle" /> 新建项目
+      <PlusCircleOutlined /> 新建项目
     </h3>
     <p>在任何页面都可以快速新建项目</p>
   </div>
@@ -152,7 +159,7 @@ const ToolUser = props => {
         <Tooltip placement="bottom" title={'使用文档'}>
           <li className="toolbar-li">
             <a target="_blank" href="https://leeguooooo.github.io/yapi" rel="noopener noreferrer">
-              <Icon className="dropdown-link" style={{ fontSize: 16 }} type="question-circle" />
+          <QuestionCircleOutlined className="dropdown-link" style={{ fontSize: 16 }} />
             </a>
           </li>
         </Tooltip>
@@ -169,7 +176,7 @@ const ToolUser = props => {
             </span>
             {/*props.imageUrl? <Avatar src={props.imageUrl} />: <Avatar src={`/api/user/avatar?uid=${props.uid}`} />*/}
             <span className="name">
-              <Icon type="down" />
+              <DownOutlined />
             </span>
           </a>
         </Dropdown>

@@ -1,6 +1,7 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Input, Checkbox, Modal, Select, Spin, Collapse, Tooltip, Tabs, Switch, Row, Col, Alert } from 'antd';
+import { PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Icon } from '@ant-design/compatible';
 import constants from '../../constants/variable.js';
 import AceEditor from 'client/components/AceEditor/AceEditor';
@@ -698,7 +699,7 @@ export default class Run extends Component {
             <Button
               style={{ display: 'none' }}
               type="primary"
-              icon={<Icon type="plus" />}
+              icon={<PlusOutlined />}
               onClick={this.addPathParam}
             >
               添加Path参数
@@ -751,7 +752,7 @@ export default class Run extends Component {
             <Button
               style={{ display: 'none' }}
               type="primary"
-              icon={<Icon type="plus" />}
+              icon={<PlusOutlined />}
               onClick={this.addQuery}
             >
               添加Query参数
@@ -791,7 +792,7 @@ export default class Run extends Component {
             <Button
               style={{ display: 'none' }}
               type="primary"
-              icon={<Icon type="plus" />}
+              icon={<PlusOutlined />}
               onClick={this.addHeader}
             >
               添加Header
@@ -823,7 +824,7 @@ export default class Run extends Component {
                   </Button>
                   <Tooltip title="高级参数设置只在json字段值中生效">
                     {'  '}
-                    <Icon type="question-circle-o" />
+                    <QuestionCircleOutlined />
                   </Tooltip>
                 </div>
               )}
@@ -896,7 +897,7 @@ export default class Run extends Component {
                   <Button
                     style={{ display: 'none' }}
                     type="primary"
-                    icon={<Icon type="plus" />}
+                    icon={<PlusOutlined />}
                     onClick={this.addBody}
                   >
                     添加Form参数
@@ -944,7 +945,7 @@ export default class Run extends Component {
                         <span>
                           Warning &nbsp;
                           <Tooltip title="针对定义为 json schema 的返回数据进行格式校验">
-                            <Icon type="question-circle-o" />
+                            <QuestionCircleOutlined />
                           </Tooltip>
                         </span>
                       }

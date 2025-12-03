@@ -2,7 +2,7 @@ import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Form } from 'client/components/LegacyForm';
-import { Icon } from '@ant-design/compatible';
+import { UserOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
 import { Button, Input, message } from 'antd';
 import axios from 'axios';
 import { withRouter } from 'react-router-dom';
@@ -118,7 +118,7 @@ class Reg extends Component {
             rules: [{ required: true, message: '请输入用户名!' }]
           })(
             <Input
-              prefix={<Icon type="user" />}
+              prefix={<UserOutlined />}
               placeholder="Username"
               autoComplete="username"
             />
@@ -137,7 +137,7 @@ class Reg extends Component {
             ]
           })(
             <Input
-              prefix={<Icon type="mail" />}
+              prefix={<MailOutlined />}
               placeholder="Email"
               autoComplete="email"
             />
@@ -158,7 +158,7 @@ class Reg extends Component {
             ]
           })(
             <Input
-              prefix={<Icon type="lock" />}
+              prefix={<LockOutlined />}
               type="password"
               placeholder="Password"
               autoComplete="new-password"
@@ -180,7 +180,7 @@ class Reg extends Component {
             ]
           })(
             <Input
-              prefix={<Icon type="lock" />}
+              prefix={<LockOutlined />}
               type="password"
               placeholder="Confirm Password"
               autoComplete="new-password"
