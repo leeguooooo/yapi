@@ -67,6 +67,29 @@ export default class Project extends Component {
 
   render() {
     const { match, location } = this.props;
+    const defaultName = 'interface';
+    const subnavData = [
+      { name: '接口', path: `/project/${match.params.id}/interface/api` },
+      { name: '动态', path: `/project/${match.params.id}/activity` },
+      { name: '数据管理', path: `/project/${match.params.id}/data` },
+      { name: '设置', path: `/project/${match.params.id}/setting` }
+    ];
+
+    let content = null;
+    const pathname = location.pathname;
+    if (pathname.indexOf('/interface') !== -1) {
+      content = <Interface match={match} location={location} />;
+    } else if (pathname.indexOf('/activity') !== -1) {
+      content = <Activity match={match} />;
+    } else if (pathname.indexOf('/data') !== -1) {
+      content = <ProjectData match={match} />;
+    } else if (pathname.indexOf('/setting') !== -1) {
+      content = <Setting match={match} />;
+    } else if (pathname.indexOf('/member') !== -1) {
+      content = <ProjectMember match={match} />;
+    } else {
+      content = <Loading visible />;
+    }
 
     return (
       <div>
