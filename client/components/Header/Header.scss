@@ -53,6 +53,16 @@
     .img {
       position: static;
       transform: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      width: 32px;
+    }
+    .img svg {
+      width: 32px;
+      height: 32px;
+      display: block;
     }
     .ui-badge {
       position: absolute;
