@@ -87,7 +87,7 @@ class Login extends Component {
             pattern: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{1,})+$/
           };
     return (
-      <Form onSubmit={this.handleSubmit}>
+      <Form onSubmit={this.handleSubmit} >
         {/* 登录类型 (普通登录／LDAP登录) */}
         {isLDAP && (
           <FormItem>
