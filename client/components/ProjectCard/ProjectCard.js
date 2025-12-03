@@ -1,8 +1,7 @@
 import './ProjectCard.scss';
 import React, { PureComponent as Component } from 'react';
 import { Card, Tooltip, Modal, Alert, Input, message } from 'antd';
-import { Icon } from '@ant-design/compatible';
-import { FolderOpenOutlined } from '@ant-design/icons';
+import { FolderOpenOutlined, StarFilled, StarOutlined, CopyOutlined } from '@ant-design/icons';
 import { connect } from 'react-redux';
 import { delFollow, addFollow } from '../../reducer/modules/follow';
 import PropTypes from 'prop-types';
@@ -99,7 +98,7 @@ class ProjectCard extends Component {
         await that.props.checkProjectName(projectName, group_id);
         that.copy(projectName);
       },
-      iconType: 'copy',
+      icon: <CopyOutlined />,
       onCancel() {}
     });
   };
@@ -161,16 +160,17 @@ class ProjectCard extends Component {
             placement="rightTop"
             title={projectData.follow || inFollowPage ? '取消关注' : '添加关注'}
           >
-            <Icon
-              type={projectData.follow || inFollowPage ? 'star' : 'star-o'}
-              className={'icon ' + (projectData.follow || inFollowPage ? 'active' : '')}
-            />
+            {projectData.follow || inFollowPage ? (
+              <StarFilled className="icon active" />
+            ) : (
+              <StarOutlined className="icon" />
+            )}
           </Tooltip>
         </div>
         {isShow && (
           <div className="copy-btns" onClick={this.showConfirm}>
             <Tooltip placement="rightTop" title="复制项目">
-              <Icon type="copy" className="icon" />
+              <CopyOutlined className="icon" />
             </Tooltip>
           </div>
         )}
