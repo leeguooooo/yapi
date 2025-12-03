@@ -163,37 +163,36 @@ class ProjectList extends Component {
 
     return (
       <div style={{ paddingTop: '24px' }} className="m-panel card-panel card-panel-s project-list">
-        <Row className="project-list-header">
+        <Row className="project-list-header" align="middle">
           <Col span={16} style={{ textAlign: 'left' }}>
-            {this.props.currGroup.group_name} 分组共 ({projectData.length}) 个项目
+            <span className="project-list-title">
+              {this.props.currGroup.group_name} 分组
+            </span>
+            <span className="project-list-count">
+              共 ({projectData.length}) 个项目
+            </span>
           </Col>
-          <Col span={8}>
+          <Col span={8} style={{ textAlign: 'right' }}>
             {isShow ? (
               <Link to="/add-project">
-                <Button type="primary">添加项目</Button>
+                <Button type="primary" icon={<i className="anticon anticon-plus" />}>添加项目</Button>
               </Link>
             ) : (
               <Tooltip title="您没有权限,请联系该分组组长或管理员">
-                <Button type="primary" disabled>
+                <Button type="primary" disabled icon={<i className="anticon anticon-plus" />}>
                   添加项目
                 </Button>
               </Tooltip>
             )}
           </Col>
         </Row>
-        <Row>
-          {/* {projectData.length ? projectData.map((item, index) => {
-            return (
-              <Col xs={8} md={6} xl={4} key={index}>
-                <ProjectCard projectData={item} callbackResult={this.receiveRes} />
-              </Col>);
-          }) : <ErrMsg type="noProject" />} */}
+        <Row gutter={[24, 24]} className="project-list-content">
           {this.props.currGroup.type === 'private' ? (
             <OwnerSpace />
           ) : projectData.length ? (
             projectData.map((item, index) => {
               return (
-                <Col xs={8} lg={6} xxl={4} key={index}>
+                <Col xs={24} sm={12} md={8} lg={6} xl={4} key={index}>
                   <ProjectCard
                     projectData={item}
                     callbackResult={this.receiveRes}
@@ -203,7 +202,9 @@ class ProjectList extends Component {
               );
             })
           ) : (
-            <ErrMsg type="noProject" />
+            <div className="no-project-wrapper">
+              <ErrMsg type="noProject" />
+            </div>
           )}
         </Row>
       </div>

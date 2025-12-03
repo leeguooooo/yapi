@@ -89,83 +89,52 @@
       margin: 0px auto;
       padding: 32px;
       position: relative;
-      // box-shadow: 0 4px 6px rgba(50, 50, 93, 0.3), 0 1px 3px rgba(0, 0, 0, 0.01);
       h3 {
         font-size: 20px;
         font-weight: 500;
-        margin-bottom: 16px;
+        margin-bottom: 24px;
+        color: #333;
       }
-      .user-item-mask-top {
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        height: 100%;
-        width: 100%;
-        background: black;
-        z-index: 2;
-        opacity: 0.7;
-      }
-      .user-item-mask {
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        height: 0px;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background-color: rgba(0, 0, 0, 0.7);
-      }
+      
       .user-item {
         position: relative;
-        z-index: 3;
-        padding: 8px 0px;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
 
-        .maoboli {
-          // background-color: rgba(225,225,225,0.16);
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          left: 0px;
-          top: 0px;
+        &:last-child {
+          border-bottom: none;
         }
-      }
-    }
-    .user-item {
-      min-height: 35px;
-      line-height: 35px;
-      margin: 5px;
-      margin-left: 0px;
-      font-size: 14px;
-      #old_password,
-      #password,
-      #verify_pass {
-        margin-top: 20px;
-      }
-      #old_password {
-        margin-top: 0px;
-      }
-      .ant-col-12 {
-        .ant-input {
-          width: 60%;
-          margin-right: 16px;
+
+        .label {
+          color: rgba(0, 0, 0, 0.85);
+          font-weight: 500;
+          text-align: right;
+          padding-right: 24px;
+          &:after {
+            content: ":";
+            margin-left: 2px;
+            position: relative;
+            top: -0.5px;
+          }
         }
-      }
-      .ant-col-4 {
-        color: rgba(71, 86, 99, 0.8);
-        font-weight: 500;
-        padding: 0px 16px;
-        text-indent: 0.7em;
-        margin-right: 30px;
-        white-space: nowrap;
-        text-align: right;
-        width: 130px;
-      }
-      .text {
-        padding-right: 16px;
-      }
-      .text-button {
-        color: #657289;
-        cursor: pointer;
+
+        .text-content {
+          display: flex;
+          align-items: center;
+          .text {
+            margin-right: 12px;
+          }
+        }
+
+        .edit-content {
+          display: flex;
+          flex-direction: column;
+          max-width: 400px;
+          
+          .ant-input {
+            margin-bottom: 8px;
+          }
+        }
       }
     }
   }
@@ -174,68 +143,72 @@
     border-bottom-left-radius: 0.04rem;
     border-bottom-right-radius: 0.04rem;
   }
-  .avatar-uploader {
-    border: none;
-    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.31), 0 1px 3px rgba(0, 0, 0, 0.08);
-  }
-  .avatar-uploader,
-  .avatar-uploader-trigger {
-    width: 100px;
-    height: 100px;
-    overflow: hidden;
-    border-radius: 50px;
-  }
-  .avatar {
-    width: 100px;
-    min-height: 100px;
-  }
-  .avatarImg {
-    width: 100px;
-    border-radius: 50px;
-    overflow: hidden;
-    height: 100px;
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.31), 0 1px 3px rgba(0, 0, 0, 0.08);
-    margin-left: 60px;
-    img {
-      width: 100%;
-    }
-  }
+  
   .avatar-uploader {
     display: block;
     cursor: pointer;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+    
+    &:hover {
+      box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .avatarImg {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .avatar-box {
+    position: relative;
+    width: 100px;
     height: 100px;
   }
-  .ant-upload-list {
-    display: none;
-  }
-  .avatar-box {
-    width: 100px;
-    position: relative;
-    margin-left: 60px;
-  }
+  
   .avatarCon {
-    // background: gray;
-    padding: 16px 0px;
-    width: 100%;
-    overflow: hidden;
-    position: relative;
+    padding: 24px 0;
+    margin-bottom: 16px;
   }
 
   .avatar-uploader-trigger {
-    display: table-cell;
-    vertical-align: middle;
-    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: #f5f5f5;
     color: #999;
+    font-size: 24px;
   }
+  
   .avatarChange {
     display: block;
-    width: 300px;
+    width: 100%;
     text-align: center;
-    padding: 8px;
-    margin-left: -100px;
-    color: #ececec;
-    position: absolute;
-    top: 0px;
+    margin-top: 8px;
+    color: #999;
+    font-size: 12px;
   }
 }

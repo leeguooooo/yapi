@@ -12,7 +12,7 @@ import {
 } from '../../../../reducer/modules/interface.js';
 import { getProject } from '../../../../reducer/modules/project.js';
 import { Input, Button, Modal, message, Tree, Tooltip } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import { FolderOpenOutlined, ApiOutlined, HomeOutlined } from '@ant-design/icons';
 import AddInterfaceForm from './AddInterfaceForm';
 import AddInterfaceCatForm from './AddInterfaceCatForm';
 import axios from 'axios';
@@ -520,7 +520,7 @@ class InterfaceMenu extends Component {
     const formatCat = cat => ({
       title: (
         <span>
-          <Icon type="folder-open" /> {cat.name}
+          <FolderOpenOutlined /> {cat.name}
         </span>
       ),
       key: catKey(cat._id),
@@ -530,7 +530,7 @@ class InterfaceMenu extends Component {
         ...(cat.list || []).map(api => ({
           title: (
             <span>
-              <Icon type="api" /> {api.title}
+              <ApiOutlined /> {api.title}
             </span>
           ),
           key: `${api._id}`,
@@ -545,7 +545,7 @@ class InterfaceMenu extends Component {
     treeData.unshift({
       title: (
         <span>
-          <Icon type="home" /> 全部接口
+          <HomeOutlined /> 全部接口
         </span>
       ),
       key: 'root',

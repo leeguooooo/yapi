@@ -3,11 +3,11 @@ import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Row, Col, Button, Card } from 'antd';
-import { 
-  AppstoreOutlined, 
-  ApiOutlined, 
-  DatabaseOutlined, 
-  TeamOutlined 
+import {
+  AppstoreOutlined,
+  ApiOutlined,
+  DatabaseOutlined,
+  TeamOutlined
 } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
@@ -25,7 +25,7 @@ const HomeGuest = () => (
       <div className="m-bg-mask m-bg-mask2" />
       <div className="m-bg-mask m-bg-mask3" />
     </div>
-    
+
     <div className="main-one">
       <div className="container">
         <Row>
@@ -43,8 +43,8 @@ const HomeGuest = () => (
             </div>
           </Col>
         </Row>
-        <Row>
-          <Col lg={9} xs={24}>
+        <Row className="hero-row" align="middle" justify="center">
+          <Col lg={10} xs={24}>
             <div className="home-des animate-fade-in">
               <div className="logo">
                 <LogoSVG length="72px" />
@@ -64,9 +64,9 @@ const HomeGuest = () => (
               </div>
             </div>
           </Col>
-          <Col lg={15} xs={0} className="col-img">
+          <Col lg={14} xs={0} className="col-img">
             <div className="img-container">
-              
+              {/* Placeholder for a hero image if needed, or keep empty for the background effect */}
             </div>
           </Col>
         </Row>
@@ -79,21 +79,27 @@ const HomeGuest = () => (
         <span className="desc">
           YApi让接口开发更简单高效，让接口的管理更具可读性、可维护性，让团队协作更合理。
         </span>
-        <Row key="feat-motion-row">
-          <Col span={8} className="section-item">
-            <AppstoreOutlined className="img" />
+        <Row key="feat-motion-row" gutter={[32, 32]} className="feat-row">
+          <Col md={8} xs={24} className="section-item">
+            <div className="feat-icon-wrapper">
+              <AppstoreOutlined className="img" />
+            </div>
             <h4 className="title">项目管理</h4>
             <span className="desc">提供基本的项目分组，项目管理，接口管理功能</span>
           </Col>
-          <Col span={8} className="section-item">
-            <ApiOutlined className="img" />
+          <Col md={8} xs={24} className="section-item">
+            <div className="feat-icon-wrapper">
+              <ApiOutlined className="img" />
+            </div>
             <h4 className="title">接口管理</h4>
             <span className="desc">
               友好的接口文档，基于websocket的多人协作接口编辑功能和类postman测试工具，让多人协作成倍提升开发效率
             </span>
           </Col>
-          <Col span={8} className="section-item">
-            <DatabaseOutlined className="img" />
+          <Col md={8} xs={24} className="section-item">
+            <div className="feat-icon-wrapper">
+              <DatabaseOutlined className="img" />
+            </div>
             <h4 className="title">MockServer</h4>
             <span className="desc">基于Mockjs，使用简单功能强大</span>
           </Col>
@@ -353,7 +359,7 @@ class Home extends Component {
     }
   }
 
-  componentDidMount() {}
+  componentDidMount() { }
   static propTypes = {
     introList: PropTypes.array,
     login: PropTypes.bool,
