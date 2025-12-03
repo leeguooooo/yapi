@@ -94,7 +94,7 @@ export default class GroupList extends Component {
     }
     if (!currGroup) {
       currGroup = this.props.groupList[0] || { group_name: '', group_desc: '' };
-      this.props.history.replace(`${currGroup._id}`);
+      this.props.history.replace(`/group/${currGroup._id}`);
     }
     this.setState({ groupList: this.props.groupList });
     this.props.setCurrGroup(currGroup);
@@ -172,7 +172,7 @@ export default class GroupList extends Component {
       return +group._id === +groupId;
     });
     this.props.setCurrGroup(currGroup);
-    this.props.history.replace(`${currGroup._id}`);
+    this.props.history.replace(`/group/${currGroup._id}`);
     this.props.fetchNewsData(groupId, 'group', 1, 10);
   }
 

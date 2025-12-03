@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { Form } from 'client/components/LegacyForm';
 import { UserOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
 import { Button, Input, message } from 'antd';
-import axios from 'axios';
+import { regActions } from 'client/reducer/modules/user';
 import { withRouter } from 'react-router-dom';
 const FormItem = Form.Item;
 
@@ -12,7 +12,7 @@ const FormItem = Form.Item;
   return {
     loginData: state.user
   };
-})
+}, { regActions })
 @withRouter
 class Reg extends Component {
   constructor(props) {
@@ -24,10 +24,11 @@ class Reg extends Component {
 
   static propTypes = {
     form: PropTypes.object,
-    history: PropTypes.object
+    history: PropTypes.object,
+    regActions: PropTypes.func
   };
 
-  handleSubmit = e => {
+  handleSubmit = async e => {
     if (e && e.preventDefault) e.preventDefault();
     let values = this.props.form.getFieldsValue();
     // 兜底：如果未收集到值（受控注册问题），直接从 DOM 读取输入框
@@ -73,22 +74,21 @@ class Reg extends Component {
       confirm
     };
 
-    axios
-      .post('/api/user/reg', payload)
-      .then(res => {
-        const { data } = res;
-        if (data?.errcode === 0) {
-          message.success('注册成功! ');
-          this.props.history.replace('/group');
-        } else {
-          message.error(data?.errmsg || '注册失败');
-        }
-      })
-      .catch(err => {
-        // eslint-disable-next-line no-console
-        console.error('register failed', err);
-        message.error('注册失败');
-      });
+    try {
+      // 通过 redux action 派发，确保全局登录态同步为已登录
+      const res = await this.props.regActions(payload);
+      const data = res?.data || res?.value?.data || res?.payload?.data || res;
+      if (data?.errcode === 0) {
+        message.success('注册成功! ');
+        this.props.history.replace('/group');
+      } else {
+        message.error(data?.errmsg || '注册失败');
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('register failed', err);
+      message.error('注册失败');
+    }
   };
 
   checkPassword = (rule, value, callback) => {

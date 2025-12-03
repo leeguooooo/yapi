@@ -42,6 +42,15 @@ const initialState = {
 export default (state = initialState, action) => {
   switch (action.type) {
     case GET_LOGIN_STATE: {
+      if (action.error) {
+        return {
+          ...state,
+          isLogin: false,
+          loginState: GUEST_STATUS,
+          isLDAP: false,
+          canRegister: true
+        };
+      }
       return {
         ...state,
         isLogin: action.payload.data.errcode == 0,
