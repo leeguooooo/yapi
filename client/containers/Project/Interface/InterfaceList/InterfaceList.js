@@ -213,9 +213,9 @@ class InterfaceList extends Component {
   // };
 
   render() {
-    let tag = this.props.curProject.tag;
+    const tag = this.props.curProject.tag || [];
     let tagFilter = tag.map(item => {
-      return {text: item.name, value: item.name};
+      return { text: item.name, value: item.name };
     });
 
     const columns = [
@@ -323,7 +323,7 @@ class InterfaceList extends Component {
         key: 'tag',
         width: 14,
         render: text => {
-          let textMsg = text.length > 0 ? text.join('\n') : '未设置';
+          let textMsg = Array.isArray(text) && text.length > 0 ? text.join('\n') : '未设置';
           return <div className="table-desc">{textMsg}</div>;
         },
         filters: tagFilter,
