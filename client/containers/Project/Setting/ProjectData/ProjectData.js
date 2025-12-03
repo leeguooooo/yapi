@@ -324,7 +324,7 @@ class ProjectData extends Component {
                     href="https://leeguooooo.github.io/yapi/documents/data.html"
                   >
                     <Tooltip title="点击查看文档">
-                      <Icon type="question-circle-o" />
+                      <QuestionCircleOutlined />
                     </Tooltip>
                   </a>
                 </h3>
@@ -395,7 +395,7 @@ class ProjectData extends Component {
                       </div>
                     }
                   >
-                    <Icon type="question-circle-o" />
+                    <QuestionCircleOutlined />
                   </Tooltip>{' '}
                 </span>
                 <Select value={this.state.dataSync} onChange={this.onChange}>
@@ -411,7 +411,7 @@ class ProjectData extends Component {
                   <span className="label">
                     开启url导入&nbsp;
                     <Tooltip title="swagger url 导入">
-                      <Icon type="question-circle-o" />
+                    <QuestionCircleOutlined />
                     </Tooltip>{' '}
                     &nbsp;&nbsp;
                   </span>
@@ -514,7 +514,7 @@ class ProjectData extends Component {
                     >
                       添加wiki&nbsp;
                       <Tooltip title="开启后 html 和 markdown 数据导出会带上wiki数据">
-                        <Icon type="question-circle-o" />
+                        <QuestionCircleOutlined />
                       </Tooltip>{' '}
                     </Checkbox>
                   </div>
