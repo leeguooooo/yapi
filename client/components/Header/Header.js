@@ -4,13 +4,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Layout, Dropdown, message, Tooltip, Popover, Tag } from 'antd';
-import {
-  LogoutOutlined,
-  StarFilled,
-  PlusCircleOutlined,
-  QuestionCircleOutlined,
-  DownOutlined
-} from '@ant-design/icons';
+import { LogoutOutlined, StarFilled, PlusCircleOutlined, QuestionCircleOutlined, DownOutlined } from '@ant-design/icons';
 import { Icon } from '@ant-design/compatible';
 import { checkLoginState, logoutActions, loginTypeAction } from '../../reducer/modules/user';
 import { changeMenuItem } from '../../reducer/modules/menu';
@@ -111,59 +105,80 @@ const ToolUser = props => {
       props.logout(info.domEvent);
     }
   };
+  const showFollowGuide = props.studyTip === 1 && !props.study;
+  const showAddGuide = props.studyTip === 2 && !props.study;
+  const showDocGuide = props.studyTip === 3 && !props.study;
   return (
     <ul>
       <li className="toolbar-li item-search">
         <Srch groupList={props.groupList} />
       </li>
-      <Popover
-        overlayClassName="popover-index"
-        content={<GuideBtns />}
-        title={tipFollow}
-        placement="bottomRight"
-        arrowPointAtCenter
-        visible={props.studyTip === 1 && !props.study}
-      >
-        <Tooltip placement="bottom" title={'我的关注'}>
-          <li className="toolbar-li">
+      <li className="toolbar-li">
+        <Popover
+          overlayClassName="popover-index"
+          content={<GuideBtns />}
+          title={tipFollow}
+          placement="bottomRight"
+          arrowPointAtCenter
+          visible={showFollowGuide}
+        >
+          {showFollowGuide ? (
             <Link to="/follow">
-              <Icon className="dropdown-link" style={{ fontSize: 16 }} type="star" />
+              <StarFilled className="dropdown-link" style={{ fontSize: 16 }} />
             </Link>
-          </li>
-        </Tooltip>
-      </Popover>
-      <Popover
-        overlayClassName="popover-index"
-        content={<GuideBtns />}
-        title={tipAdd}
-        placement="bottomRight"
-        arrowPointAtCenter
-        visible={props.studyTip === 2 && !props.study}
-      >
-        <Tooltip placement="bottom" title={'新建项目'}>
-          <li className="toolbar-li">
+          ) : (
+            <Tooltip placement="bottom" title={'我的关注'}>
+              <Link to="/follow">
+                <StarFilled className="dropdown-link" style={{ fontSize: 16 }} />
+              </Link>
+            </Tooltip>
+          )}
+        </Popover>
+      </li>
+      <li className="toolbar-li">
+        <Popover
+          overlayClassName="popover-index"
+          content={<GuideBtns />}
+          title={tipAdd}
+          placement="bottomRight"
+          arrowPointAtCenter
+          visible={showAddGuide}
+        >
+          {showAddGuide ? (
             <Link to="/add-project">
-              <Icon className="dropdown-link" style={{ fontSize: 16 }} type="plus-circle" />
+              <PlusCircleOutlined className="dropdown-link" style={{ fontSize: 16 }} />
             </Link>
-          </li>
-        </Tooltip>
-      </Popover>
-      <Popover
-        overlayClassName="popover-index"
-        content={<GuideBtns isLast={true} />}
-        title={tipDoc}
-        placement="bottomRight"
-        arrowPointAtCenter
-        visible={props.studyTip === 3 && !props.study}
-      >
-        <Tooltip placement="bottom" title={'使用文档'}>
-          <li className="toolbar-li">
+          ) : (
+            <Tooltip placement="bottom" title={'新建项目'}>
+              <Link to="/add-project">
+                <PlusCircleOutlined className="dropdown-link" style={{ fontSize: 16 }} />
+              </Link>
+            </Tooltip>
+          )}
+        </Popover>
+      </li>
+      <li className="toolbar-li">
+        <Popover
+          overlayClassName="popover-index"
+          content={<GuideBtns isLast={true} />}
+          title={tipDoc}
+          placement="bottomRight"
+          arrowPointAtCenter
+          visible={showDocGuide}
+        >
+          {showDocGuide ? (
             <a target="_blank" href="https://leeguooooo.github.io/yapi" rel="noopener noreferrer">
-          <QuestionCircleOutlined className="dropdown-link" style={{ fontSize: 16 }} />
+              <QuestionCircleOutlined className="dropdown-link" style={{ fontSize: 16 }} />
             </a>
-          </li>
-        </Tooltip>
-      </Popover>
+          ) : (
+            <Tooltip placement="bottom" title={'使用文档'}>
+              <a target="_blank" href="https://leeguooooo.github.io/yapi" rel="noopener noreferrer">
+                <QuestionCircleOutlined className="dropdown-link" style={{ fontSize: 16 }} />
+              </a>
+            </Tooltip>
+          )}
+        </Popover>
+      </li>
       <li className="toolbar-li">
         <Dropdown
           placement="bottomRight"
