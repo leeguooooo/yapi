@@ -1,6 +1,6 @@
 import React, { PureComponent as Component } from 'react';
 import { Upload, message, Select, Tooltip, Button, Spin, Switch, Modal, Radio, Input, Checkbox } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import { QuestionCircleOutlined, ExclamationCircleOutlined, InboxOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import './ProjectData.scss';
@@ -58,7 +58,7 @@ class ProjectData extends Component {
     this.state = {
       selectCatid: '',
       menuList: [],
-      curImportType: 'swagger',
+      curImportType: null,
       curExportType: null,
       showLoading: false,
       dataSync: 'merge',
@@ -81,16 +81,22 @@ class ProjectData extends Component {
 
   componentDidMount() {
     axios.get(`/api/interface/getCatMenu?project_id=${this.props.match.params.id}`).then(data => {
-      if (data.data.errcode === 0) {
+      if (data.data.errcode === 0 && Array.isArray(data.data.data)) {
         let menuList = data.data.data;
         this.setState({
           menuList: menuList,
-          selectCatid: menuList[0]._id
+          selectCatid: menuList[0]?._id || ''
         });
       }
     });
     plugin.emitHook('import_data', importDataModule);
     plugin.emitHook('export_data', exportDataModule, this.props.match.params.id);
+    const importKeys = Object.keys(importDataModule);
+    const exportKeys = Object.keys(exportDataModule);
+    this.setState({
+      curImportType: importKeys.length ? importKeys[0] : null,
+      curExportType: exportKeys.length ? exportKeys[0] : null
+    });
   }
 
   selectChange(value) {
@@ -127,7 +133,8 @@ class ProjectData extends Component {
 
   // 本地文件上传
   handleFile = info => {
-    if (!this.state.curImportType) {
+    const currentImport = this.state.curImportType && importDataModule[this.state.curImportType];
+    if (!currentImport) {
       return message.error('请选择导入数据的方式');
     }
     if (this.state.selectCatid) {
@@ -135,7 +142,7 @@ class ProjectData extends Component {
       let reader = new FileReader();
       reader.readAsText(info.file);
       reader.onload = async res => {
-        res = await importDataModule[this.state.curImportType].run(res.target.result);
+        res = await currentImport.run(res.target.result);
         if (this.state.dataSync === 'merge') {
           // 开启同步
           this.showConfirm(res);
@@ -163,12 +170,12 @@ class ProjectData extends Component {
       typeid,
       apis: apiCollections
     });
-    let domainData = result.payload.data.data;
+    let domainData = (result.payload && result.payload.data && result.payload.data.data) || [];
     const ref = confirm({
       title: '您确认要进行数据同步????',
       width: 600,
       okType: 'danger',
-      iconType: 'exclamation-circle',
+      icon: <ExclamationCircleOutlined />,
       className: 'dataImport-confirm',
       okText: '确认',
       cancelText: '取消',
@@ -282,19 +289,20 @@ class ProjectData extends Component {
    * @memberof ProjectData
    */
   render() {
+    const currentImport = this.state.curImportType && importDataModule[this.state.curImportType];
+    const currentExport =
+      this.state.curExportType && exportDataModule[this.state.curExportType];
+
     const uploadMess = {
       name: 'interfaceData',
       multiple: true,
       showUploadList: false,
       action: '/api/interface/interUpload',
-      customRequest: this.handleFile,
+      customRequest: currentImport ? this.handleFile : undefined,
       onChange: this.uploadChange
     };
 
-    let exportUrl =
-      this.state.curExportType &&
-      exportDataModule[this.state.curExportType] &&
-      exportDataModule[this.state.curExportType].route;
+    let exportUrl = currentExport && currentExport.route;
     let exportHref = handleExportRouteParams(
       exportUrl,
       this.state.exportContent,
@@ -334,6 +342,11 @@ class ProjectData extends Component {
                       </Option>
                     );
                   })}
+                  {!Object.keys(importDataModule).length && (
+                    <Option key="empty" disabled>
+                      暂无可用导入方式
+                    </Option>
+                  )}
                 </Select>
               </div>
               <div className="catidSelect">
@@ -355,6 +368,11 @@ class ProjectData extends Component {
                       </Option>
                     );
                   })}
+                  {!this.state.menuList.length && (
+                    <Option key="empty" disabled>
+                      暂无分类
+                    </Option>
+                  )}
                 </Select>
               </div>
               <div className="dataSync">
@@ -388,7 +406,7 @@ class ProjectData extends Component {
 
                 {/* <Switch checked={this.state.dataSync} onChange={this.onChange} /> */}
               </div>
-              {this.state.curImportType === 'swagger' && (
+                {this.state.curImportType === 'swagger' && (
                 <div className="dataSync">
                   <span className="label">
                     开启url导入&nbsp;
@@ -412,6 +430,7 @@ class ProjectData extends Component {
                     className="url-btn"
                     onClick={this.onUrlUpload}
                     loading={this.state.showLoading}
+                    disabled={!currentImport}
                   >
                     上传
                   </Button>
@@ -421,7 +440,7 @@ class ProjectData extends Component {
                   <Spin spinning={this.state.showLoading} tip="上传中...">
                     <Dragger {...uploadMess}>
                       <p className="ant-upload-drag-icon">
-                        <Icon type="inbox" />
+                        <InboxOutlined />
                       </p>
                       <p className="ant-upload-text">点击或者拖拽文件到上传区域</p>
                       <p
@@ -431,8 +450,8 @@ class ProjectData extends Component {
                         }}
                         dangerouslySetInnerHTML={{
                           __html: this.state.curImportType
-                            ? importDataModule[this.state.curImportType].desc
-                            : null
+                            ? currentImport?.desc || '请先选择导入方式'
+                            : '请先选择导入方式'
                         }}
                       />
                     </Dragger>
@@ -452,7 +471,7 @@ class ProjectData extends Component {
                 <h3>数据导出</h3>
               </div>
               <div className="dataImportTile">
-                <Select placeholder="请选择导出数据的方式" onChange={this.handleExportType}>
+                <Select placeholder="请选择导出数据的方式" onChange={this.handleExportType} value={this.state.curExportType}>
                   {Object.keys(exportDataModule).map(name => {
                     return (
                       <Option key={name} value={name}>
@@ -460,6 +479,11 @@ class ProjectData extends Component {
                       </Option>
                     );
                   })}
+                  {!Object.keys(exportDataModule).length && (
+                    <Option key="empty" disabled>
+                      暂无可用导出方式
+                    </Option>
+                  )}
                 </Select>
               </div>
 
@@ -470,9 +494,9 @@ class ProjectData extends Component {
                 </RadioGroup>
               </div>
               <div className="export-content">
-                {this.state.curExportType ? (
+                {currentExport ? (
                   <div>
-                    <p className="export-desc">{exportDataModule[this.state.curExportType].desc}</p>
+                    <p className="export-desc">{currentExport.desc}</p>
                     <a 
                       target="_blank"
                       rel="noopener noreferrer"
