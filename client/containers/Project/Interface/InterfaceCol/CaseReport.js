@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col, Tabs } from 'antd';
-const TabPane = Tabs.TabPane;
 function jsonFormat(json) {
   // console.log('json',json)
   if (json && typeof json === 'object') {
@@ -23,10 +22,12 @@ const CaseReport = function(props) {
     });
   }
 
-  return (
-    <div className="report">
-      <Tabs defaultActiveKey="request">
-        <TabPane className="case-report-pane" tab="Request" key="request">
+  const items = [
+    {
+      key: 'request',
+      label: 'Request',
+      children: (
+        <>
           <Row className="case-report">
             <Col className="case-report-title" span="6">
               Url
@@ -63,9 +64,15 @@ const CaseReport = function(props) {
               </Col>
             </Row>
           ) : null}
-        </TabPane>
-        <TabPane className="case-report-pane" tab="Response" key="response">
-          <Row  className="case-report">
+        </>
+      )
+    },
+    {
+      key: 'response',
+      label: 'Response',
+      children: (
+        <>
+          <Row className="case-report">
             <Col className="case-report-title" span="6">
               HttpCode
             </Col>
@@ -93,20 +100,28 @@ const CaseReport = function(props) {
               </Col>
             </Row>
           ) : null}
-        </TabPane>
-        <TabPane className="case-report-pane" tab="验证结果" key="valid">
-          {props.validRes ? (
-            <Row className="case-report">
-              <Col className="case-report-title" span="6">
-                验证结果
-              </Col>
-              <Col span="18"><pre>
-                {validRes}  
-              </pre></Col>
-            </Row>
-          ) : null}
-        </TabPane>
-      </Tabs>
+        </>
+      )
+    },
+    {
+      key: 'valid',
+      label: '验证结果',
+      children: props.validRes ? (
+        <Row className="case-report">
+          <Col className="case-report-title" span="6">
+            验证结果
+          </Col>
+          <Col span="18">
+            <pre>{validRes}</pre>
+          </Col>
+        </Row>
+      ) : null
+    }
+  ];
+
+  return (
+    <div className="report">
+      <Tabs defaultActiveKey="request" items={items} />
     </div>
   );
 };

@@ -13,6 +13,7 @@ import {
   Switch,
   Tooltip
 } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import PropTypes from 'prop-types';
 import { fetchGroupMsg } from '../../../../reducer/modules/group';
 import { connect } from 'react-redux';
@@ -266,10 +267,19 @@ class ProjectMember extends Component {
         title:
           this.state.role === 'owner' || this.state.role === 'admin' ? (
             <div className="btn-container">
-              <Button className="btn" type="primary" icon="plus" onClick={this.showAddMemberModal}>
+              <Button
+                className="btn"
+                type="primary"
+                icon={<Icon type="plus" />}
+                onClick={this.showAddMemberModal}
+              >
                 添加成员
               </Button>
-              <Button className="btn" icon="plus" onClick={this.showImportMemberModal}>
+              <Button
+                className="btn"
+                icon={<Icon type="plus" />}
+                onClick={this.showImportMemberModal}
+              >
                 批量导入成员
               </Button>
             </div>
@@ -298,7 +308,11 @@ class ProjectMember extends Component {
                   okText="确定"
                   cancelText=""
                 >
-                  <Button type="danger" icon="delete" className="btn-danger" />
+                  <Button
+                    type="danger"
+                    icon={<Icon type="delete" />}
+                    className="btn-danger"
+                  />
                 </Popconfirm>
               </div>
             );

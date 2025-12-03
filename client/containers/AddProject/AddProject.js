@@ -203,7 +203,12 @@ class ProjectList extends Component {
           </Form>
           <Row>
             <Col sm={{ offset: 6 }} lg={{ offset: 3 }}>
-              <Button className="m-btn" icon="plus" type="primary" onClick={this.handleOk}>
+              <Button
+                className="m-btn"
+                icon={<Icon type="plus" />}
+                type="primary"
+                onClick={this.handleOk}
+              >
                 创建项目
               </Button>
             </Col>

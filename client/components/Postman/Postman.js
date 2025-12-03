@@ -698,7 +698,7 @@ export default class Run extends Component {
             <Button
               style={{ display: 'none' }}
               type="primary"
-              icon="plus"
+              icon={<Icon type="plus" />}
               onClick={this.addPathParam}
             >
               添加Path参数
@@ -748,7 +748,12 @@ export default class Run extends Component {
                 </div>
               );
             })}
-            <Button style={{ display: 'none' }} type="primary" icon="plus" onClick={this.addQuery}>
+            <Button
+              style={{ display: 'none' }}
+              type="primary"
+              icon={<Icon type="plus" />}
+              onClick={this.addQuery}
+            >
               添加Query参数
             </Button>
           </Panel>
@@ -783,7 +788,12 @@ export default class Run extends Component {
                 </div>
               );
             })}
-            <Button style={{ display: 'none' }} type="primary" icon="plus" onClick={this.addHeader}>
+            <Button
+              style={{ display: 'none' }}
+              type="primary"
+              icon={<Icon type="plus" />}
+              onClick={this.addHeader}
+            >
               添加Header
             </Button>
           </Panel>
@@ -886,7 +896,7 @@ export default class Run extends Component {
                   <Button
                     style={{ display: 'none' }}
                     type="primary"
-                    icon="plus"
+                    icon={<Icon type="plus" />}
                     onClick={this.addBody}
                   >
                     添加Form参数

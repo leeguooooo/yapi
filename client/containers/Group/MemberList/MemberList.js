@@ -2,6 +2,7 @@ import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Table, Select, Button, Modal, Row, Col, message, Popconfirm } from 'antd';
+import { Icon } from '@ant-design/compatible';
 import { Link } from 'react-router-dom';
 import './MemberList.scss';
 import { autobind } from 'core-decorators';
@@ -243,7 +244,11 @@ class MemberList extends Component {
                   okText="确定"
                   cancelText=""
                 >
-                  <Button type="danger" icon="delete" className="btn-danger" />
+                  <Button
+                    type="danger"
+                    icon={<Icon type="delete" />}
+                    className="btn-danger"
+                  />
                   {/* <Icon type="delete" className="btn-danger"/> */}
                 </Popconfirm>
               </div>

@@ -269,7 +269,12 @@ class GroupSetting extends Component {
         </Row>
         <Row type="flex" justify="center" className="row save">
           <Col span={4} className="save-button">
-            <Button className="m-btn btn-save" icon="save" type="primary" onClick={this.editGroup}>
+            <Button
+              className="m-btn btn-save"
+              icon={<Icon type="save" />}
+              type="primary"
+              onClick={this.editGroup}
+            >
               保 存
             </Button>
           </Col>

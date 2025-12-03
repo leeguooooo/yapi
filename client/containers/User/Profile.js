@@ -224,11 +224,8 @@ class Profile extends Component {
     // 用户名信息修改
     if (this.state.usernameEdit === false) {
       userNameEditHtml = (
-        <div>
-          <span className="text">{userinfo.username}</span>&nbsp;&nbsp;
-          {/*<span className="text-button"  onClick={() => { this.handleEdit('usernameEdit', true) }}><Icon type="edit" />修改</span>*/}
-          {/* {btn} */}
-          {/* 站点登陆才能编辑 */}
+        <div className="text-content">
+          <span className="text">{userinfo.username}</span>
           {userType && (
             <EditButton
               userType={userType}
@@ -242,7 +239,7 @@ class Profile extends Component {
       );
     } else {
       userNameEditHtml = (
-        <div>
+        <div className="edit-content">
           <Input
             value={_userinfo.username}
             name="username"
@@ -274,11 +271,8 @@ class Profile extends Component {
     // 邮箱信息修改
     if (this.state.emailEdit === false) {
       emailEditHtml = (
-        <div>
-          <span className="text">{userinfo.email}</span>&nbsp;&nbsp;
-          {/*<span className="text-button" onClick={() => { this.handleEdit('emailEdit', true) }} ><Icon type="edit" />修改</span>*/}
-          {/* {btn} */}
-          {/* 站点登陆才能编辑 */}
+        <div className="text-content">
+          <span className="text">{userinfo.email}</span>
           {userType && (
             <EditButton
               admin={userinfo.role === 'admin'}
@@ -292,7 +286,7 @@ class Profile extends Component {
       );
     } else {
       emailEditHtml = (
-        <div>
+        <div className="edit-content">
           <Input
             placeholder="Email"
             value={_userinfo.email}
@@ -324,8 +318,8 @@ class Profile extends Component {
 
     if (this.state.roleEdit === false) {
       roleEditHtml = (
-        <div>
-          <span className="text">{roles[userinfo.role]}</span>&nbsp;&nbsp;
+        <div className="text-content">
+          <span className="text">{roles[userinfo.role]}</span>
         </div>
       );
     } else {
@@ -354,18 +348,19 @@ class Profile extends Component {
       secureEditHtml = btn;
     } else {
       secureEditHtml = (
-        <div>
+        <div className="edit-content">
           <Input
             style={{
-              display: this.props.curRole === 'admin' && userinfo.role != 'admin' ? 'none' : ''
+              display: this.props.curRole === 'admin' && userinfo.role != 'admin' ? 'none' : '',
+              marginBottom: 8
             }}
             placeholder="旧的密码"
             type="password"
             name="old_password"
             id="old_password"
           />
-          <Input placeholder="新的密码" type="password" name="password" id="password" />
-          <Input placeholder="确认密码" type="password" name="verify_pass" id="verify_pass" />
+          <Input placeholder="新的密码" type="password" name="password" id="password" style={{ marginBottom: 8 }} />
+          <Input placeholder="确认密码" type="password" name="verify_pass" id="verify_pass" style={{ marginBottom: 8 }} />
           <ButtonGroup className="edit-buttons">
             <Button
               className="edit-button"
@@ -391,8 +386,9 @@ class Profile extends Component {
             <h3>{userinfo.username} 资料设置</h3>
           )}
 
-          <Row className="avatarCon" type="flex" justify="start">
-            <Col span={24}>
+          <Row className="avatarCon" type="flex" justify="start" align="middle">
+            <Col span={4} className="label">头像</Col>
+            <Col span={20}>
               {userinfo.uid === this.props.curUid ? (
                 <AvatarUpload uid={userinfo.uid}>点击上传头像</AvatarUpload>
               ) : (
@@ -402,57 +398,51 @@ class Profile extends Component {
               )}
             </Col>
           </Row>
-          <Row className="user-item" type="flex" justify="start">
-            <div className="maoboli" />
-            <Col span={4}>用户id</Col>
-            <Col span={12}>{userinfo.uid}</Col>
+          <Row className="user-item" type="flex" justify="start" align="middle">
+            <Col span={4} className="label">用户id</Col>
+            <Col span={20}>{userinfo.uid}</Col>
           </Row>
-          <Row className="user-item" type="flex" justify="start">
-            <div className="maoboli" />
-            <Col span={4}>用户名</Col>
-            <Col span={12}>{userNameEditHtml}</Col>
+          <Row className="user-item" type="flex" justify="start" align="middle">
+            <Col span={4} className="label">用户名</Col>
+            <Col span={20}>{userNameEditHtml}</Col>
           </Row>
-          <Row className="user-item" type="flex" justify="start">
-            <div className="maoboli" />
-            <Col span={4}>Email</Col>
-            <Col span={12}>{emailEditHtml}</Col>
+          <Row className="user-item" type="flex" justify="start" align="middle">
+            <Col span={4} className="label">Email</Col>
+            <Col span={20}>{emailEditHtml}</Col>
           </Row>
           <Row
             className="user-item"
             style={{ display: this.props.curRole === 'admin' ? '' : 'none' }}
             type="flex"
             justify="start"
+            align="middle"
           >
-            <div className="maoboli" />
-            <Col span={4}>角色</Col>
-            <Col span={12}>{roleEditHtml}</Col>
+            <Col span={4} className="label">角色</Col>
+            <Col span={20}>{roleEditHtml}</Col>
           </Row>
           <Row
             className="user-item"
             style={{ display: this.props.curRole === 'admin' ? '' : 'none' }}
             type="flex"
             justify="start"
+            align="middle"
           >
-            <div className="maoboli" />
-            <Col span={4}>登陆方式</Col>
-            <Col span={12}>{userinfo.type === 'site' ? '站点登陆' : '第三方登陆'}</Col>
+            <Col span={4} className="label">登陆方式</Col>
+            <Col span={20}>{userinfo.type === 'site' ? '站点登陆' : '第三方登陆'}</Col>
           </Row>
-          <Row className="user-item" type="flex" justify="start">
-            <div className="maoboli" />
-            <Col span={4}>创建账号时间</Col>
-            <Col span={12}>{formatTime(userinfo.add_time)}</Col>
+          <Row className="user-item" type="flex" justify="start" align="middle">
+            <Col span={4} className="label">创建账号时间</Col>
+            <Col span={20}>{formatTime(userinfo.add_time)}</Col>
           </Row>
-          <Row className="user-item" type="flex" justify="start">
-            <div className="maoboli" />
-            <Col span={4}>更新账号时间</Col>
-            <Col span={12}>{formatTime(userinfo.up_time)}</Col>
+          <Row className="user-item" type="flex" justify="start" align="middle">
+            <Col span={4} className="label">更新账号时间</Col>
+            <Col span={20}>{formatTime(userinfo.up_time)}</Col>
           </Row>
 
           {userType ? (
-            <Row className="user-item" type="flex" justify="start">
-              <div className="maoboli" />
-              <Col span={4}>密码</Col>
-              <Col span={12}>{secureEditHtml}</Col>
+            <Row className="user-item" type="flex" justify="start" align="top">
+              <Col span={4} className="label">密码</Col>
+              <Col span={20}>{secureEditHtml}</Col>
             </Row>
           ) : (
             ''

@@ -369,7 +369,7 @@ class ProjectEnvContent extends Component {
         <div className="btnwrap-changeproject">
           <Button
             className="m-btn btn-save"
-            icon="save"
+            icon={<Icon type="save" />}
             type="primary"
             size="large"
             onClick={this.handleOk}
