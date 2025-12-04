@@ -27,7 +27,9 @@ export default class Srch extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      options: []
+      options: [],
+      open: false,
+      value: ''
     };
   }
 
@@ -45,6 +47,7 @@ export default class Srch extends Component {
 
   onSelect = async (value, option) => {
     const { type } = option;
+    this.setState({ open: false, value: '', options: [] });
     if (type === '分组') {
       this.props.changeMenuItem('/group');
       this.props.history.push('/group/' + option.id);
@@ -61,9 +64,20 @@ export default class Srch extends Component {
   };
 
   handleSearch = value => {
+    const query = value.trim();
+    this.setState({ value });
+
+    if (!query) {
+      this.setState({ options: [], open: false });
+      return;
+    }
+
     axios
-      .get('/api/project/search?q=' + value)
+      .get('/api/project/search?q=' + encodeURIComponent(query))
       .then(res => {
+        if (this.state.value.trim() !== query) {
+          return;
+        }
         if (res.data && res.data.errcode === 0) {
           const options = [];
           for (let title in res.data.data) {
@@ -101,30 +115,37 @@ export default class Srch extends Component {
             });
           }
           this.setState({
-            options
+            options,
+            open: options.length > 0
           });
         } else {
+          this.setState({ options: [], open: false });
           console.log('查询项目或分组失败');
         }
       })
       .catch(err => {
+        this.setState({ options: [], open: false });
         console.log(err);
       });
   };
 
-  // getDataSource(groupList){
-  //   const groupArr =[];
-  //   groupList.forEach(item =>{
-  //     groupArr.push("group: "+ item["group_name"]);
-  //   })
-  //   return groupArr;
-  // }
+  handleFocus = () => {
+    const { value, options } = this.state;
+    if (value.trim() && options.length > 0) {
+      this.setState({ open: true });
+    }
+  };
+
+  handleBlur = () => {
+    this.setState({ open: false });
+  };
 
   render() {
-    const { options } = this.state;
+    const { options, open, value } = this.state;
+    const searchWidth = 180;
 
     return (
-      <div className="search-wrapper">
+      <div className="search-wrapper" style={{ width: searchWidth }}>
         <AutoComplete
           className="search-dropdown"
           options={options}
@@ -132,15 +153,17 @@ export default class Srch extends Component {
           defaultActiveFirstOption={false}
           onSelect={this.onSelect}
           onSearch={this.handleSearch}
+          value={value}
           filterOption={false}
-          // filterOption={(inputValue, option) =>
-          //   option.props.children.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
-          // }
+          open={open}
         >
           <Input
             prefix={<SearchOutlined className="srch-icon" />}
             placeholder="搜索分组/项目/接口"
             className="search-input"
+            allowClear
+            onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
           />
         </AutoComplete>
       </div>

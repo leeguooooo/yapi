@@ -68,18 +68,28 @@ export default class Group extends Component {
   render() {
     if (this.state.groupId === -1) return <Spin />;
     const GroupContent = (
-      <Layout style={{ minHeight: 'calc(100vh - 100px)', marginLeft: '24px', marginTop: '24px' }}>
-        <Sider style={{ height: '100%' }} width={300}>
-          <div className="logo" />
+      <Layout
+        style={{
+          minHeight: 'calc(100vh - 100px)',
+          marginLeft: '24px',
+          marginTop: '24px',
+          background: 'transparent'
+        }}
+      >
+        <Sider
+          theme="light"
+          style={{ height: '100%', background: '#f5f7fb', paddingRight: '0' }}
+          width={300}
+        >
           <GroupList />
         </Sider>
-        <Layout>
+        <Layout style={{ background: 'transparent' }}>
           <Content
             style={{
               height: '100%',
               margin: '0 24px 0 16px',
               overflow: 'initial',
-              backgroundColor: '#fff'
+              backgroundColor: 'transparent'
             }}
           >
             <Tabs

@@ -70,6 +70,25 @@ class ProjectList extends Component {
     });
   };
 
+  syncGroupsFromProps(nextProps) {
+    const list = nextProps.groupList || [];
+    const accessList = list.filter(
+      item => item.role === 'dev' || item.role === 'owner' || item.role === 'admin'
+    );
+    const first = (accessList[0] || list[0])?._id;
+    this.setState(
+      {
+        groupList: list,
+        currGroupId: first ? String(first) : null
+      },
+      () => {
+        if (first) {
+          this.props.form.setFieldsValue({ group: String(first) });
+        }
+      }
+    );
+  }
+
   // 确认添加项目
   @autobind
   handleOk(e) {
@@ -99,14 +118,18 @@ class ProjectList extends Component {
     if (this.props.groupList.length === 0) {
       return null;
     }
-    this.setState({
-      currGroupId: this.props.currGroup._id ? this.props.currGroup._id : this.props.groupList[0]._id
-    });
-    this.setState({ groupList: this.props.groupList });
+    this.syncGroupsFromProps(this.props);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.groupList !== this.props.groupList) {
+      this.syncGroupsFromProps(this.props);
+    }
   }
 
   render() {
     const { getFieldDecorator } = this.props.form;
+    const { groupList, currGroupId } = this.state;
     return (
       <div className="g-row">
         <div className="g-row m-container">
@@ -119,7 +142,7 @@ class ProjectList extends Component {
 
             <FormItem {...formItemLayout} label="所属分组">
               {getFieldDecorator('group', {
-                initialValue: this.state.currGroupId + '',
+                initialValue: currGroupId ? String(currGroupId) : undefined,
                 rules: [
                   {
                     required: true,
@@ -128,7 +151,7 @@ class ProjectList extends Component {
                 ]
               })(
                 <Select>
-                  {this.state.groupList.map((item, index) => (
+                  {groupList.map((item, index) => (
                     <Option
                       disabled={
                         !(item.role === 'dev' || item.role === 'owner' || item.role === 'admin')

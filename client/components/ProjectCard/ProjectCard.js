@@ -1,6 +1,6 @@
 import './ProjectCard.scss';
 import React, { PureComponent as Component } from 'react';
-import { Card, Tooltip, Modal, Alert, Input, message } from 'antd';
+import { Card, Tooltip, Modal, Alert, Input, message, Avatar } from 'antd';
 import { FolderOpenOutlined, StarFilled, StarOutlined, CopyOutlined } from '@ant-design/icons';
 import { connect } from 'react-redux';
 import { delFollow, addFollow } from '../../reducer/modules/follow';
@@ -132,49 +132,71 @@ class ProjectCard extends Component {
 
   render() {
     const { projectData, inFollowPage, isShow } = this.props;
+    const goDetail = () =>
+      this.props.history.push('/project/' + (projectData.projectid || projectData._id));
+
+    const starAction = (
+      <Tooltip
+        placement="top"
+        title={projectData.follow || inFollowPage ? '取消关注' : '添加关注'}
+      >
+        {projectData.follow || inFollowPage ? (
+          <StarFilled
+            className="action-icon active"
+            onClick={e => {
+              e.stopPropagation();
+              this.del();
+            }}
+          />
+        ) : (
+          <StarOutlined
+            className="action-icon"
+            onClick={e => {
+              e.stopPropagation();
+              this.add();
+            }}
+          />
+        )}
+      </Tooltip>
+    );
+
+    const copyAction =
+      isShow &&
+      this.showConfirm && (
+        <Tooltip placement="top" title="复制项目">
+          <CopyOutlined
+            className="action-icon"
+            onClick={e => {
+              e.stopPropagation();
+              this.showConfirm();
+            }}
+          />
+        </Tooltip>
+      );
+
     return (
-      <div className="card-container">
-        <Card
-          bordered={false}
-          className="m-card"
-          onClick={() =>
-            this.props.history.push('/project/' + (projectData.projectid || projectData._id))
-          }
-        >
-          <div
-            className="ui-logo"
+      <Card
+        hoverable
+        bordered={false}
+        className="m-card"
+        onClick={goDetail}
+        actions={[starAction, copyAction].filter(Boolean)}
+      >
+        <div className="card-meta">
+          <Avatar
+            shape="square"
+            size={48}
             style={{
               backgroundColor:
                 constants.PROJECT_COLOR[projectData.color] || constants.PROJECT_COLOR.blue
             }}
-          >
-            <FolderOpenOutlined />
+            icon={<FolderOpenOutlined />}
+          />
+          <div className="card-title" title={projectData.name || projectData.projectname}>
+            {projectData.name || projectData.projectname}
           </div>
-          <h4 className="ui-title">{projectData.name || projectData.projectname}</h4>
-        </Card>
-        <div
-          className="card-btns"
-          onClick={projectData.follow || inFollowPage ? this.del : this.add}
-        >
-          <Tooltip
-            placement="rightTop"
-            title={projectData.follow || inFollowPage ? '取消关注' : '添加关注'}
-          >
-            {projectData.follow || inFollowPage ? (
-              <StarFilled className="icon active" />
-            ) : (
-              <StarOutlined className="icon" />
-            )}
-          </Tooltip>
         </div>
-        {isShow && (
-          <div className="copy-btns" onClick={this.showConfirm}>
-            <Tooltip placement="rightTop" title="复制项目">
-              <CopyOutlined className="icon" />
-            </Tooltip>
-          </div>
-        )}
-      </div>
+      </Card>
     );
   }
 }

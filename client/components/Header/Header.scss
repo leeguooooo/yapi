@@ -17,24 +17,27 @@
 
 /* .header-box.css */
 .header-box {
-  height: .56rem;
-  line-height: .56rem;
-  padding: 0;
+  height: .64rem;
+  line-height: .64rem;
+  padding: 0 16px;
+  background: #2f3540;
+  border-bottom: 1px solid #3a414c;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   .logo {
     position: relative;
     float: left;
     display: flex;
     align-items: center;
     justify-content: center;
-    line-height: .56rem;
-    height: .56rem;
-    width: 56px;
-    border-right: 1px solid #55616d;
-    border-left: 1px solid #55616d;
-    background-color: inherit;
+    line-height: .64rem;
+    height: .64rem;
+    width: 64px;
+    border-right: 1px solid #3a414c;
+    border-left: 1px solid #3a414c;
+    background-color: transparent;
     transition: all .2s;
     &:hover{
-      background-color: #2395f1;
+      background-color: #3c4552;
     }
     .href {
       text-decoration: none;
@@ -43,12 +46,6 @@
       justify-content: center;
       height: 100%;
       width: 100%;
-    }
-    .logo-name {
-      color: $color-white;
-      font-size: .24rem;
-      font-weight: 300;
-      margin-left: .38rem;
     }
     .img {
       position: static;
@@ -104,21 +101,21 @@
   }
   .user-toolbar{
     float: right;
-    height: .54rem;
+    height: .64rem;
     display: flex;
     align-items: center;
     .toolbar-li{
       float: left;
       font-size: .14rem;
       cursor: pointer;
-      color: #ccc;
+      color: #c8d2e1;
       margin-left: .16rem;
       transition: color .2s;
       & a {
-        color: #ccc;
+        color: #c8d2e1;
       }
       .dropdown-link {
-        color: #ccc;
+        color: #c8d2e1;
         transition: color .2s;
         // .ant-avatar-image{
         //   margin-bottom: -10px;
@@ -130,7 +127,7 @@
           margin-bottom: -10px;
           display: inline-block;
           text-align: center;
-          background: #ccc;
+          background: #4a5363;
           color: #fff;
           white-space: nowrap;
           position: relative;
@@ -159,6 +156,15 @@
       .name {
         margin-left: .08rem;
       }
+    }
+    .toolbar-li.item-search{
+      display: flex;
+      align-items: center;
+      height: .64rem;
+      width: 180px;
+      flex: 0 0 180px;
+      margin-left: 0;
+      margin-right: .16rem;
     }
   }
 }

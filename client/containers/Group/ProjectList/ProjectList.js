@@ -1,7 +1,7 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Row, Col, Button, Tooltip } from 'antd';
+import { Row, Col, Button, Tooltip, Space, Card } from 'antd';
 import { Link } from 'react-router-dom';
 import {
   addProject,
@@ -123,11 +123,13 @@ class ProjectList extends Component {
 
     const Follow = () => {
       return followProject.length ? (
-        <Row>
-          <h3 className="owner-type">我的关注</h3>
+        <Row gutter={[24, 24]} align="top">
+          <Col span={24}>
+            <h3 className="owner-type">我的关注</h3>
+          </Col>
           {followProject.map((item, index) => {
             return (
-              <Col xs={8} lg={6} xxl={4} key={index}>
+              <Col xs={24} sm={12} md={8} lg={6} xl={4} xxl={4} key={index}>
                 <ProjectCard projectData={item} callbackResult={this.receiveRes} />
               </Col>
             );
@@ -137,11 +139,17 @@ class ProjectList extends Component {
     };
     const NoFollow = () => {
       return noFollow.length ? (
-        <Row style={{ borderBottom: '1px solid #eee', marginBottom: '15px' }}>
-          <h3 className="owner-type">我的项目</h3>
+        <Row
+          gutter={[24, 24]}
+          align="top"
+          style={{ borderBottom: '1px solid #eee', marginBottom: '15px' }}
+        >
+          <Col span={24}>
+            <h3 className="owner-type">我的项目</h3>
+          </Col>
           {noFollow.map((item, index) => {
             return (
-              <Col xs={8} lg={6} xxl={4} key={index}>
+              <Col xs={24} sm={12} md={8} lg={6} xl={4} xxl={4} key={index}>
                 <ProjectCard projectData={item} callbackResult={this.receiveRes} isShow={isShow} />
               </Col>
             );
@@ -162,51 +170,58 @@ class ProjectList extends Component {
     };
 
     return (
-      <div style={{ paddingTop: '24px' }} className="m-panel card-panel card-panel-s project-list">
-        <Row className="project-list-header" align="middle">
-          <Col span={16} style={{ textAlign: 'left' }}>
-            <span className="project-list-title">
-              {this.props.currGroup.group_name} 分组
-            </span>
-            <span className="project-list-count">
-              共 ({projectData.length}) 个项目
-            </span>
-          </Col>
-          <Col span={8} style={{ textAlign: 'right' }}>
-            {isShow ? (
-              <Link to="/add-project">
-                <Button type="primary" icon={<i className="anticon anticon-plus" />}>添加项目</Button>
-              </Link>
-            ) : (
-              <Tooltip title="您没有权限,请联系该分组组长或管理员">
-                <Button type="primary" disabled icon={<i className="anticon anticon-plus" />}>
-                  添加项目
-                </Button>
-              </Tooltip>
-            )}
-          </Col>
-        </Row>
-        <Row gutter={[24, 24]} className="project-list-content" justify="center">
-          {this.props.currGroup.type === 'private' ? (
-            <OwnerSpace />
-          ) : projectData.length ? (
-            projectData.map((item, index) => {
-              return (
-                <Col xs={24} sm={12} md={8} lg={6} xl={4} key={index}>
-                  <ProjectCard
-                    projectData={item}
-                    callbackResult={this.receiveRes}
-                    isShow={isShow}
-                  />
-                </Col>
-              );
-            })
-          ) : (
-            <div className="no-project-wrapper">
-              <ErrMsg type="noProject" />
+      <div className="m-panel card-panel card-panel-s project-list">
+        <Card bordered={false} className="project-list-card">
+          <Space direction="vertical" size={16} style={{ width: '100%' }}>
+            <Row className="project-list-header" align="middle" justify="space-between">
+              <Col>
+                <Space size="middle" align="center">
+                  <span className="project-list-title">
+                    {this.props.currGroup.group_name} 分组
+                  </span>
+                  <span className="project-list-count">共 ({projectData.length}) 个项目</span>
+                </Space>
+              </Col>
+              <Col>
+                {isShow ? (
+                  <Link to="/add-project">
+                    <Button type="primary" icon={<i className="anticon anticon-plus" />}>
+                      添加项目
+                    </Button>
+                  </Link>
+                ) : (
+                  <Tooltip title="您没有权限,请联系该分组组长或管理员">
+                    <Button type="primary" disabled icon={<i className="anticon anticon-plus" />}>
+                      添加项目
+                    </Button>
+                  </Tooltip>
+                )}
+              </Col>
+            </Row>
+
+            <div className="project-list-content">
+              {this.props.currGroup.type === 'private' ? (
+                <OwnerSpace />
+              ) : projectData.length ? (
+                <Row gutter={[16, 16]} justify="start" align="top">
+                  {projectData.map((item, index) => (
+                    <Col xs={24} sm={12} md={8} lg={6} xl={5} xxl={4} key={index}>
+                      <ProjectCard
+                        projectData={item}
+                        callbackResult={this.receiveRes}
+                        isShow={isShow}
+                      />
+                    </Col>
+                  ))}
+                </Row>
+              ) : (
+                <div className="no-project-wrapper">
+                  <ErrMsg type="noProject" />
+                </div>
+              )}
             </div>
-          )}
-        </Row>
+          </Space>
+        </Card>
       </div>
     );
   }

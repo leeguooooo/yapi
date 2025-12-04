@@ -87,8 +87,19 @@ class Interface extends Component {
     }
 
     return (
-      <Layout style={{ minHeight: 'calc(100vh - 156px)', marginLeft: '24px', marginTop: '24px' }}>
-        <Sider style={{ height: '100%' }} width={300}>
+      <Layout
+        style={{
+          minHeight: 'calc(100vh - 156px)',
+          marginLeft: '24px',
+          marginTop: '24px',
+          background: 'transparent'
+        }}
+      >
+        <Sider
+          theme="light"
+          style={{ height: '100%', background: '#f5f7fb', paddingRight: '0' }}
+          width={300}
+        >
           <div className="left-menu">
             <Tabs
               type="card"
