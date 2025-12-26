@@ -55,16 +55,9 @@
         margin-bottom: 0px;
         padding-bottom: 0px;
     }
-    .ant-table-thead {
-        th{
-            color: #6d6c6c;
-            font-weight: normal;
-        }
-        tr{
-            // background-color: black;
-        }
-    }
-    .ant-table-thead>tr>th{
+    table thead th{
+        color: #6d6c6c;
+        font-weight: normal;
         background: #f7f7f7;
     }
     .colMethod{

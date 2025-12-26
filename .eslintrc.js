@@ -29,8 +29,22 @@ module.exports = {
         "no-unused-vars": ["off"],
         "no-undef": ["off"],
         "react/no-deprecated": ["off"],
-        "react/prop-types": ["off"]
+        "react/prop-types": ["off"],
+        "no-restricted-imports": [
+            "error",
+            {
+                "paths": [
+                    {
+                        "name": "@ant-design/compatible",
+                        "message": "Ant Design v1-5 compat layer is disabled. Use antd v6 APIs or client/components/Icon."
+                    },
+                    {
+                        "name": "client/shims/antd-compatible.js",
+                        "message": "The legacy antd compat shim is removed. Import modern components instead."
+                    }
+                ]
+            }
+        ]
         // "react/no-unescaped-entities": 0
     }
 };
-

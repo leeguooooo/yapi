@@ -5,7 +5,7 @@ import { FolderOpenOutlined, StarFilled, StarOutlined, CopyOutlined } from '@ant
 import { connect } from 'react-redux';
 import { delFollow, addFollow } from '../../reducer/modules/follow';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { debounce } from '../../common';
 import constants from '../../constants/variable.js';
 import { produce } from 'immer';
@@ -28,7 +28,6 @@ const confirm = Modal.confirm;
     copyProjectMsg
   }
 )
-@withRouter
 class ProjectCard extends Component {
   constructor(props) {
     super(props);
@@ -41,7 +40,7 @@ class ProjectCard extends Component {
     uid: PropTypes.number,
     inFollowPage: PropTypes.bool,
     callbackResult: PropTypes.func,
-    history: PropTypes.object,
+    router: PropTypes.object,
     delFollow: PropTypes.func,
     addFollow: PropTypes.func,
     isShow: PropTypes.bool,
@@ -133,7 +132,7 @@ class ProjectCard extends Component {
   render() {
     const { projectData, inFollowPage, isShow } = this.props;
     const goDetail = () =>
-      this.props.history.push('/project/' + (projectData.projectid || projectData._id));
+      this.props.router.navigate('/project/' + (projectData.projectid || projectData._id));
 
     const starAction = (
       <Tooltip
@@ -179,21 +178,24 @@ class ProjectCard extends Component {
         hoverable
         bordered={false}
         className="m-card"
+        bodyStyle={{ padding: 0 }}
         onClick={goDetail}
         actions={[starAction, copyAction].filter(Boolean)}
       >
-        <div className="card-meta">
-          <Avatar
-            shape="square"
-            size={48}
-            style={{
-              backgroundColor:
-                constants.PROJECT_COLOR[projectData.color] || constants.PROJECT_COLOR.blue
-            }}
-            icon={<FolderOpenOutlined />}
-          />
-          <div className="card-title" title={projectData.name || projectData.projectname}>
-            {projectData.name || projectData.projectname}
+        <div className="m-card-body">
+          <div className="card-meta">
+            <Avatar
+              shape="square"
+              size={48}
+              style={{
+                backgroundColor:
+                  constants.PROJECT_COLOR[projectData.color] || constants.PROJECT_COLOR.blue
+              }}
+              icon={<FolderOpenOutlined />}
+            />
+            <div className="card-title" title={projectData.name || projectData.projectname}>
+              {projectData.name || projectData.projectname}
+            </div>
           </div>
         </div>
       </Card>
@@ -201,4 +203,9 @@ class ProjectCard extends Component {
   }
 }
 
-export default ProjectCard;
+function ProjectCardWithRouter(props) {
+  const navigate = useNavigate();
+  return <ProjectCard {...props} router={{ navigate }} />;
+}
+
+export default ProjectCardWithRouter;

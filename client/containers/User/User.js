@@ -1,7 +1,7 @@
 import './index.scss';
 import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import List from './List.js';
 import PropTypes from 'prop-types';
 import Profile from './Profile.js';
@@ -18,7 +18,6 @@ import { Row } from 'antd';
 )
 class User extends Component {
   static propTypes = {
-    match: PropTypes.object,
     curUid: PropTypes.number,
     userType: PropTypes.string,
     role: PropTypes.string
@@ -33,10 +32,10 @@ class User extends Component {
       <div>
         <div className="g-doc">
           <Row className="user-box">
-            <Switch>
-              <Route path="list" component={List} />
-              <Route path="profile/:uid" component={Profile} />
-            </Switch>
+            <Routes>
+              <Route path="list" element={<List />} />
+              <Route path="profile/:uid" element={<Profile />} />
+            </Routes>
           </Row>
         </div>
       </div>

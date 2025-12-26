@@ -2,10 +2,9 @@ import React, { Component } from 'react';
 // import { connect } from 'react-redux'
 import axios from 'axios';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
-import { Form } from '@ant-design/compatible';
-import { Switch, Button, message, Tooltip, Radio } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import { useParams } from 'react-router-dom';
+import { Form, Switch, Button, message, Tooltip, Radio } from 'antd';
+import Icon from 'client/components/Icon';
 import MockCol from './MockCol/MockCol.js';
 import mockEditor from 'client/components/AceEditor/mockEditor';
 import constants from '../../client/constants/variable.js';
@@ -14,7 +13,8 @@ const FormItem = Form.Item;
 class AdvMock extends Component {
   static propTypes = {
     form: PropTypes.object,
-    match: PropTypes.object
+    projectId: PropTypes.string,
+    actionId: PropTypes.string
   };
 
   constructor(props) {
@@ -28,8 +28,8 @@ class AdvMock extends Component {
 
   handleSubmit = e => {
     e.preventDefault();
-    let projectId = this.props.match.params.id;
-    let interfaceId = this.props.match.params.actionId;
+    let projectId = this.props.projectId;
+    let interfaceId = this.props.actionId;
     let params = {
       project_id: projectId,
       interface_id: interfaceId,
@@ -50,7 +50,7 @@ class AdvMock extends Component {
   }
 
   async getAdvMockData() {
-    let interfaceId = this.props.match.params.actionId;
+    let interfaceId = this.props.actionId;
     let result = await axios.get('/api/plugin/advmock/get?interface_id=' + interfaceId);
     if (result.data.errcode === 0) {
       let mockData = result.data.data;
@@ -122,7 +122,7 @@ class AdvMock extends Component {
                     href={constants.docHref.adv_mock_script}
                   >
                     <Tooltip title="点击查看文档">
-                      <Icon type="question-circle-o" />
+                      <Icon name="question-circle-o" />
                     </Tooltip>
                   </a>
                 </span>
@@ -155,8 +155,12 @@ class AdvMock extends Component {
   }
 }
 
-const WrappedAdvMock = withRouter(AdvMock);
-export default WrappedAdvMock;
+function AdvMockWithParams(props) {
+  const { id, actionId } = useParams();
+  return <AdvMock {...props} projectId={id} actionId={actionId} />;
+}
+
+export default AdvMockWithParams;
 if (typeof module !== 'undefined') {
-  module.exports = WrappedAdvMock;
+  module.exports = AdvMockWithParams;
 }

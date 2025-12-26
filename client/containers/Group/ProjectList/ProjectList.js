@@ -171,7 +171,7 @@ class ProjectList extends Component {
 
     return (
       <div className="m-panel card-panel card-panel-s project-list">
-        <Card bordered={false} className="project-list-card">
+        <Card bordered={false} className="project-list-card" bodyStyle={{ padding: 12 }}>
           <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <Row className="project-list-header" align="middle" justify="space-between">
               <Col>
@@ -203,7 +203,12 @@ class ProjectList extends Component {
               {this.props.currGroup.type === 'private' ? (
                 <OwnerSpace />
               ) : projectData.length ? (
-                <Row gutter={[16, 16]} justify="start" align="top">
+                <Row
+                  gutter={[16, 16]}
+                  justify="start"
+                  align="top"
+                  style={{ marginLeft: 0, marginRight: 0 }}
+                >
                   {projectData.map((item, index) => (
                     <Col xs={24} sm={12} md={8} lg={6} xl={5} xxl={4} key={index}>
                       <ProjectCard

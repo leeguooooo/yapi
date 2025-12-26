@@ -1,6 +1,7 @@
 import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { useLocation, useParams } from 'react-router-dom';
 // 内部使用 pathname 手动切换，避免 v6 路由匹配不到造成内容空白
 import { Subnav } from '../../components/index';
 import { fetchGroupMsg } from '../../reducer/modules/group';
@@ -26,9 +27,9 @@ import plugin from 'client/plugin.js';
     setBreadcrumb
   }
 )
-export default class Project extends Component {
+class Project extends Component {
   static propTypes = {
-    match: PropTypes.object,
+    projectId: PropTypes.string,
     curProject: PropTypes.object,
     getProject: PropTypes.func,
     location: PropTypes.object,
@@ -42,15 +43,21 @@ export default class Project extends Component {
   }
 
   loadData = async props => {
-    await props.getProject(props.match.params.id);
-    await props.fetchGroupMsg(props.curProject.group_id);
+    const projectRes = await props.getProject(props.projectId);
+    const projectData = (projectRes && projectRes.payload && projectRes.payload.data && projectRes.payload.data.data) || props.curProject;
+    let groupData = props.currGroup;
+    const groupId = projectData && projectData.group_id;
+    if (groupId) {
+      const groupRes = await props.fetchGroupMsg(groupId);
+      groupData = (groupRes && groupRes.payload && groupRes.payload.data && groupRes.payload.data.data) || groupData;
+    }
     props.setBreadcrumb([
       {
-        name: props.currGroup.group_name,
-        href: '/group/' + props.currGroup._id
+        name: groupData ? groupData.group_name : '',
+        href: groupData && groupData._id ? '/group/' + groupData._id : undefined
       },
       {
-        name: props.curProject.name
+        name: projectData ? projectData.name : ''
       }
     ]);
   };
@@ -60,42 +67,54 @@ export default class Project extends Component {
   }
 
   async componentDidUpdate(prevProps) {
-    if (prevProps.match.params.id !== this.props.match.params.id) {
+    if (prevProps.projectId !== this.props.projectId) {
       await this.loadData(this.props);
     }
   }
 
   render() {
-    const { match, location } = this.props;
+    const { projectId, location, curProject } = this.props;
     const defaultName = 'interface';
     const subnavData = [
-      { name: '接口', path: `/project/${match.params.id}/interface/api` },
-      { name: '动态', path: `/project/${match.params.id}/activity` },
-      { name: '数据管理', path: `/project/${match.params.id}/data` },
-      { name: '设置', path: `/project/${match.params.id}/setting` }
+      { name: '接口', path: `/project/${projectId}/interface/api` },
+      { name: '动态', path: `/project/${projectId}/activity` },
+      { name: '数据管理', path: `/project/${projectId}/data` },
+      { name: '设置', path: `/project/${projectId}/setting` }
     ];
 
     let content = null;
     const pathname = location.pathname;
     if (pathname.indexOf('/interface') !== -1) {
-      content = <Interface match={match} location={location} />;
+      content = <Interface />;
     } else if (pathname.indexOf('/activity') !== -1) {
-      content = <Activity match={match} />;
+      content = <Activity />;
     } else if (pathname.indexOf('/data') !== -1) {
-      content = <ProjectData match={match} />;
+      content = <ProjectData />;
     } else if (pathname.indexOf('/setting') !== -1) {
-      content = <Setting match={match} />;
+      content = <Setting />;
     } else if (pathname.indexOf('/member') !== -1) {
-      content = <ProjectMember match={match} />;
+      content = <ProjectMember />;
     } else {
       content = <Loading visible />;
     }
 
+    const loaded = curProject && curProject._id;
+
     return (
       <div>
         <Subnav default={defaultName} data={subnavData} />
-        <div className="project-content">{content}</div>
+        <div className="project-content">
+          {loaded ? content : <Loading visible />}
+        </div>
       </div>
     );
   }
 }
+
+function ProjectWithRouter(props) {
+  const { id } = useParams();
+  const location = useLocation();
+  return <Project {...props} projectId={id} location={location} />;
+}
+
+export default ProjectWithRouter;

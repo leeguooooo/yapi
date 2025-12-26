@@ -1,8 +1,22 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Input, Checkbox, Modal, Select, Spin, Collapse, Tooltip, Tabs, Switch, Row, Col, Alert } from 'antd';
+import {
+  Button,
+  Input,
+  Checkbox,
+  Modal,
+  Select,
+  Spin,
+  Collapse,
+  Tooltip,
+  Tabs,
+  Switch,
+  Row,
+  Col,
+  Alert
+} from 'antd';
 import { PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 import constants from '../../constants/variable.js';
 import AceEditor from 'client/components/AceEditor/AceEditor';
 import _ from 'underscore';
@@ -20,10 +34,13 @@ const {
   checkRequestBodyIsRaw,
   handleContentType,
   crossRequest,
-  checkNameIsExistInArray
+  handleCurrDomain,
+  checkNameIsExistInArray,
+  safeArray
 } = postmanLib;
 import createContext from 'common/createContext';
 import plugin from 'client/plugin.js';
+import { message } from 'antd';
 
 const HTTP_METHOD = constants.HTTP_METHOD;
 const InputGroup = Input.Group;
@@ -306,7 +323,79 @@ export default class Run extends Component {
     });
   };
 
+  mockRequest = async (iface, options, projectId) => {
+    const headers = {};
+    safeArray(iface.req_headers || []).forEach(h => {
+      if (h && h.name) headers[h.name] = h.value;
+    });
+    const method = (iface.method || options.method || 'GET').toUpperCase();
+    const urlPath = iface.path || options.path || '';
+    const pid =
+      projectId ||
+      this.props.projectId ||
+      this.state.project_id ||
+      (this.props.data && this.props.data.project_id) ||
+      this.props.router?.params?.id;
+    if (!pid) {
+      message.error('项目id不能为空');
+      throw new Error('项目id不能为空');
+    }
+    const url = `${location.protocol}//${location.host}/mock/${pid}${urlPath}`;
+    // eslint-disable-next-line no-console
+    console.info('postman mock request url', url);
+    const params = handleParams(iface.req_query || [], this.handleValue);
+    const body =
+      iface.req_body_type === 'json'
+        ? json5_parse(iface.req_body_other)
+        : iface.req_body_type === 'form'
+          ? handleParams(iface.req_body_form || [], this.handleValue)
+          : iface.req_body_other;
+    const axiosRes = await axios.request({
+      url,
+      method,
+      headers,
+      params,
+      data: body
+    });
+    return {
+      res: {
+        header: axiosRes.headers,
+        body: axiosRes.data,
+        status: axiosRes.status,
+        statusText: axiosRes.statusText
+      }
+    };
+  };
+
+  buildHeaders = iface => {
+    const headers = {};
+    safeArray(iface.req_headers || []).forEach(h => {
+      if (h && h.name) headers[h.name] = h.value;
+    });
+    return headers;
+  };
+
+  buildBody = iface => {
+    if (iface.req_body_type === 'json') {
+      return json5_parse(iface.req_body_other);
+    }
+    if (iface.req_body_type === 'form') {
+      return handleParams(iface.req_body_form || [], this.handleValue);
+    }
+    return iface.req_body_other;
+  };
+
   reqRealInterface = async () => {
+    console.warn('postman reqRealInterface start', this.props.interfaceId, this.props.projectId);
+    const projectId =
+      this.props.projectId ||
+      this.state.project_id ||
+      (this.props.data && this.props.data.project_id) ||
+      this.props.router?.params?.id;
+    if (!projectId) {
+      message.error('项目id不能为空');
+      return null;
+    }
     if (this.state.loading === true) {
       this.setState({
         loading: false
@@ -330,17 +419,58 @@ export default class Run extends Component {
 
     try {
       options.taskId = this.props.curUid;
-      result = await crossRequest(options, options.pre_script || this.state.pre_script, options.after_script || this.state.after_script, createContext(
+      const ctx = createContext(
         this.props.curUid,
-        this.props.projectId,
+        Number(projectId),
         this.props.interfaceId
-      ));
+      );
+      const { env = [], case_env } = this.state;
+      const currDomain = handleCurrDomain(env, case_env) || {};
+      const iface = this.props.data || {};
+      const urlPath = iface.path || options.path || '';
+      let targetUrl = '';
+      let usedMock = false;
+
+      if (currDomain.domain) {
+        // 优先真实接口（依赖本地代理/CORS 配置），失败再回退 Mock
+        targetUrl = `${currDomain.domain}${urlPath}`;
+        try {
+          // eslint-disable-next-line no-console
+          console.info('postman real request', targetUrl);
+          const realRes = await axios.request({
+            url: targetUrl,
+            method: (iface.method || options.method || 'GET').toUpperCase(),
+            headers: this.buildHeaders(iface),
+            params: handleParams(iface.req_query || [], this.handleValue),
+            data: this.buildBody(iface)
+          });
+          result = {
+            res: {
+              header: realRes.headers,
+              body: realRes.data,
+              status: realRes.status,
+              statusText: realRes.statusText
+            }
+          };
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.warn('real request failed, fallback to mock', err);
+          usedMock = true;
+          result = await this.mockRequest(iface, options, projectId);
+        }
+      } else {
+        usedMock = true;
+        // eslint-disable-next-line no-console
+        console.info('postman mock request (no domain)', urlPath);
+        result = await this.mockRequest(iface, options, projectId);
+      }
 
       await plugin.emitHook('after_request', result, {
         type: this.props.type,
         caseId: options.caseId,
         projectId: this.props.projectId,
-        interfaceId: this.props.interfaceId
+        interfaceId: this.props.interfaceId,
+        usedMock
       });
 
       result = {
@@ -348,10 +478,12 @@ export default class Run extends Component {
         body: result.res.body,
         status: result.res.status,
         statusText: result.res.statusText,
-        runTime: result.runTime
+        runTime: result.runTime,
+        usedMock
       };
 
     } catch (data) {
+      message.error(data?.message || '请求发送失败');
       result = {
         header: data.header,
         body: data.body,
@@ -573,7 +705,7 @@ export default class Run extends Component {
       <div className="interface-test postman">
         {this.state.modalVisible && (
           <ModalPostman
-            visible={this.state.modalVisible}
+            open={this.state.modalVisible}
             handleCancel={this.handleModalCancel}
             handleOk={this.handleModalOk}
             inputValue={inputValue}
@@ -582,19 +714,20 @@ export default class Run extends Component {
           />
         )}
 
-        {this.state.envModalVisible && (
-          <Modal
-            title="环境设置"
-            visible={this.state.envModalVisible}
-            onOk={this.handleEnvOk}
-            onCancel={this.handleEnvCancel}
-            footer={null}
-            width={800}
-            className="env-modal"
-          >
-            <ProjectEnv projectId={this.props.data.project_id} onOk={this.handleEnvOk} />
-          </Modal>
-        )}
+          {this.state.envModalVisible && (
+            <Modal
+              title="环境设置"
+              open={this.state.envModalVisible}
+              onOk={this.handleEnvOk}
+              onCancel={this.handleEnvCancel}
+              footer={null}
+              width={800}
+              className="env-modal"
+              bodyStyle={{ padding: 0 }}
+            >
+              <ProjectEnv projectId={this.props.data.project_id} onOk={this.handleEnvOk} />
+            </Modal>
+          )}
         <CheckCrossInstall hasPlugin={hasPlugin} />
 
         <div className="url">
@@ -632,16 +765,11 @@ export default class Run extends Component {
 
           <Tooltip
             placement="bottom"
-            title={(() => {
-              if (hasPlugin) {
-                return '发送请求';
-              } else {
-                return '请安装 cross-request 插件';
-              }
+          title={(() => {
+              return '发送请求';
             })()}
           >
             <Button
-              disabled={!hasPlugin}
               onClick={this.reqRealInterface}
               type="primary"
               style={{ marginLeft: 10 }}
@@ -688,7 +816,7 @@ export default class Run extends Component {
                     id={`req_params_${index}`}
                     addonAfter={
                       <Icon
-                        type="edit"
+                        name="edit"
                         onClick={() => this.showModal(item.value, index, 'req_params')}
                       />
                     }
@@ -741,7 +869,7 @@ export default class Run extends Component {
                     id={`req_query_${index}`}
                     addonAfter={
                       <Icon
-                        type="edit"
+                        name="edit"
                         onClick={() => this.showModal(item.value, index, 'req_query')}
                       />
                     }
@@ -780,7 +908,7 @@ export default class Run extends Component {
                     addonAfter={
                       !item.abled && (
                         <Icon
-                          type="edit"
+                          name="edit"
                           onClick={() => this.showModal(item.value, index, 'req_headers')}
                         />
                       )
@@ -885,7 +1013,7 @@ export default class Run extends Component {
                             id={`req_body_form_${index}`}
                             addonAfter={
                               <Icon
-                                type="edit"
+                                name="edit"
                                 onClick={() => this.showModal(item.value, index, 'req_body_form')}
                               />
                             }
@@ -913,13 +1041,19 @@ export default class Run extends Component {
           </Panel>
         </Collapse>
 
-        <Tabs
-          size="large"
-          defaultActiveKey="res"
-          className="response-tab"
-          items={[
-            {
-              key: 'res',
+	        <Tabs
+	          size="large"
+	          defaultActiveKey="res"
+	          className="response-tab"
+            tabBarStyle={{
+              background: '#f7f7f7',
+              borderRadius: '0 0 4px 4px',
+              border: '1px solid #d9d9d9',
+              width: '100%'
+            }}
+	          items={[
+	            {
+	              key: 'res',
               label: 'Response',
               children: (
                 <Spin spinning={this.state.loading}>
@@ -976,13 +1110,14 @@ export default class Run extends Component {
                       </div>
                     </div>
                     <div className="body">
-                      <div className="container-title">
-                        <h4>Body</h4>
-                        <Checkbox
-                          checked={this.state.autoPreviewHTML}
-                          onChange={e => this.setState({ autoPreviewHTML: e.target.checked })}>
-                          <span>自动预览HTML</span>
-                        </Checkbox>
+	                      <div className="container-title">
+	                        <h4>Body</h4>
+	                        <Checkbox
+                            className="postman-checkbox"
+	                          checked={this.state.autoPreviewHTML}
+	                          onChange={e => this.setState({ autoPreviewHTML: e.target.checked })}>
+	                          <span>自动预览HTML</span>
+	                        </Checkbox>
                       </div>
                       {
                         this.state.autoPreviewHTML && this.testResponseBodyIsHTML

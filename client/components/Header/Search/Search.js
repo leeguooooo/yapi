@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { Input, AutoComplete } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import './Search.scss';
-import { withRouter } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { setCurrGroup, fetchGroupMsg } from '../../../reducer/modules/group';
 import { changeMenuItem } from '../../../reducer/modules/menu';
@@ -22,8 +22,7 @@ import { fetchInterfaceListMenu } from '../../../reducer/modules/interface';
     fetchInterfaceListMenu
   }
 )
-@withRouter
-export default class Srch extends Component {
+class Srch extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -37,7 +36,6 @@ export default class Srch extends Component {
     groupList: PropTypes.array,
     projectList: PropTypes.array,
     router: PropTypes.object,
-    history: PropTypes.object,
     location: PropTypes.object,
     setCurrGroup: PropTypes.func,
     changeMenuItem: PropTypes.func,
@@ -50,16 +48,14 @@ export default class Srch extends Component {
     this.setState({ open: false, value: '', options: [] });
     if (type === '分组') {
       this.props.changeMenuItem('/group');
-      this.props.history.push('/group/' + option.id);
+      this.props.router.navigate('/group/' + option.id);
       this.props.setCurrGroup({ group_name: value, _id: option.id - 0 });
     } else if (type === '项目') {
       await this.props.fetchGroupMsg(option.groupId);
-      this.props.history.push('/project/' + option.id);
+      this.props.router.navigate('/project/' + option.id);
     } else if (type === '接口') {
       await this.props.fetchInterfaceListMenu(option.projectId);
-      this.props.history.push(
-        '/project/' + option.projectId + '/interface/api/' + option.id
-      );
+      this.props.router.navigate('/project/' + option.projectId + '/interface/api/' + option.id);
     }
   };
 
@@ -147,7 +143,6 @@ export default class Srch extends Component {
     return (
       <div className="search-wrapper" style={{ width: searchWidth }}>
         <AutoComplete
-          className="search-dropdown"
           options={options}
           style={{ width: '100%' }}
           defaultActiveFirstOption={false}
@@ -158,9 +153,8 @@ export default class Srch extends Component {
           open={open}
         >
           <Input
-            prefix={<SearchOutlined className="srch-icon" />}
+            prefix={<SearchOutlined />}
             placeholder="搜索分组/项目/接口"
-            className="search-input"
             allowClear
             onFocus={this.handleFocus}
             onBlur={this.handleBlur}
@@ -170,3 +164,10 @@ export default class Srch extends Component {
     );
   }
 }
+
+function SrchWithRouter(props) {
+  const navigate = useNavigate();
+  return <Srch {...props} router={{ navigate }} />;
+}
+
+export default SrchWithRouter;

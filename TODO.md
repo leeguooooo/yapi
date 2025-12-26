@@ -1,0 +1,16 @@
+- [x] Fix interface/category creation UI not responding on `project/:id/interface/api`: 新建项目后点击“添加接口/添加分类”无弹窗无请求的问题已修复，现可正常弹出表单并创建接口/分类。
+- [x] Fix Postman/集合运行被 `safeArray`/`message`/`handleCurrDomain` 缺失短路：已补齐 postmanLib 导出与 antd message 引用，真实失败后能稳定回退 Mock。
+- [x] Fix `/mock/{projectId}/*` 系统性 500：Origin 为空导致 CORS setHeader 抛错、mockExtra CJS/ESM 互操作错误已修复，Mock 现可正常响应。
+- [x] Fix 未登录访问受保护页面白屏：退出登录后直访 `/group` / `/project/:id/interface/api` 现在会正确跳转到 `/login`，不再只剩页脚空白。
+- [x] Fix 小屏横向滚动溢出：`/project/:id/interface/api` 与 `/project/:id/interface/col/:colId` 在 1024/768 宽度下不再出现水平滚动条，左右栏布局正常收缩。
+- [x] Fix 接口预览页白屏（useBlocker）：访问 `/project/:id/interface/api/:interfaceId` 不再报 `useBlocker must be used within a data router`，页面可正常渲染与编辑。
+- [x] Fix 数据管理页字体/布局异常：`client/styles/common.scss` 仅设置了 `html{font-size:100px}` 导致默认 `h3` 等按 100px 基准放大；现改为 `body{font-size:0.14rem}` 保持 rem 基准 100px 同时恢复默认文本/标题大小。
+- [x] Fix 顶部导航搜索框被全局样式/line-height 破坏：登录页 `Login.scss` 的全局 `.ant-input-affix-wrapper` 覆写泄漏到 Header，导致 padding 过大、placeholder 被裁剪；同时 Header 64px `line-height` 被 AutoComplete 继承拉高控件。现将登录页覆写收敛到 `.login-body` 作用域，并在 Header 的 `.user-toolbar` 与搜索 wrapper 重置 `line-height`，搜索框恢复 antd 默认尺寸/圆角/选中态。
+- [x] 清理全局 antd 覆写：移除 `client/styles/theme.less`、`client/styles/common.scss`、`client/containers/Group/ProjectList/ProjectList.scss` 中所有顶层 `.ant-*` 选择器，避免跨页面污染；保留仅在业务容器内的局部样式。
+- [x] UX: cross-request 插件提示文案已收敛为 Postman 的可选提示（`client/components/Postman/CheckCrossInstall.js`），不再阻断；若仍看到旧文案需确认前端 main.js 已刷新。
+- [x] A11y: 剩余的 “A form field element should have an id or name attribute” 来自 antd Tree 内部隐藏输入框（aria-label="for screen reader"），业务输入已补齐 `id/name`，框架内部告警可忽略。
+- [x] 清理 Setting 模块 antd 内部样式：`client/containers/Project/Setting` 下已无 `.ant-*` 选择器。通过 Card 的 `headStyle/bodyStyle`、Popover 自有 wrapper（`change-project-*`）、Upload Dragger 业务 class、Select 内联 `style` 替代内部 DOM 覆写，数据管理/项目配置/环境配置页布局回归正常。
+- [x] 清理 Postman/ModalPostman antd 内部样式：`client/components/Postman`、`client/components/ModalPostman` 下已无 `.ant-*`。用 Modal `bodyStyle`、Tabs `tabBarStyle`、Methods 参数输入自有 class 等替代内部 DOM 覆写，运行页/高级参数弹窗布局保持正常。
+- [x] 清理 OpenAPI3Schema antd 内部样式：`client/components/OpenAPI3Schema` 已改为 Collapse `styles` + Alert 自有 message/description wrapper，不再使用 `.ant-collapse-*`/`.ant-alert-*`。
+- [ ] Bug: 添加接口时遇到重复 path（后端返回 `errcode=40022 已存在的接口`）前端无可见错误提示。复现：在接口列表点“添加接口”，填写与现有接口同名/同 path（如 `/qa6/ping2`），提交后弹窗停留但无 toast/字段报错；期望明确提示“接口已存在”。已在 `client/index.jsx` 加 `message.config({ top: 72 })` 让消息避开顶部导航，但仍需你本机确认是否恢复可见。
+- [ ] Enhancement: 当接口未配置 `res_body` 时 Mock 返回 `204 No Content`，可考虑返回空 JSON/200 或给出提示，提升预期一致性。

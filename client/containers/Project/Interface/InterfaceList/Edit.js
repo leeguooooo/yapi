@@ -11,8 +11,9 @@ import { getProject } from '../../../../reducer/modules/project.js';
 import axios from 'axios';
 import { message, Modal } from 'antd';
 import './Edit.scss';
-import { withRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import ProjectTag from '../../Setting/ProjectMessage/ProjectTag.js';
+import { joinBasePath } from '../../../../common.js';
 
 @connect(
   state => {
@@ -35,7 +36,7 @@ class InterfaceEdit extends Component {
     updateInterfaceData: PropTypes.func,
     fetchInterfaceListMenu: PropTypes.func,
     fetchInterfaceData: PropTypes.func,
-    match: PropTypes.object,
+    actionId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     switchToView: PropTypes.func,
     getProject: PropTypes.func
   };
@@ -49,7 +50,7 @@ class InterfaceEdit extends Component {
         '//' +
         location.hostname +
         (location.port !== '' ? ':' + location.port : '') +
-        `/mock/${currProject._id}${currProject.basepath}${curdata.path}`,
+        `/mock/${currProject._id}${joinBasePath(currProject.basepath, curdata.path)}`,
       curdata: {},
       status: 0,
       visible: false
@@ -58,7 +59,7 @@ class InterfaceEdit extends Component {
   }
 
   onSubmit = async params => {
-    params.id = this.props.match.params.actionId;
+    params.id = this.props.actionId;
     let result = await axios.post('/api/interface/up', params);
     this.props.fetchInterfaceListMenu(this.props.currProject._id).then();
     this.props.fetchInterfaceData(params.id).then();
@@ -103,7 +104,7 @@ class InterfaceEdit extends Component {
           '://' +
           domain +
           '/api/interface/solve_conflict?id=' +
-          this.props.match.params.actionId
+          this.props.actionId
       );
       s.onopen = () => {
         this.WebSocket = s;
@@ -212,7 +213,7 @@ class InterfaceEdit extends Component {
         <Modal
           title="Tag 设置"
           width={680}
-          visible={this.state.visible}
+          open={this.state.visible}
           onOk={this.handleOk}
           onCancel={this.handleCancel}
           okText="保存"
@@ -226,4 +227,4 @@ class InterfaceEdit extends Component {
   }
 }
 
-export default withRouter(InterfaceEdit);
+export default InterfaceEdit;

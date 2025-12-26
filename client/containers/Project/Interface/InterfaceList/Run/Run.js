@@ -1,11 +1,11 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import axios from 'axios';
 import { message } from 'antd';
 import { Postman } from '../../../../../components';
 import AddColModal from './AddColModal';
+import { joinBasePath } from '../../../../../common.js';
 
 // import {
 // } from '../../../reducer/modules/group.js'
@@ -17,12 +17,11 @@ import './Run.scss';
   currProject: state.project.currProject,
   curUid: state.user.uid
 }))
-@withRouter
 export default class Run extends Component {
   static propTypes = {
     currProject: PropTypes.object,
     currInterface: PropTypes.object,
-    match: PropTypes.object,
+    projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     curUid: PropTypes.number
   };
 
@@ -39,7 +38,7 @@ export default class Run extends Component {
   };
 
   saveCase = async (colId, caseName) => {
-    const project_id = this.props.match.params.id;
+    const project_id = this.props.projectId;
     const interface_id = this.props.currInterface._id;
     const {
       case_env,
@@ -85,7 +84,7 @@ export default class Run extends Component {
       pre_script: currProject.pre_script,
       after_script: currProject.after_script
     });
-    data.path = currProject.basepath + currInterface.path;
+    data.path = joinBasePath(currProject.basepath, currInterface.path);
     return (
       <div>
         <Postman
@@ -100,8 +99,9 @@ export default class Run extends Component {
           curUid={this.props.curUid}
         />
         <AddColModal
-          visible={this.state.saveCaseModalVisible}
+          open={this.state.saveCaseModalVisible}
           caseName={currInterface.title}
+          projectId={this.props.projectId}
           onCancel={() => this.setState({ saveCaseModalVisible: false })}
           onOk={this.saveCase}
         />

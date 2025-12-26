@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Input, Select, Tooltip } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 import _ from 'underscore';
 const Option = Select.Option;
 
@@ -65,6 +65,7 @@ class MethodsList extends Component {
       <Input
         size="small"
         placeholder="请输入参数"
+        className="methods-param-input"
         value={params[0]}
         onChange={e => this.handleParamsChange(e.target.value, clickIndex, paramsIndex, 0)}
       />
@@ -81,12 +82,14 @@ class MethodsList extends Component {
         <Input
           size="small"
           placeholder="start"
+          className="methods-param-input"
           value={params[0]}
           onChange={e => this.handleParamsChange(e.target.value, clickIndex, paramsIndex, 0)}
         />
         <Input
           size="small"
           placeholder="length"
+          className="methods-param-input"
           value={params[1]}
           onChange={e => this.handleParamsChange(e.target.value, clickIndex, paramsIndex, 1)}
         />
@@ -103,6 +106,7 @@ class MethodsList extends Component {
       <Select
         value={params[0] || 'sha1'}
         placeholder="请选择"
+        className="methods-param-input"
         style={{ width: 150 }}
         size="small"
         onChange={e => this.handleParamsChange(e, clickIndex, paramsIndex, 0)}
@@ -181,7 +185,7 @@ class MethodsList extends Component {
         })}
         {moreFlag && (
           <div className="show-more" onClick={this.showMore}>
-            <Icon type="down" />
+            <Icon name="down" />
             <span style={{ paddingLeft: '4px' }}>更多</span>
           </div>
         )}

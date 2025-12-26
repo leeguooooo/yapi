@@ -14,7 +14,7 @@ export default (state = initialState, action) => {
   if (action.type === GET_FOLLOW_LIST) {
     return {
       ...state,
-      data: action.payload.data.data
+      data: action.payload?.data?.data || []
     };
   } else {
     return state;

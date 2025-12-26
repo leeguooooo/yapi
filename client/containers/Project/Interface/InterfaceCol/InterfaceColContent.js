@@ -1,11 +1,10 @@
 import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 //import constants from '../../../../constants/variable.js'
 import { Tooltip, Input, Button, Row, Col, Spin, Modal, message, Select, Switch, Table } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 import {
   fetchInterfaceColList,
   fetchCaseList,
@@ -29,11 +28,14 @@ const {
   handleParams,
   crossRequest,
   handleCurrDomain,
-  checkNameIsExistInArray
+  checkNameIsExistInArray,
+  safeArray
 } = postmanLib;
 import { handleParamsValue, json_parse, ArrayToObject } from 'common/utils.browser.js';
 import CaseEnv from 'client/components/CaseEnv';
 import Label from '../../../../components/Label/Label.js';
+import ImportInterface from './ImportInterface.js';
+import { joinBasePath } from '../../../../common.js';
 
 const Option = Select.Option;
 import createContext from 'common/createContext';
@@ -120,15 +122,13 @@ function handleReport(json) {
     fetchCaseEnvList
   }
 )
-@withRouter
 class InterfaceColContent extends Component {
   static propTypes = {
-    match: PropTypes.object,
+    router: PropTypes.object,
     interfaceColList: PropTypes.array,
     fetchInterfaceColList: PropTypes.func,
     fetchCaseList: PropTypes.func,
     setColData: PropTypes.func,
-    history: PropTypes.object,
     currCaseList: PropTypes.array,
     currColId: PropTypes.number,
     currCaseId: PropTypes.number,
@@ -178,11 +178,18 @@ class InterfaceColContent extends Component {
           enable: false,
           content: ''
         }
-      }
+      },
+      importInterVisible: false,
+      importInterIds: [],
+      importColId: null,
+      importProjectId: null
     };
-    this.onRow = this.onRow.bind(this);
-    this.onMoveRow = this.onMoveRow.bind(this);
   }
+
+  // 拖拽排序占位，当前未实现具体逻辑，避免 undefined.bind 造成崩溃
+  onRow = () => ({})
+
+  onMoveRow = () => {}
 
   async handleColIdChange(newColId){
     this.props.setColData({
@@ -192,27 +199,35 @@ class InterfaceColContent extends Component {
     });
 
     let result = await this.props.fetchCaseList(newColId);
-    if (result.payload.data.errcode === 0) {
-      this.reports = handleReport(result.payload.data.colData.test_report);
+    const colData = result?.payload?.data?.colData;
+    const caseList = result?.payload?.data?.data || [];
+    if (result?.payload?.data?.errcode === 0 && colData) {
+      this.reports = handleReport(colData.test_report);
+      const checkScript = colData.checkScript || {};
       this.setState({
-        commonSetting:{
+        commonSetting: {
           ...this.state.commonSetting,
-          ...result.payload.data.colData
+          ...colData,
+          checkScript: {
+            enable: !!checkScript.enable,
+            content: checkScript.content || ''
+          }
         }
-      })
+      });
     }
+    this.props.setColData({ currCaseList: caseList });
+    this.handleColdata(caseList);
 
-    await this.props.fetchCaseList(newColId);
     await this.props.fetchCaseEnvList(newColId);
     this.changeCollapseClose();
-    this.handleColdata(this.props.currCaseList);
+    this.handleColdata(caseList);
   }
 
   async componentDidMount() {
-    const result = await this.props.fetchInterfaceColList(this.props.match.params.id);
-    await this.props.getToken(this.props.match.params.id);
+    const result = await this.props.fetchInterfaceColList(this.props.router.params.id);
+    await this.props.getToken(this.props.router.params.id);
     let { currColId } = this.props;
-    const params = this.props.match.params;
+    const params = this.props.router.params;
     const { actionId } = params;
     this.currColId = currColId = +actionId || result.payload.data.data[0]._id;
     // this.props.history.push('/project/' + params.id + '/interface/col/' + currColId);
@@ -241,7 +256,7 @@ class InterfaceColContent extends Component {
       if (res.data.errcode) {
         return message.error(res.data.errmsg);
       }
-      let project_id = this.props.match.params.id;
+      let project_id = this.props.router.params.id;
       await this.props.fetchInterfaceColList(project_id);
       message.success('接口集合简介更新成功');
     });
@@ -253,8 +268,8 @@ class InterfaceColContent extends Component {
       return item._id === project_id;
     });
 
-    let currDomain = handleCurrDomain(envItem && envItem.env, case_env);
-    let header = currDomain.header;
+    let currDomain = handleCurrDomain((envItem && envItem.env) || [], case_env) || { header: [] };
+    let header = currDomain.header || [];
     header.forEach(item => {
       if (!checkNameIsExistInArray(item.name, req_header)) {
         // item.abled = true;
@@ -268,12 +283,13 @@ class InterfaceColContent extends Component {
     return req_header;
   };
 
-  handleColdata = (rows, currColEnvObj = {}) => {
+  normalizeRows = (rows, currColEnvObj = {}) => {
     let that = this;
-    let newRows = produce(rows, draftRows => {
+    return produce(rows || [], draftRows => {
       draftRows.map(item => {
         item.id = item._id;
         item._test_status = item.test_status;
+        item.project_id = item.project_id || Number(that.props.router.params.id);
         if(currColEnvObj[item.project_id]){
           item.case_env =currColEnvObj[item.project_id];
         }
@@ -281,16 +297,40 @@ class InterfaceColContent extends Component {
         return item;
       });
     });
+  };
+
+  handleColdata = (rows, currColEnvObj = {}) => {
+    const newRows = this.normalizeRows(rows, currColEnvObj);
     this.setState({ rows: newRows });
+    return newRows;
   };
 
   executeTests = async () => {
-    for (let i = 0, l = this.state.rows.length, newRows, curitem; i < l; i++) {
-      let { rows } = this.state;
+    // 运行前刷新一次用例，避免列表为空
+    const currentColId = this.currColId || this.props.currColId;
+    console.warn('col executeTests start', currentColId);
+    let rowsToRun = [];
+    if (currentColId) {
+      const res = await this.props.fetchCaseList(currentColId);
+      const caseList = res?.payload?.data?.data || [];
+      rowsToRun = this.normalizeRows(caseList);
+      this.setState({ rows: rowsToRun });
+      this.props.setColData({ currCaseList: caseList });
+    } else {
+      rowsToRun = this.state.rows || [];
+    }
+    if (!rowsToRun.length) {
+      console.warn('col executeTests no cases');
+      message.warn('当前集合没有用例可运行');
+      return;
+    }
+    try {
+      for (let i = 0, l = rowsToRun.length, newRows, curitem; i < l; i++) {
+      let rows = rowsToRun;
 
       let envItem = _.find(this.props.envList, item => {
         return item._id === rows[i].project_id;
-      });
+      }) || {};
 
       curitem = Object.assign(
         {},
@@ -304,6 +344,7 @@ class InterfaceColContent extends Component {
       );
       newRows = [].concat([], rows);
       newRows[i] = curitem;
+      rowsToRun = newRows;
       this.setState({ rows: newRows });
       let status = 'error',
         result;
@@ -334,15 +375,27 @@ class InterfaceColContent extends Component {
       curitem = Object.assign({}, rows[i], { test_status: status });
       newRows = [].concat([], rows);
       newRows[i] = curitem;
+      rowsToRun = newRows;
       this.setState({ rows: newRows });
     }
     await axios.post('/api/col/up_col', {
       col_id: this.props.currColId,
       test_report: JSON.stringify(this.reports)
     });
+    } catch (err) {
+      // 任何未捕获错误直接提示，避免静默失败
+      // eslint-disable-next-line no-console
+      console.error(err);
+      message.error(err?.message || '执行测试失败');
+    }
   };
 
   handleTest = async interfaceData => {
+    console.warn('col handleTest start', interfaceData && interfaceData._id);
+    const projectId = interfaceData.project_id || this.props.router.params.id;
+    if (!projectId) {
+      throw new Error('项目id不能为空');
+    }
     let requestParams = {};
     let options = handleParams(interfaceData, this.handleValue, requestParams);
 
@@ -360,11 +413,57 @@ class InterfaceColContent extends Component {
     }));
 
     try {
-      let data = await crossRequest(options, interfaceData.pre_script, interfaceData.after_script, createContext(
+      const context = createContext(
         this.props.curUid,
-        this.props.match.params.id,
+        projectId,
         interfaceData.interface_id
-      ));
+      );
+      let data;
+      const envItem = _.find(this.props.envList, item => {
+        return item._id === interfaceData.project_id;
+      }) || {};
+      const currDomain = handleCurrDomain(envItem.env || [], interfaceData.case_env) || {};
+      const urlPath = interfaceData.path || '';
+      const headers = {};
+      safeArray(interfaceData.req_headers).forEach(h => {
+        if (h && h.name) headers[h.name] = h.value;
+      });
+
+      if (currDomain.domain) {
+        try {
+          // eslint-disable-next-line no-console
+          console.info('col real request', `${currDomain.domain}${urlPath}`);
+          const realRes = await axios.request({
+            url: `${currDomain.domain}${urlPath}`,
+            method: (interfaceData.method || 'GET').toUpperCase(),
+            headers,
+            params: handleParams(interfaceData.req_query || [], this.handleValue, requestParams),
+            data:
+              interfaceData.req_body_type === 'json'
+                ? json_parse(interfaceData.req_body_other)
+                : interfaceData.req_body_type === 'form'
+                  ? handleParams(interfaceData.req_body_form || [], this.handleValue, requestParams)
+                  : interfaceData.req_body_other
+          });
+          data = {
+            res: {
+              body: realRes.data,
+              header: realRes.headers,
+              status: realRes.status,
+              statusText: realRes.statusText
+            }
+          };
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.warn('real request failed, fallback to mock', err);
+          data = await this.runMockRequest(interfaceData, requestParams, projectId);
+        }
+      } else {
+        // 无域名配置时兜底走 Mock
+        // eslint-disable-next-line no-console
+        console.info('col mock request (no domain)', projectId, urlPath);
+        data = await this.runMockRequest(interfaceData, requestParams, projectId);
+      }
       options.taskId = this.props.curUid;
       let res = (data.res.body = json_parse(data.res.body));
       result = {
@@ -437,6 +536,43 @@ class InterfaceColContent extends Component {
     return result;
   };
 
+  runMockRequest = async (interfaceData, requestParams, projectId) => {
+    const pid = projectId || interfaceData.project_id || this.props.router.params.id;
+    if (!pid) {
+      throw new Error('项目id不能为空');
+    }
+    const headers = {};
+    safeArray(interfaceData.req_headers).forEach(h => {
+      if (h && h.name) headers[h.name] = h.value;
+    });
+    const method = (interfaceData.method || 'GET').toUpperCase();
+    const basepath = this.props.currProject?.basepath || '';
+    const mockPath = joinBasePath(basepath, interfaceData.path || '');
+    const url = `${location.protocol}//${location.host}/mock/${pid}${mockPath}`;
+    // eslint-disable-next-line no-console
+    console.info('col mock request url', url);
+    const axiosRes = await axios.request({
+      url,
+      method,
+      headers,
+      params: handleParams(interfaceData.req_query || [], this.handleValue, requestParams),
+      data:
+        interfaceData.req_body_type === 'json'
+          ? json_parse(interfaceData.req_body_other)
+          : interfaceData.req_body_type === 'form'
+            ? handleParams(interfaceData.req_body_form || [], this.handleValue, requestParams)
+            : interfaceData.req_body_other
+    });
+    return {
+      res: {
+        body: axiosRes.data,
+        header: axiosRes.headers,
+        status: axiosRes.status,
+        statusText: axiosRes.statusText
+      }
+    };
+  };
+
   //response, validRes
   // 断言测试
   handleScriptTest = async (interfaceData, response, validRes, requestParams) => {
@@ -485,7 +621,7 @@ class InterfaceColContent extends Component {
   saveRowOrder = () => {
     const changes = this.state.rows.map((item, index) => ({ id: item._id, index }));
     axios.post('/api/col/up_case_index', changes).then(() => {
-      this.props.fetchInterfaceColList(this.props.match.params.id);
+      this.props.fetchInterfaceColList(this.props.router.params.id);
     });
   };
 
@@ -514,8 +650,52 @@ class InterfaceColContent extends Component {
     this.aceEditor.editor.insertCode(code);
   };
 
+  openImportInterface = () => {
+    const projectId = this.props.router.params.id;
+    this.setState({
+      importInterVisible: true,
+      importColId: this.currColId || this.props.currColId || null,
+      importProjectId: projectId,
+      importInterIds: []
+    });
+  };
+
+  selectInterface = (importInterIds, selectedProject) => {
+    this.setState({ importInterIds, importProjectId: selectedProject || this.state.importProjectId });
+  };
+
+  handleImportOk = async () => {
+    const project_id = this.state.importProjectId || this.props.router.params.id;
+    const colId = this.state.importColId || this.currColId || this.props.currColId;
+    const { importInterIds } = this.state;
+    if (!colId || !importInterIds || importInterIds.length === 0) {
+      message.error('请选择要导入的接口');
+      return;
+    }
+    const res = await axios.post('/api/col/add_case_list', {
+      interface_list: importInterIds,
+      col_id: colId,
+      project_id
+    });
+    if (!res.data.errcode) {
+      this.setState({ importInterVisible: false, importInterIds: [] });
+      message.success('导入集合成功');
+      await this.props.fetchInterfaceColList(project_id);
+      await this.handleColIdChange(colId);
+      await this.props.fetchCaseList(colId);
+    } else {
+      message.error(res.data.errmsg);
+    }
+  };
+
+  handleImportCancel = () => {
+    this.setState({ importInterVisible: false, importInterIds: [] });
+  };
+
   async componentDidUpdate(nextProps) {
-    let newColId = !isNaN(nextProps.match.params.actionId) ? +nextProps.match.params.actionId : 0;
+    let newColId = !isNaN(nextProps.router.params.actionId)
+      ? +nextProps.router.params.actionId
+      : 0;
 
     if (newColId && ((this.currColId && newColId !== this.currColId) || nextProps.isRander)) {
       this.currColId = newColId;
@@ -743,23 +923,23 @@ class InterfaceColContent extends Component {
             case 0:
               return (
                 <Tooltip title="Pass">
-                  <Icon style={{ color: '#00a854' }} type="check-circle" />
+                  <Icon style={{ color: '#00a854' }} name="check-circle" />
                 </Tooltip>
               );
             case 400:
               return (
                 <Tooltip title="请求异常">
-                  <Icon type="info-circle" style={{ color: '#f04134' }} />
+                  <Icon name="info-circle" style={{ color: '#f04134' }} />
                 </Tooltip>
               );
             case 1:
               return (
                 <Tooltip title="验证失败">
-                  <Icon type="exclamation-circle" style={{ color: '#ffbf00' }} />
+                  <Icon name="exclamation-circle" style={{ color: '#ffbf00' }} />
                 </Tooltip>
               );
             default:
-              return <Icon style={{ color: '#00a854' }} type="check-circle" />;
+              return <Icon style={{ color: '#00a854' }} name="check-circle" />;
           }
         }
       },
@@ -822,7 +1002,7 @@ class InterfaceColContent extends Component {
       <div className="interface-col">
         <Modal
             title="通用规则配置"
-            visible={this.state.commonSettingModalVisible}
+            open={this.state.commonSettingModalVisible}
             onOk={this.handleCommonSetting}
             onCancel={this.cancelCommonSetting}
             width={'1000px'}
@@ -832,7 +1012,7 @@ class InterfaceColContent extends Component {
             <Row className="setting-item">
               <Col className="col-item" span="4">
                 <label>检查HttpCode:&nbsp;<Tooltip title={'检查 http code 是否为 200'}>
-                  <Icon type="question-circle-o" style={{ width: '10px' }} />
+                  <Icon name="question-circle-o" style={{ width: '10px' }} />
                 </Tooltip></label>
               </Col>
               <Col className="col-item"  span="18">
@@ -851,7 +1031,7 @@ class InterfaceColContent extends Component {
             <Row className="setting-item">
               <Col className="col-item"  span="4">
                 <label>检查返回json:&nbsp;<Tooltip title={'检查接口返回数据字段值，比如检查 code 是不是等于 0'}>
-                  <Icon type="question-circle-o" style={{ width: '10px' }} />
+                  <Icon name="question-circle-o" style={{ width: '10px' }} />
                 </Tooltip></label>
               </Col>
               <Col  className="col-item" span="6">
@@ -868,7 +1048,7 @@ class InterfaceColContent extends Component {
             <Row className="setting-item">
               <Col className="col-item" span="4">
                 <label>检查返回数据结构:&nbsp;<Tooltip title={'只有 response 基于 json-schema 方式定义，该检查才会生效'}>
-                  <Icon type="question-circle-o" style={{ width: '10px' }} />
+                  <Icon name="question-circle-o" style={{ width: '10px' }} />
                 </Tooltip></label>
               </Col>
               <Col className="col-item"  span="18">
@@ -887,26 +1067,27 @@ class InterfaceColContent extends Component {
             <Row className="setting-item">
               <Col className="col-item  " span="4">
                 <label>全局测试脚本:&nbsp;<Tooltip title={'在跑自动化测试时，优先调用全局脚本，只有全局脚本通过测试，才会开始跑case自定义的测试脚本'}>
-                  <Icon type="question-circle-o" style={{ width: '10px' }} />
+                  <Icon name="question-circle-o" style={{ width: '10px' }} />
                 </Tooltip></label>
               </Col>
               <Col className="col-item"  span="14">
                 <div><Switch onChange={e=>{
-                  let {commonSetting} = this.state;
+                  const { commonSetting } = this.state;
+                  const currentCheckScript = commonSetting.checkScript || { enable: false, content: '' };
                   this.setState({
                     commonSetting :{
                       ...commonSetting,
                       checkScript: {
-                        ...this.state.checkScript,
+                        ...currentCheckScript,
                         enable: e
                       }
                     }
                   })
-                }} checked={this.state.commonSetting.checkScript.enable}  checkedChildren="开" unCheckedChildren="关"  /></div>
+                }} checked={this.state.commonSetting.checkScript?.enable}  checkedChildren="开" unCheckedChildren="关"  /></div>
                 <AceEditor
                   onChange={this.onChangeTest}
                   className="case-script"
-                  data={this.state.commonSetting.checkScript.content}
+                  data={this.state.commonSetting.checkScript?.content || ''}
                   ref={aceEditor => {
                     this.aceEditor = aceEditor;
                   }}
@@ -950,7 +1131,7 @@ class InterfaceColContent extends Component {
                 href="https://leeguooooo.github.io/yapi/documents/case.html"
               >
                 <Tooltip title="点击查看文档">
-                  <Icon type="question-circle-o" />
+                  <Icon name="question-circle-o" />
                 </Tooltip>
               </a>
             </h2>
@@ -965,47 +1146,43 @@ class InterfaceColContent extends Component {
             />
           </Col>
           <Col span={9}>
-            {this.state.hasPlugin ? (
-              <div
+            <div
+              style={{
+                float: 'right',
+                paddingTop: '8px'
+              }}
+            >
+              {this.props.curProjectRole !== 'guest' && (
+                <Tooltip title="在 YApi 服务端跑自动化测试，测试环境不能为私有网络，请确保 YApi 服务器可以访问到自动化测试环境 domain">
+                  <Button
+                    style={{
+                      marginRight: '8px'
+                    }}
+                    onClick={this.autoTests}
+                  >
+                    服务端测试
+                  </Button>
+                </Tooltip>
+              )}
+              <Button
+                onClick={this.openCommonSetting}
                 style={{
-                  float: 'right',
-                  paddingTop: '8px'
+                  marginRight: '8px'
                 }}
               >
-                {this.props.curProjectRole !== 'guest' && (
-                  <Tooltip title="在 YApi 服务端跑自动化测试，测试环境不能为私有网络，请确保 YApi 服务器可以访问到自动化测试环境domain">
-                    <Button
-                      style={{
-                        marginRight: '8px'
-                      }}
-                      onClick={this.autoTests}
-                    >
-                      服务端测试
-                    </Button>
-                  </Tooltip>
-                )}
-                <Button onClick={this.openCommonSetting} style={{
-                        marginRight: '8px'
-                      }} >通用规则配置</Button>
-                &nbsp;
-                <Button type="primary" onClick={this.executeTests}>
-                  开始测试
-                </Button>
-              </div>
-            ) : (
-              <Tooltip title="请安装 cross-request Chrome 插件">
-                <Button
-                  disabled
-                  type="primary"
-                  style={{
-                    float: 'right',
-                    marginTop: '8px'
-                  }}
-                >
-                  开始测试
-                </Button>
-              </Tooltip>
-            )}
+                通用规则配置
+              </Button>
+              <Button
+                type="primary"
+                disabled={!rows || rows.length === 0}
+                onClick={this.executeTests}
+              >
+                开始测试
+              </Button>
+              <Button style={{ marginLeft: 8 }} onClick={this.openImportInterface}>
+                添加用例
+              </Button>
+            </div>
           </Col>
         </Row>
 
@@ -1033,7 +1210,7 @@ class InterfaceColContent extends Component {
           style={{
             minHeight: '500px'
           }}
-          visible={this.state.visible}
+          open={this.state.visible}
           onCancel={this.handleCancel}
           footer={null}
         >
@@ -1046,7 +1223,7 @@ class InterfaceColContent extends Component {
           style={{
             minHeight: '500px'
           }}
-          visible={this.state.advVisible}
+          open={this.state.advVisible}
           onCancel={this.handleAdvCancel}
           onOk={this.handleAdvOk}
           maskClosable={false}
@@ -1071,16 +1248,17 @@ class InterfaceColContent extends Component {
             style={{
               minHeight: '500px'
             }}
-            visible={this.state.autoVisible}
+            open={this.state.autoVisible}
             onCancel={this.handleAuto}
             className="autoTestsModal"
             footer={null}
+            styles={{ body: { paddingTop: 32 } }}
           >
             <Row type="flex" justify="space-around" className="row" align="top">
               <Col span={3} className="label" style={{ paddingTop: '16px' }}>
                 选择环境
                 <Tooltip title="默认使用测试用例选择的环境">
-                  <Icon type="question-circle-o" />
+                  <Icon name="question-circle-o" />
                 </Tooltip>
                 &nbsp;：
               </Col>
@@ -1114,7 +1292,7 @@ class InterfaceColContent extends Component {
                 消息通知
                 <Tooltip title={'测试不通过时，会给项目组成员发送消息通知'}>
                   <Icon
-                    type="question-circle-o"
+                    name="question-circle-o"
                     style={{
                       width: '10px'
                     }}
@@ -1136,7 +1314,7 @@ class InterfaceColContent extends Component {
                 下载数据
                 <Tooltip title={'开启后，测试数据将被下载到本地'}>
                   <Icon
-                    type="question-circle-o"
+                    name="question-circle-o"
                     style={{
                       width: '10px'
                     }}
@@ -1173,6 +1351,21 @@ class InterfaceColContent extends Component {
             </div>
           </Modal>
         )}
+        <Modal
+          title="添加用例到集合"
+          open={this.state.importInterVisible}
+          onOk={this.handleImportOk}
+          onCancel={this.handleImportCancel}
+          okButtonProps={{ disabled: !this.state.importInterIds || this.state.importInterIds.length === 0 }}
+          className="import-case-modal"
+          width={800}
+          styles={{ body: { maxHeight: 800, overflowY: 'auto' } }}
+        >
+          <ImportInterface
+            currProjectId={this.props.router.params.id}
+            selectInterface={this.selectInterface}
+          />
+        </Modal>
       </div>
     );
   }

@@ -1,30 +1,25 @@
 @use '../../styles/mixin.scss' as *;
 
 .breadcrumb-container {
-  .ant-breadcrumb {
+  .yapi-breadcrumb {
     font-size: 16px;
     float: left;
     color: #fff;
     padding-left: 16px;
     line-height: unset;
-  
   }
-  .ant-breadcrumb a {
-    color: #fff;
-    &:hover {
-      color: $color-blue
-    }
+
+  .yapi-breadcrumb span,
+  .yapi-breadcrumb a {
+    color: inherit;
   }
-  .ant-breadcrumb > span:last-child {
-    color: #fff;
-    font-weight: normal;
+
+  .yapi-breadcrumb a:hover {
+    color: $color-blue;
   }
-  .ant-breadcrumb-link,
-  .ant-breadcrumb-link > a {
-    color: #fff !important;
-  }
-  .ant-breadcrumb-separator {
-    color: #fff;
+
+  .yapi-breadcrumb li:last-child,
+  .yapi-breadcrumb li:last-child a {
     font-weight: normal;
   }
 }

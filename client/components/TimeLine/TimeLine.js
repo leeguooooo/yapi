@@ -173,48 +173,61 @@ class TimeTree extends Component {
       </Option>
     );
 
+    let timelineItems = [];
     if (data && data.length) {
-      data = data.map((item, i) => {
+      timelineItems = data.map((item, i) => {
         let interfaceDiff = false;
         // 去掉了 && item.data.interface_id
         if (item.data && typeof item.data === 'object') {
           interfaceDiff = true;
         }
-        return (
-          <Timeline.Item
-            dot={
-              <Link to={`/user/profile/${item.uid}`}>
-                <Avatar src={`/api/user/avatar?uid=${item.uid}`} />
-              </Link>
-            }
-            key={i}
-          >
-            <div className="logMesHeade">
-              <span className="logoTimeago">{timeago(item.add_time)}</span>
-              {/*<span className="logusername"><Link to={`/user/profile/${item.uid}`}><Icon type="user" />{item.username}</Link></span>*/}
-              <span className="logtype">{logType[item.type]}动态</span>
-              <span className="logtime">{formatTime(item.add_time)}</span>
-            </div>
-            <span className="logcontent" dangerouslySetInnerHTML={{ __html: item.content }} />
-            <div style={{ padding: '10px 0 0 10px' }}>
-              {interfaceDiff && <Button onClick={() => this.openDiff(item.data)}>改动详情</Button>}
-            </div>
-          </Timeline.Item>
-        );
+        return {
+          key: item._id || i,
+          icon: (
+            <Link to={`/user/profile/${item.uid}`}>
+              <Avatar
+                className="news-avatar"
+                size={36}
+                src={`/api/user/avatar?uid=${item.uid}`}
+              />
+            </Link>
+          ),
+          content: (
+            <>
+              <div className="logMesHeade">
+                <span className="logoTimeago">{timeago(item.add_time)}</span>
+                {/*<span className="logusername"><Link to={`/user/profile/${item.uid}`}><Icon type="user" />{item.username}</Link></span>*/}
+                <span className="logtype">{logType[item.type]}动态</span>
+                <span className="logtime">{formatTime(item.add_time)}</span>
+              </div>
+              <span className="logcontent" dangerouslySetInnerHTML={{ __html: item.content }} />
+              <div style={{ padding: '10px 0 0 10px' }}>
+                {interfaceDiff && <Button onClick={() => this.openDiff(item.data)}>改动详情</Button>}
+              </div>
+            </>
+          )
+        };
       });
-    } else {
-      data = '';
-    }
-    let pending =
-      this.props.newsData.total <= this.props.curpage ? (
-        <a className="logbidden">以上为全部内容</a>
-      ) : (
-        <a className="loggetMore" onClick={this.getMore.bind(this)}>
-          查看更多
-        </a>
-      );
-    if (this.state.loading) {
-      pending = <Spin />;
+
+      let pendingContent =
+        this.props.newsData.total <= this.props.curpage ? (
+          <a className="logbidden">以上为全部内容</a>
+        ) : (
+          <a className="loggetMore" onClick={this.getMore.bind(this)}>
+            查看更多
+          </a>
+        );
+
+      if (this.state.loading) {
+        pendingContent = <Spin />;
+      }
+
+      timelineItems.push({
+        key: 'pending',
+        className: 'news-timeline-item-pending',
+        loading: true,
+        content: pendingContent
+      });
     }
     let diffView = showDiffMsg(jsondiffpatch, formattersHtml, curDiffData);
 
@@ -223,7 +236,7 @@ class TimeTree extends Component {
         <Modal
           style={{ minWidth: '800px' }}
           title="Api 改动日志"
-          visible={this.state.visible}
+          open={this.state.visible}
           footer={null}
           onCancel={this.handleCancel}
         >
@@ -273,10 +286,16 @@ class TimeTree extends Component {
             </Col>
           </Row>
         )}
-        {data ? (
-          <Timeline className="news-content" pending={pending}>
-            {data}
-          </Timeline>
+        {timelineItems.length ? (
+          <Timeline
+            className="news-content"
+            classNames={{
+              item: 'news-timeline-item',
+              itemIcon: 'news-timeline-item-icon',
+              itemContent: 'news-timeline-item-content'
+            }}
+            items={timelineItems}
+          />
         ) : (
           <ErrMsg type="noData" />
         )}

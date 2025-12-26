@@ -153,5 +153,9 @@ function handleSegment(str, index) {
 }
 
 const utils = stringHandles;
-export { utils, PowerString, handleOriginStr };
-export default { utils, PowerString, handleOriginStr };
+function filter(str, handleValueFn) {
+  return handleOriginStr(str, handleValueFn);
+}
+
+export { utils, PowerString, handleOriginStr, filter };
+export default { utils, PowerString, handleOriginStr, filter };

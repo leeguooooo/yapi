@@ -60,7 +60,7 @@ class userController extends baseController {
           study: result.study
         },
         0,
-        'logout success...'
+        'login success...'
       ));
     } else {
       return (ctx.body = yapi.commons.resReturn(null, 405, '密码错误'));
@@ -162,7 +162,7 @@ class userController extends baseController {
             study: result.study
           },
           0,
-          'logout success...'
+          'login success...'
         ));
       }
     } catch (e) {

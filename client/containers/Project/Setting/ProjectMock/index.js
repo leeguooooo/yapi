@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Form } from 'client/components/LegacyForm';
-import { Icon } from '@ant-design/compatible';
-import { Switch, Button, Tooltip, message } from 'antd';
+import { Form, Switch, Button, Tooltip, message } from 'antd';
+import Icon from 'client/components/Icon';
 import AceEditor from '../../../../components/AceEditor/AceEditor';
 const FormItem = Form.Item;
 import { updateProjectMock, getProject } from '../../../../reducer/modules/project';
@@ -36,7 +35,6 @@ const tailFormItemLayout = {
     getProject
   }
 )
-@Form.create()
 export default class ProjectMock extends Component {
   static propTypes = {
     form: PropTypes.object,
@@ -73,10 +71,12 @@ export default class ProjectMock extends Component {
   };
 
   componentDidMount() {
-    this.setState({
-      is_mock_open: this.props.projectMsg.is_mock_open,
-      project_mock_script: this.props.projectMsg.project_mock_script
-    });
+    if (this.props.projectMsg) {
+      this.setState({
+        is_mock_open: this.props.projectMsg.is_mock_open,
+        project_mock_script: this.props.projectMsg.project_mock_script
+      });
+    }
   }
 
   // 是否开启
@@ -95,7 +95,7 @@ export default class ProjectMock extends Component {
   render() {
     return (
       <div className="m-panel">
-        <Form>
+        <Form layout="horizontal">
           <FormItem
             label={
               <span>
@@ -105,7 +105,7 @@ export default class ProjectMock extends Component {
                   href="https://leeguooooo.github.io/yapi/documents/project.html#%E5%85%A8%E5%B1%80mock"
                 >
                   <Tooltip title="点击查看文档">
-                    <Icon type="question-circle-o" />
+                    <Icon name="question-circle-o" />
                   </Tooltip>
                 </a>
               </span>
@@ -127,7 +127,7 @@ export default class ProjectMock extends Component {
             />
           </FormItem>
           <FormItem {...tailFormItemLayout}>
-            <Button type="primary" htmlType="submit" onClick={this.handleSubmit}>
+            <Button htmlType="button" type="primary" onClick={this.handleSubmit}>
               保存
             </Button>
           </FormItem>

@@ -1,15 +1,13 @@
 import React, { PureComponent as Component } from 'react';
-import { createRoot } from 'react-dom/client';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { Home, Group, Project, Follows, AddProject, Login } from './containers/index';
 import { Alert } from 'antd';
 import User from './containers/User/User.js';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import Loading from './components/Loading/Loading';
-import MyPopConfirm from './components/MyPopConfirm/MyPopConfirm';
 import { checkLoginState } from './reducer/modules/user';
 import { requireAuthentication } from './components/AuthenticatedComponent';
 import Notify from './components/Notify/Notify';
@@ -95,55 +93,35 @@ export default class App extends Component {
     this.props.checkLoginState();
   }
 
-  showConfirm = (msg, callback) => {
-    // 自定义 window.confirm
-    // http://reacttraining.cn/web/api/BrowserRouter/getUserConfirmation-func
-    let container = document.createElement('div');
-    document.body.appendChild(container);
-    const root = createRoot(container);
-    root.render(<MyPopConfirm msg={msg} callback={callback} />);
-  };
-
   route = status => {
     let r;
     if (status === LOADING_STATUS) {
       return <Loading visible />;
     } else {
       r = (
-        <Router getUserConfirmation={this.showConfirm}>
+        <Router>
           <div className="g-main">
             <div className="router-main">
               {this.props.curUserRole === 'admin' && <Notify />}
               {alertContent()}
               {this.props.loginState !== 1 ? <Header /> : null}
               <div className="router-container">
-                <Switch>
+                <Routes>
                   {Object.keys(AppRoute).map(key => {
-                    let item = AppRoute[key];
-                    return key === 'login' ? (
-                      <Route key={key} path={item.path} component={item.component} />
-                    ) : key === 'home' ? (
-                      <Route key={key} exact path={item.path} component={item.component} />
-                    ) : (
-                      <Route
-                        key={key}
-                        path={item.path}
-                        component={requireAuthentication(item.component)}
-                      />
+                    const item = AppRoute[key];
+                    const RouteComponent = item.component;
+                    if (key === 'login' || key === 'home') {
+                      return (
+                        <Route key={key} path={item.path} element={<RouteComponent />} />
+                      );
+                    }
+                    const AuthedComponent = requireAuthentication(RouteComponent);
+                    return (
+                      <Route key={key} path={item.path} element={<AuthedComponent />} />
                     );
                   })}
-                </Switch>
+                </Routes>
               </div>
-              {/* <div className="router-container">
-                <Route exact path="/" component={Home} />
-                <Route path="/group" component={requireAuthentication(Group)} />
-                <Route path="/project/:id" component={requireAuthentication(Project)} />
-                <Route path="/user" component={requireAuthentication(User)} />
-                <Route path="/follow" component={requireAuthentication(Follows)} />
-                <Route path="/add-project" component={requireAuthentication(AddProject)} />
-                <Route path="/login" component={Login} />
-                {/* <Route path="/statistic" component={statisticsPage} /> */}
-              {/* </div> */}
             </div>
             <Footer />
           </div>

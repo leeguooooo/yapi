@@ -1,11 +1,6 @@
-import React, { PureComponent as Component } from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Form } from 'client/components/LegacyForm';
-import { Input, Button, TreeSelect } from 'antd';
-const FormItem = Form.Item;
-function hasErrors(fieldsError) {
-  return Object.keys(fieldsError).some(field => fieldsError[field]);
-}
+import { Form, Input, Button, TreeSelect } from 'antd';
 
 const buildTreeData = (list = []) =>
   list.map(item => ({
@@ -15,84 +10,95 @@ const buildTreeData = (list = []) =>
     children: buildTreeData(item.children || [])
   }));
 
-class AddInterfaceForm extends Component {
-  static propTypes = {
-    form: PropTypes.object,
-    onSubmit: PropTypes.func,
-    onCancel: PropTypes.func,
-    catdata: PropTypes.object,
-    catTree: PropTypes.array
-  };
-  handleSubmit = e => {
-    e.preventDefault();
-    this.props.form.validateFields((err, values) => {
-      if (!err) {
-        this.props.onSubmit(values);
-      }
-    });
-  };
-
-  render() {
-    const { getFieldDecorator, getFieldsError } = this.props.form;
-    const formItemLayout = {
-      labelCol: {
-        xs: { span: 24 },
-        sm: { span: 6 }
-      },
-      wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 14 }
-      }
-    };
-
-    return (
-      <Form onSubmit={this.handleSubmit}>
-        <FormItem {...formItemLayout} label="分类名">
-          {getFieldDecorator('name', {
-            rules: [
-              {
-                required: true,
-                message: '请输入分类名称!'
-              }
-            ],
-            initialValue: this.props.catdata ? this.props.catdata.name || null : null
-          })(<Input placeholder="分类名称" />)}
-        </FormItem>
-        <FormItem {...formItemLayout} label="备注">
-          {getFieldDecorator('desc', {
-            initialValue: this.props.catdata ? this.props.catdata.desc || null : null
-          })(<Input placeholder="备注" />)}
-        </FormItem>
-        <FormItem {...formItemLayout} label="父级分类">
-          {getFieldDecorator('parent_id', {
-            initialValue:
-              this.props.catdata && typeof this.props.catdata.parent_id !== 'undefined'
-                ? `${this.props.catdata.parent_id}`
-                : '0'
-          })(
-            <TreeSelect
-              allowClear
-              dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-              treeDefaultExpandAll
-              treeData={[
-                { title: '根分类', value: '0', key: 'root' },
-                ...buildTreeData(this.props.catTree || [])
-              ]}
-            />
-          )}
-        </FormItem>
-
-        <FormItem className="catModalfoot" wrapperCol={{ span: 24, offset: 8 }}>
-          <Button onClick={this.props.onCancel} style={{ marginRight: '10px' }}>
-            取消
-          </Button>
-          <Button type="primary" htmlType="submit" disabled={hasErrors(getFieldsError())}>
-            提交
-          </Button>
-        </FormItem>
-      </Form>
-    );
+const formItemLayout = {
+  labelCol: {
+    xs: { span: 24 },
+    sm: { span: 6 }
+  },
+  wrapperCol: {
+    xs: { span: 24 },
+    sm: { span: 14 }
   }
-}
+};
 
-export default Form.create()(AddInterfaceForm);
+const AddInterfaceCatForm = ({ onSubmit, onCancel, catdata, catTree }) => {
+  const [form] = Form.useForm();
+  const nameValue = Form.useWatch('name', form);
+
+  useEffect(() => {
+    form.setFieldsValue({
+      name: catdata ? catdata.name || null : null,
+      desc: catdata ? catdata.desc || null : null,
+      parent_id:
+        catdata && typeof catdata.parent_id !== 'undefined'
+          ? `${catdata.parent_id}`
+          : '0'
+    });
+  }, [catdata, form]);
+
+  const handleFinish = values => {
+    const payload = { ...values, parent_id: Number(values.parent_id || 0) };
+    onSubmit(payload);
+  };
+
+  return (
+    <Form
+      form={form}
+      onFinish={handleFinish}
+      initialValues={{
+        name: catdata ? catdata.name || null : null,
+        desc: catdata ? catdata.desc || null : null,
+        parent_id:
+          catdata && typeof catdata.parent_id !== 'undefined'
+            ? `${catdata.parent_id}`
+            : '0'
+      }}
+    >
+      <Form.Item
+        {...formItemLayout}
+        label="分类名"
+        name="name"
+        rules={[
+          {
+            required: true,
+            message: '请输入分类名称!'
+          }
+        ]}
+      >
+        <Input placeholder="分类名称" />
+      </Form.Item>
+      <Form.Item {...formItemLayout} label="备注" name="desc">
+        <Input placeholder="备注" />
+      </Form.Item>
+      <Form.Item {...formItemLayout} label="父级分类" name="parent_id">
+        <TreeSelect
+          allowClear
+          dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+          treeDefaultExpandAll
+          treeData={[
+            { title: '根分类', value: '0', key: 'root' },
+            ...buildTreeData(catTree || [])
+          ]}
+        />
+      </Form.Item>
+
+      <Form.Item className="catModalfoot" wrapperCol={{ span: 24, offset: 8 }}>
+        <Button onClick={onCancel} style={{ marginRight: '10px' }}>
+          取消
+        </Button>
+        <Button type="primary" htmlType="submit" disabled={!nameValue}>
+          提交
+        </Button>
+      </Form.Item>
+    </Form>
+  );
+};
+
+AddInterfaceCatForm.propTypes = {
+  catTree: PropTypes.array,
+  catdata: PropTypes.object,
+  onCancel: PropTypes.func,
+  onSubmit: PropTypes.func
+};
+
+export default AddInterfaceCatForm;

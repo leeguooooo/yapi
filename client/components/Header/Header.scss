@@ -4,16 +4,7 @@
   color: red;
 }
 
-.user-menu.ant-menu.ant-menu-dark .ant-menu-item-selected {
-  background: #32363a;
-  color: rgba(255, 255, 255, 0.67);
-}
-.user-menu.ant-menu-dark .ant-menu-item-selected > a {
-  color: rgba(255, 255, 255, 0.67);
-}
-.user-menu .ant-dropdown-menu-title-content .anticon {
-  margin-right: 6px;
-}
+// NOTE: Avoid styling antd internal menu classes globally.
 
 /* .header-box.css */
 .header-box {
@@ -104,6 +95,7 @@
     height: .64rem;
     display: flex;
     align-items: center;
+    line-height: normal;
     .toolbar-li{
       float: left;
       font-size: .14rem;
@@ -117,12 +109,6 @@
       .dropdown-link {
         color: #c8d2e1;
         transition: color .2s;
-        // .ant-avatar-image{
-        //   margin-bottom: -10px;
-        // }
-        // .ant-avatar > img{
-        //   height: auto;
-        // }
         .avatar-image{
           margin-bottom: -10px;
           display: inline-block;

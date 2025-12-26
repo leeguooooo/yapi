@@ -190,6 +190,7 @@ function handleSegment(str, index) {
 module.exports = {
   utils: stringHandles,
   PowerString,
-  handleOriginStr
+  handleOriginStr,
+  filter: handleOriginStr
 };
 module.exports.default = module.exports;

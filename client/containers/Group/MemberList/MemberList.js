@@ -2,7 +2,7 @@ import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Table, Select, Button, Modal, Row, Col, message, Popconfirm } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 import { Link } from 'react-router-dom';
 import './MemberList.scss';
 import { autobind } from 'core-decorators';
@@ -246,7 +246,7 @@ class MemberList extends Component {
                 >
                   <Button
                     type="danger"
-                    icon={<Icon type="delete" />}
+                    icon={<Icon name="delete" />}
                     className="btn-danger"
                   />
                   {/* <Icon type="delete" className="btn-danger"/> */}
@@ -289,7 +289,7 @@ class MemberList extends Component {
         {this.state.visible ? (
           <Modal
             title="添加成员"
-            visible={this.state.visible}
+            open={this.state.visible}
             onOk={this.handleOk}
             onCancel={this.handleCancel}
           >

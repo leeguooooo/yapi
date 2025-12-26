@@ -2,7 +2,7 @@ import './Footer.scss';
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 
 const version = process.env.version;
 class Footer extends Component {
@@ -45,7 +45,7 @@ class FootItem extends Component {
     return (
       <Col span={6}>
         <h4 className="title">
-          {this.props.iconType ? <Icon type={this.props.iconType} className="icon" /> : ''}
+          {this.props.iconType ? <Icon name={this.props.iconType} className="icon" /> : ''}
           {this.props.title}
         </h4>
         {this.props.linkList.map(function(item, i) {

@@ -1,7 +1,6 @@
 import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { message, Tooltip, Input } from 'antd';
@@ -37,16 +36,14 @@ import './InterfaceCaseContent.scss';
     getEnv
   }
 )
-@withRouter
 export default class InterfaceCaseContent extends Component {
   static propTypes = {
-    match: PropTypes.object,
+    router: PropTypes.object,
     interfaceColList: PropTypes.array,
     fetchInterfaceColList: PropTypes.func,
     fetchCaseData: PropTypes.func,
     setColData: PropTypes.func,
     fetchCaseList: PropTypes.func,
-    history: PropTypes.object,
     currColId: PropTypes.number,
     currCaseId: PropTypes.number,
     currCase: PropTypes.object,
@@ -79,16 +76,23 @@ export default class InterfaceCaseContent extends Component {
   }
 
   loadCase = async props => {
-    const result = await props.fetchInterfaceColList(props.match.params.id);
+    const result = await props.fetchInterfaceColList(props.router.params.id);
     let { currCaseId } = props;
-    const params = props.match.params;
+    const params = props.router.params;
     const { actionId } = params;
     currCaseId = +actionId || +currCaseId || result.payload.data.data[0].caseList[0]._id;
     let currColId = this.getColId(result.payload.data.data, currCaseId);
-    await props.fetchCaseData(currCaseId);
-    props.setColData({ currCaseId: +currCaseId, currColId, isShowCol: false });
-    await props.getEnv(props.currCase.project_id);
-    this.setState({ editCasename: props.currCase.casename });
+    const caseRes = await props.fetchCaseData(currCaseId);
+    const caseData = caseRes?.payload?.data?.data || props.currCase || {};
+    const filledCase = {
+      ...caseData,
+      project_id: caseData.project_id || +props.router.params.id
+    };
+    props.setColData({ currCaseId: +currCaseId, currColId, isShowCol: false, currCase: filledCase });
+    if (filledCase.project_id) {
+      await props.getEnv(filledCase.project_id);
+    }
+    this.setState({ editCasename: filledCase.casename || '' });
   };
 
   async componentDidMount() {
@@ -96,8 +100,8 @@ export default class InterfaceCaseContent extends Component {
   }
 
   async componentDidUpdate(prevProps) {
-    const oldCaseId = prevProps.match.params.actionId;
-    const newCaseId = this.props.match.params.actionId;
+    const oldCaseId = prevProps.router.params.actionId;
+    const newCaseId = this.props.router.params.actionId;
     if (oldCaseId !== newCaseId) {
       await this.loadCase(this.props);
     }
@@ -142,7 +146,7 @@ export default class InterfaceCaseContent extends Component {
 
     const res = await axios.post('/api/col/up_case', params);
     if (this.props.currCase.casename !== casename) {
-      this.props.fetchInterfaceColList(this.props.match.params.id);
+      this.props.fetchInterfaceColList(this.props.router.params.id);
     }
     if (res.data.errcode) {
       message.error(res.data.errmsg);
@@ -177,7 +181,7 @@ export default class InterfaceCaseContent extends Component {
         pre_script: currProject.pre_script,
         after_script: currProject.after_script
       },
-      { _id: currCase._id }
+      { _id: currCase._id, project_id: Number(currCase.project_id || this.props.router.params.id) }
     );
 
     return (
@@ -218,7 +222,7 @@ export default class InterfaceCaseContent extends Component {
               save={this.updateCase}
               ref={this.savePostmanRef}
               interfaceId={currCase.interface_id}
-              projectId={currCase.project_id}
+              projectId={Number(currCase.project_id || this.props.router.params.id)}
               curUid={this.props.curUid}
             />
           )}

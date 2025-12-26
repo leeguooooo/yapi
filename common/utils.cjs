@@ -1,6 +1,5 @@
 const Mock = require('mockjs');
-const filter = require('./power-string.js').filter;
-const stringUtils = require('./power-string.js').utils;
+const { handleOriginStr: filter, utils: stringUtils } = require('./power-string.js');
 const json5 = require('json5');
 const Ajv = require('ajv');
 /**
@@ -251,21 +250,64 @@ exports.timeago = function(timestamp) {
 // json schema 验证器
 exports.schemaValidator = function(schema, params) {
   try {
-    const ajv = new Ajv({
-      format: false,
-      meta: false
+    let ajv = new Ajv({
+      allErrors: true,
+      strict: false,
+      validateFormats: false,
+      schemaId: 'auto',
+      meta: false,
+      logger: false
     });
-    let metaSchema = require('ajv/lib/refs/json-schema-draft-04.json');
-    ajv.addMetaSchema(metaSchema);
-    ajv._opts.defaultMeta = metaSchema.id;
-    ajv._refs['http://json-schema.org/schema'] = 'http://json-schema.org/draft-04/schema';
-    var localize = require('ajv-i18n');
+
+    // Optional draft-04 support when ajv-draft-04 is installed.
+    try {
+      const addDraft4 = require('ajv-draft-04');
+      if (typeof addDraft4 === 'function') {
+        ajv = addDraft4(ajv);
+      } else if (addDraft4 && typeof addDraft4.default === 'function') {
+        ajv = addDraft4.default(ajv);
+      }
+    } catch (err) {
+      // ignore
+    }
+    const localize = require('ajv-i18n');
 
     schema = schema || {
       type: 'object',
       title: 'empty object',
       properties: {}
     };
+    const normalizeDraft04Exclusive = node => {
+      if (!node || typeof node !== 'object') return;
+      if (node.exclusiveMinimum === true && typeof node.minimum === 'number') {
+        node.exclusiveMinimum = node.minimum;
+        delete node.minimum;
+      } else if (node.exclusiveMinimum === false) {
+        delete node.exclusiveMinimum;
+      }
+      if (node.exclusiveMaximum === true && typeof node.maximum === 'number') {
+        node.exclusiveMaximum = node.maximum;
+        delete node.maximum;
+      } else if (node.exclusiveMaximum === false) {
+        delete node.exclusiveMaximum;
+      }
+      Object.keys(node).forEach(key => {
+        const val = node[key];
+        if (Array.isArray(val)) {
+          val.forEach(child => normalizeDraft04Exclusive(child));
+        } else if (val && typeof val === 'object') {
+          normalizeDraft04Exclusive(val);
+        }
+      });
+    };
+
+    if (schema && typeof schema === 'object') {
+      schema = JSON.parse(JSON.stringify(schema));
+      if (schema.$schema && /draft-04/i.test(schema.$schema)) {
+        delete schema.$schema;
+      }
+      normalizeDraft04Exclusive(schema);
+    }
     const validate = ajv.compile(schema);
     let valid = validate(params);
 

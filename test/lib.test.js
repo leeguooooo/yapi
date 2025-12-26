@@ -65,7 +65,7 @@ test('initPlugins3', t=>{
   }])
 })
 
-test('initPlugins3', t=>{
+test('initPlugins3-options', t=>{
   plugin.__set__("getPluginConfig", function(){
     return {
       server: false,
@@ -95,7 +95,7 @@ test('initPlugins3', t=>{
   }])
 })
 
-test('initPlugins3', t=>{
+test('initPlugins3-disabled', t=>{
   plugin.__set__("getPluginConfig", function(){
     return {
       server: false,
@@ -136,27 +136,27 @@ test('testJsonEqualBaseString', t=>{
 })
 
 
-test('isDeepMatch', t=>{
+test('isDeepMatch-basic', t=>{
   t.true(lib.isDeepMatch({a:'aaaaa', b:2}, {a:'aaaaa'}))
 })
 
-test('isDeepMatch', t=>{
+test('isDeepMatch-nested', t=>{
   t.true(lib.isDeepMatch({a:1, b:2, c: {t:'ttt'}}, {c: {t:'ttt'}}))
 })
 
-test('isDeepMatch', t=>{
+test('isDeepMatch-empty-undefined', t=>{
   t.true(lib.isDeepMatch({}, undefined))
 })
 
-test('isDeepMatch', t=>{
+test('isDeepMatch-undefined-empty', t=>{
   t.true(lib.isDeepMatch(undefined, {}))
 })
 
-test('isDeepMatch', t=>{
+test('isDeepMatch-undefined-mismatch', t=>{
   t.false(lib.isDeepMatch(undefined, {a:1}))
 })
 
-test('isDeepMatch', t=>{
+test('isDeepMatch-number-string', t=>{
   t.true(lib.isDeepMatch({ t: 1,
     b: '2',
     ip: '127.0.0.1',
@@ -167,14 +167,14 @@ test('isDeepMatch', t=>{
     code: 1 }, {t:'1'}))
 })
 
-test('isDeepMatch', t=>{
-    t.true(lib.isDeepMatch({ t:[{a: 1}]}, { t:[{a: 1}]}))
-  })
+test('isDeepMatch-array-equal', t=>{
+  t.true(lib.isDeepMatch({ t:[{a: 1}]}, { t:[{a: 1}]}))
+})
 
-  test('isDeepMatch', t=>{
-    t.false(lib.isDeepMatch({ t:[{a: 1, b: 12}]}, { t:[{a: 1}]}))
-  })
+test('isDeepMatch-array-mismatch', t=>{
+  t.false(lib.isDeepMatch({ t:[{a: 1, b: 12}]}, { t:[{a: 1}]}))
+})
 
-  test('isDeepMatch', t=>{
-    t.true(lib.isDeepMatch([{a: 1}], [{a: 1}]))
-  })
+test('isDeepMatch-array-root', t=>{
+  t.true(lib.isDeepMatch([{a: 1}], [{a: 1}]))
+})

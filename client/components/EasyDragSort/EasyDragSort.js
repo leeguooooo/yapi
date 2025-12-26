@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 
 /**
@@ -23,7 +22,7 @@ function isDom(obj) {
 
 export default class EasyDragSort extends React.Component {
   static propTypes = {
-    children: PropTypes.array,
+    children: PropTypes.node,
     onChange: PropTypes.func,
     onDragEnd: PropTypes.func,
     data: PropTypes.func,
@@ -35,11 +34,34 @@ export default class EasyDragSort extends React.Component {
     this.itemRefs = {};
   }
 
+  handleMouseDown = (e, onlyChild) => {
+    let el = e.target,
+      target = e.target;
+    if (!onlyChild || !isDom(el)) {
+      return;
+    }
+    do {
+      if (el && isDom(el) && el.getAttribute(onlyChild)) {
+        target = el;
+      }
+      if (el && el.tagName === 'DIV' && el.getAttribute('data-ref')) {
+        break;
+      }
+    } while ((el = el.parentNode));
+    if (!el) {
+      return;
+    }
+    let refKey = el.getAttribute('data-ref');
+    let dom = this.itemRefs[refKey];
+    if (dom) {
+      dom.draggable = target.getAttribute(onlyChild) ? true : false;
+    }
+  };
+
   render() {
-    const that = this;
     const props = this.props;
     const { onlyChild } = props;
-    let container = props.children;
+    const container = React.Children.toArray(props.children);
     const onChange = (from, to) => {
       if (from === to) {
         return;
@@ -56,69 +78,33 @@ export default class EasyDragSort extends React.Component {
     return (
       <div>
         {container.map((item, index) => {
-          if (React.isValidElement(item)) {
-            return React.cloneElement(item, {
-              draggable: onlyChild ? false : true,
-              ref: (el) => {
-                // 获取真实的 DOM 节点，支持组件实例的情况
-                let domNode = el;
-                if (el) {
-                  // 判断是否为真实 DOM 节点
-                  const isDOMNode = el.nodeType === 1;
-                  // 如果不是 DOM 节点（可能是组件实例），尝试获取真实 DOM
-                  if (!isDOMNode && typeof ReactDOM.findDOMNode === 'function') {
-                    domNode = ReactDOM.findDOMNode(el);
-                  }
-                }
-                that.itemRefs['x' + index] = domNode;
-              },
-              'data-ref': 'x' + index,
-              onDragStart: function() {
+          const refKey = 'x' + index;
+          return (
+            <div
+              key={refKey}
+              draggable={onlyChild ? false : true}
+              ref={el => {
+                this.itemRefs[refKey] = el;
+              }}
+              data-ref={refKey}
+              onDragStart={() => {
                 curDragIndex = index;
-              },
-              /**
-               * 控制 dom 是否可拖动
-               * @param {*} e
-               */
-              onMouseDown(e) {
-                if (!onlyChild) {
-                  return;
-                }
-                let el = e.target,
-                  target = e.target;
-                if (!isDom(el)) {
-                  return;
-                }
-                do {
-                  if (el && isDom(el) && el.getAttribute(onlyChild)) {
-                    target = el;
-                  }
-                  if (el && el.tagName == 'DIV' && el.getAttribute('data-ref')) {
-                    break;
-                  }
-                } while ((el = el.parentNode));
-                if (!el) {
-                  return;
-                }
-                let refKey = el.getAttribute('data-ref');
-                let dom = that.itemRefs[refKey];
-                if (dom) {
-                  dom.draggable = target.getAttribute(onlyChild) ? true : false;
-                }
-              },
-              onDragEnter: function() {
+              }}
+              onMouseDown={e => this.handleMouseDown(e, onlyChild)}
+              onDragEnter={() => {
                 onChange(curDragIndex, index);
                 curDragIndex = index;
-              },
-              onDragEnd: function() {
+              }}
+              onDragEnd={() => {
                 curDragIndex = null;
                 if (typeof props.onDragEnd === 'function') {
                   props.onDragEnd();
                 }
-              }
-            });
-          }
-          return item;
+              }}
+            >
+              {item}
+            </div>
+          );
         })}
       </div>
     );

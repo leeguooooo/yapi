@@ -45,6 +45,8 @@ class MockList extends Component {
           value={filter}
           placeholder="搜索mock数据"
           className="mock-search"
+          id="mock-search"
+          name="mock-search"
         />
         {list.map((item, index) => {
           return (

@@ -8,6 +8,7 @@ import ProjectToken from './ProjectToken/ProjectToken';
 import ProjectMock from './ProjectMock/index.js';
 import { connect } from 'react-redux';
 import plugin from 'client/plugin.js';
+import { useParams } from 'react-router-dom';
 
 const routers = {}
 
@@ -20,11 +21,11 @@ import './Setting.scss';
 })
 class Setting extends Component {
   static propTypes = {
-    match: PropTypes.object,
+    projectId: PropTypes.string,
     curProjectRole: PropTypes.string
   };
   render() {
-    const id = this.props.match.params.id;
+    const id = this.props.projectId;
     plugin.emitHook('sub_setting_nav', routers);
     return (
       <div className="g-row">
@@ -58,4 +59,9 @@ class Setting extends Component {
   }
 }
 
-export default Setting;
+function SettingWithParams(props) {
+  const { id } = useParams();
+  return <Setting {...props} projectId={id} />;
+}
+
+export default SettingWithParams;

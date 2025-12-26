@@ -1,9 +1,8 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Form } from 'client/components/LegacyForm';
-import { Icon } from '@ant-design/compatible';
-import { Button, Input, Tooltip, Select, message, Row, Col, Radio } from 'antd';
+import Icon from 'client/components/Icon';
+import { Button, Input, Tooltip, Select, message, Row, Col, Radio, Form } from 'antd';
 import { addProject } from '../../reducer/modules/project.js';
 import { fetchGroupList } from '../../reducer/modules/group.js';
 import { autobind } from 'core-decorators';
@@ -14,7 +13,7 @@ const Option = Select.Option;
 const RadioGroup = Radio.Group;
 import { pickRandomProperty, handlePath, nameLengthLimit } from '../../common';
 import constants from '../../constants/variable.js';
-import { withRouter } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './Addproject.scss';
 
 const formItemLayout = {
@@ -44,7 +43,6 @@ const formItemLayout = {
     setBreadcrumb
   }
 )
-@withRouter
 class ProjectList extends Component {
   constructor(props) {
     super(props);
@@ -52,20 +50,20 @@ class ProjectList extends Component {
       groupList: [],
       currGroupId: null
     };
+    this.formRef = React.createRef();
   }
   static propTypes = {
     groupList: PropTypes.array,
-    form: PropTypes.object,
     currGroup: PropTypes.object,
     addProject: PropTypes.func,
-    history: PropTypes.object,
+    router: PropTypes.object,
     setBreadcrumb: PropTypes.func,
     fetchGroupList: PropTypes.func
   };
 
   handlePath = e => {
     let val = e.target.value;
-    this.props.form.setFieldsValue({
+    this.formRef.current?.setFieldsValue({
       basepath: handlePath(val)
     });
   };
@@ -82,8 +80,8 @@ class ProjectList extends Component {
         currGroupId: first ? String(first) : null
       },
       () => {
-        if (first) {
-          this.props.form.setFieldsValue({ group: String(first) });
+        if (first && this.formRef.current) {
+          this.formRef.current.setFieldsValue({ group: String(first) });
         }
       }
     );
@@ -91,23 +89,34 @@ class ProjectList extends Component {
 
   // 确认添加项目
   @autobind
-  handleOk(e) {
-    const { form, addProject } = this.props;
+  async handleOk(e) {
     e.preventDefault();
-    form.validateFields((err, values) => {
-      if (!err) {
-        values.group_id = values.group;
-        values.icon = constants.PROJECT_ICON[0];
-        values.color = pickRandomProperty(constants.PROJECT_COLOR);
-        addProject(values).then(res => {
-          if (res.payload.data.errcode == 0) {
-            form.resetFields();
-            message.success('创建成功! ');
-            this.props.history.push('/project/' + res.payload.data.data._id + '/interface/api');
-          }
+    const { addProject } = this.props;
+    if (!this.formRef.current) {
+      return;
+    }
+    try {
+      const values = await this.formRef.current.validateFields();
+      values.group_id = values.group;
+      values.icon = constants.PROJECT_ICON[0];
+      values.color = pickRandomProperty(constants.PROJECT_COLOR);
+      const res = await addProject(values);
+      if (res.payload.data.errcode == 0) {
+        this.formRef.current.resetFields();
+        this.formRef.current.setFieldsValue({
+          group: this.state.currGroupId
+            ? String(this.state.currGroupId)
+            : undefined,
+          project_type: 'private'
         });
+        message.success('创建成功! ');
+        this.props.router.navigate(
+          '/project/' + res.payload.data.data._id + '/interface/api'
+        );
       }
-    });
+    } catch (err) {
+      // 表单校验失败会走这里，无需额外处理
+    }
   }
 
   async componentDidMount() {
@@ -128,42 +137,50 @@ class ProjectList extends Component {
   }
 
   render() {
-    const { getFieldDecorator } = this.props.form;
     const { groupList, currGroupId } = this.state;
     return (
       <div className="g-row">
         <div className="g-row m-container">
-          <Form>
-            <FormItem {...formItemLayout} label="项目名称">
-              {getFieldDecorator('name', {
-                rules: nameLengthLimit('项目')
-              })(<Input />)}
+          <Form
+            ref={this.formRef}
+            initialValues={{
+              project_type: 'private',
+              group: currGroupId ? String(currGroupId) : undefined
+            }}
+          >
+            <FormItem
+              {...formItemLayout}
+              label="项目名称"
+              name="name"
+              rules={nameLengthLimit('项目')}
+            >
+              <Input />
             </FormItem>
 
-            <FormItem {...formItemLayout} label="所属分组">
-              {getFieldDecorator('group', {
-                initialValue: currGroupId ? String(currGroupId) : undefined,
-                rules: [
-                  {
-                    required: true,
-                    message: '请选择项目所属的分组!'
-                  }
-                ]
-              })(
-                <Select>
-                  {groupList.map((item, index) => (
-                    <Option
-                      disabled={
-                        !(item.role === 'dev' || item.role === 'owner' || item.role === 'admin')
-                      }
-                      value={item._id.toString()}
-                      key={index}
-                    >
-                      {item.group_name}
-                    </Option>
-                  ))}
-                </Select>
-              )}
+            <FormItem
+              {...formItemLayout}
+              label="所属分组"
+              name="group"
+              rules={[
+                {
+                  required: true,
+                  message: '请选择项目所属的分组!'
+                }
+              ]}
+            >
+              <Select>
+                {groupList.map((item, index) => (
+                  <Option
+                    disabled={
+                      !(item.role === 'dev' || item.role === 'owner' || item.role === 'admin')
+                    }
+                    value={item._id.toString()}
+                    key={index}
+                  >
+                    {item.group_name}
+                  </Option>
+                ))}
+              </Select>
             </FormItem>
 
             <hr className="breakline" />
@@ -174,61 +191,64 @@ class ProjectList extends Component {
                 <span>
                   基本路径&nbsp;
                   <Tooltip title="接口基本路径，为空是根路径">
-                    <Icon type="question-circle-o" />
+                    <Icon name="question-circle-o" />
                   </Tooltip>
                 </span>
               }
+              name="basepath"
+              rules={[
+                {
+                  required: false,
+                  message: '请输入项目基本路径'
+                }
+              ]}
             >
-              {getFieldDecorator('basepath', {
-                rules: [
-                  {
-                    required: false,
-                    message: '请输入项目基本路径'
-                  }
-                ]
-              })(<Input onBlur={this.handlePath} />)}
+              <Input onBlur={this.handlePath} />
             </FormItem>
 
-            <FormItem {...formItemLayout} label="描述">
-              {getFieldDecorator('desc', {
-                rules: [
-                  {
-                    required: false,
-                    message: '描述不超过144字!',
-                    max: 144
-                  }
-                ]
-              })(<TextArea rows={4} />)}
+            <FormItem
+              {...formItemLayout}
+              label="描述"
+              name="desc"
+              rules={[
+                {
+                  required: false,
+                  message: '描述不超过144字!',
+                  max: 144
+                }
+              ]}
+            >
+              <TextArea rows={4} />
             </FormItem>
 
-            <FormItem {...formItemLayout} label="权限">
-              {getFieldDecorator('project_type', {
-                rules: [
-                  {
-                    required: true
-                  }
-                ],
-                initialValue: 'private'
-              })(
-                <RadioGroup>
-                  <Radio value="private" className="radio">
-                    <Icon type="lock" />私有<br />
-                    <span className="radio-desc">只有组长和项目开发者可以索引并查看项目信息</span>
-                  </Radio>
-                  <br />
-                  {/* <Radio value="public" className="radio">
-                    <Icon type="unlock" />公开<br />
+            <FormItem
+              {...formItemLayout}
+              label="权限"
+              name="project_type"
+              rules={[
+                {
+                  required: true
+                }
+              ]}
+            >
+              <RadioGroup>
+                <Radio value="private" className="radio">
+                  <Icon name="lock" />私有<br />
+                  <span className="radio-desc">只有组长和项目开发者可以索引并查看项目信息</span>
+                </Radio>
+                <br />
+                {/* <Radio value="public" className="radio">
+                    <Icon name="unlock" />公开<br />
                     <span className="radio-desc">任何人都可以索引并查看项目信息</span>
                   </Radio> */}
-                </RadioGroup>
-              )}
+              </RadioGroup>
             </FormItem>
           </Form>
           <Row>
             <Col sm={{ offset: 6 }} lg={{ offset: 3 }}>
               <Button
                 className="m-btn"
-                icon={<Icon type="plus" />}
+                icon={<Icon name="plus" />}
                 type="primary"
                 onClick={this.handleOk}
               >
@@ -242,4 +262,9 @@ class ProjectList extends Component {
   }
 }
 
-export default Form.create()(ProjectList);
+function ProjectListWithRouter(props) {
+  const navigate = useNavigate();
+  return <ProjectList {...props} router={{ navigate }} />;
+}
+
+export default ProjectListWithRouter;

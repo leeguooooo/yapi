@@ -24,6 +24,7 @@ const router = require('./router.js');
 
 global.storageCreator = storageCreator;
 let indexFile = process.argv[2] === 'dev' ? 'dev.html' : 'index.html';
+const isDev = process.argv[2] === 'dev';
 
 const app = websockify(new Koa());
 app.proxy = true;
@@ -48,7 +49,15 @@ app.use(async (ctx, next) => {
 
 app.use(async (ctx, next) => {
   if (ctx.path.indexOf('/prd') === 0) {
-    ctx.set('Cache-Control', 'max-age=8640000000');
+    // Auto cache policy:
+    // - In dev, always disable strong caching.
+    // - In prod, only enable long-term caching for hashed assets.
+    const isHashedAsset = /\/assets\/.+\.[0-9a-f]{8,}\.(js|css)$/.test(ctx.path);
+    if (!isDev && isHashedAsset) {
+      ctx.set('Cache-Control', 'max-age=31536000, immutable');
+    } else {
+      ctx.set('Cache-Control', 'no-cache');
+    }
     if (yapi.commons.fileExist(yapi.path.join(yapi.WEBROOT, 'static', ctx.path + '.gz'))) {
       ctx.set('Content-Encoding', 'gzip');
       ctx.path = ctx.path + '.gz';

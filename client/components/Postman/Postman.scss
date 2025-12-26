@@ -25,7 +25,8 @@
 
   .interface-test {
     padding: .24rem;
-    .ant-checkbox-wrapper{
+    .params-enable,
+    .postman-checkbox {
       display: flex;
     }
   }
@@ -51,12 +52,6 @@
   .response-tab{    
     margin-top: 20px;
     margin-bottom: 20px;
-    .ant-tabs-nav{
-      background: #f7f7f7;
-      border-radius: 0 0 4px 4px;      
-      border: 1px solid #d9d9d9;
-      width: 100%;
-    }
 
     .header, .body{
       margin-bottom: 10px;
@@ -74,15 +69,6 @@
 
     .response-test{
       min-height: 400px;
-    }
-  }
-
-  .ant-spin-blur {
-    .res-code.success {
-      background-color: transparent;
-    }
-    .res-code.fail {
-      background-color: transparent;
     }
   }
   .res-code {
@@ -180,10 +166,4 @@
     color: #2395f1;
   }
 
-}
-
-.env-modal{
-  .ant-modal-body{
-    padding: 0;
-  }
 }

@@ -52,13 +52,6 @@ export default defineConfig(async () => {
         'client': path.resolve(__dirname, 'client'),
         'common': path.resolve(__dirname, 'common'),
         'exts': path.resolve(__dirname, 'exts'),
-        '@ant-design/compatible': path.resolve(__dirname, 'client/shims/antd-compatible.js'),
-        // Shim legacy withRouter usage onto react-router-dom v7
-        'react-router-dom': path.resolve(__dirname, 'client/shims/react-router-dom.js'),
-        'react-router-dom-original': path.resolve(
-          __dirname,
-          'node_modules/react-router-dom/dist/index.js'
-        ),
         'common/postmanLib.js': path.resolve(__dirname, 'common/postmanLib.browser.js'),
         'common/postmanLib': path.resolve(__dirname, 'common/postmanLib.browser.js'),
         'common/utils': path.resolve(__dirname, 'common/utils.browser.js'),
@@ -102,6 +95,15 @@ export default defineConfig(async () => {
       rollupOptions: {
         input: {
           main: 'client/index.jsx'
+        },
+        output: {
+          entryFileNames: 'assets/main.js',
+          chunkFileNames: 'assets/[name].js',
+          assetFileNames: chunkInfo => {
+            const ext = chunkInfo.name?.split('.').pop();
+            if (ext === 'css') return 'assets/main.css';
+            return 'assets/[name][extname]';
+          }
         }
       }
     },

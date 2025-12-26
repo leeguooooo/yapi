@@ -1,7 +1,8 @@
 const yapi = require('../yapi.js');
 const projectModel = require('../models/project.js');
 const interfaceModel = require('../models/interface.js');
-const mockExtra = require('../../common/mock-extra.js');
+const mockExtraModule = require('../../common/mock-extra.js');
+const mockExtra = mockExtraModule.default || mockExtraModule;
 const { schemaValidator } = require('../../common/utils.js');
 const _ = require('underscore');
 const Mock = require('mockjs');
@@ -79,7 +80,8 @@ function parseCookie(str) {
 
 function handleCorsRequest(ctx) {
   let header = ctx.request.header;
-  ctx.set('Access-Control-Allow-Origin', header.origin);
+  const origin = header.origin || `${ctx.protocol}://${ctx.host}`;
+  ctx.set('Access-Control-Allow-Origin', origin);
   ctx.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, HEADER, PATCH, OPTIONS');
   ctx.set('Access-Control-Allow-Headers', header['access-control-request-headers']);
   ctx.set('Access-Control-Allow-Credentials', true);
@@ -158,7 +160,8 @@ module.exports = async (ctx, next) => {
   paths.splice(0, 3);
   path = '/' + paths.join('/');
 
-  ctx.set('Access-Control-Allow-Origin', header.origin);
+  const origin = header.origin || `${ctx.protocol}://${ctx.host}`;
+  ctx.set('Access-Control-Allow-Origin', origin);
   ctx.set('Access-Control-Allow-Credentials', true);
 
   // ctx.set('Access-Control-Allow-Origin', '*');

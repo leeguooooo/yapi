@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import './index.scss';
 import { Layout, Tooltip, message, Row, Popconfirm } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 const { Content, Sider } = Layout;
 import ProjectEnvContent from './ProjectEnvContent.js';
 import { connect } from 'react-redux';
@@ -177,7 +177,7 @@ class ProjectEnv extends Component {
               cancelText="取消"
             >
               <Icon
-                type="delete"
+                name="delete"
                 className="interface-delete-icon"
                 style={{
                   display: this.state.delIcon == index && env.length - 1 !== 0 ? 'block' : 'none'
@@ -198,11 +198,11 @@ class ProjectEnv extends Component {
                 <div className="env-icon-style">
                   <h3>
                     环境列表&nbsp;<Tooltip placement="top" title="在这里添加项目的环境配置">
-                      <Icon type="question-circle-o" />
+                      <Icon name="question-circle-o" />
                     </Tooltip>
                   </h3>
                   <Tooltip title="添加环境变量">
-                    <Icon type="plus" onClick={() => this.addParams('env')} />
+                    <Icon name="plus" onClick={() => this.addParams('env')} />
                   </Tooltip>
                 </div>
               </Row>

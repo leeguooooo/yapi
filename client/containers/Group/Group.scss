@@ -4,7 +4,36 @@
   @include row-width-limit;
   margin: 0 auto .24rem;
 }
-.news-box .news-timeline .ant-timeline-item .ant-timeline-item-content{
-  min-width: 300px !important;
-  width: 75% !important;
+
+// allow flex children to shrink on small screens
+.group-main-layout {
+  min-width: 0;
+}
+.group-content {
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .group-layout {
+    flex-direction: column !important;
+    margin: 12px !important;
+  }
+
+  .group-sider {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 auto !important;
+    height: auto !important;
+    margin-bottom: 12px;
+  }
+
+  .group-main-layout {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .group-content {
+    margin: 0 !important;
+    min-width: 0;
+  }
 }

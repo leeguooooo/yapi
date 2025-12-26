@@ -29,12 +29,14 @@ import { createRoot } from 'react-dom/client';
 import App from './Application';
 import { Provider } from 'react-redux';
 import createStore from './reducer/create';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, message } from 'antd';
 import zhCN from 'antd/es/locale/zh_CN';
 
 const store = createStore();
 const container = document.getElementById('yapi');
 const root = createRoot(container);
+
+message.config({ top: 72 });
 
 root.render(
   <Provider store={store}>

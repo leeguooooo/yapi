@@ -1,18 +1,14 @@
 @use '../../../../styles/mixin.scss' as *;
 
-.interface-edit{
-  padding: 24px;
-  // overflow: hidden;
-  .interface-edit-item{
-    margin-bottom: 16px;
-    .ant-form-item-label label:after{
-      margin-left: 4px;
+  .interface-edit{
+    padding: 24px;
+    // overflow: hidden;
+    .interface-edit-item{
+      margin-bottom: 16px;
+      .interface-editor {
+        min-height: 300px;
+      }
     }
-
-    .interface-editor {
-      min-height: 300px;
-    }
-  }
 
   .interface-edit-json-info{
     margin-bottom: 5px;
@@ -42,13 +38,10 @@
     margin-left: 5px;
     cursor: pointer
   }
-  .ant-select-selection__rendered{
-    line-height: 34px;
-  }
   .interace-edit-desc{
     height: 250px;
   }
-  .ant-affix{
+  .interface-edit-affix{
     background-color: #f3f4f6;
      padding: 16px 0;
      z-index: 999;
@@ -99,13 +92,10 @@
     margin-right: 7px;
     padding: 0 5px;
   }
-  .ant-select-selection {
-    background-color: transparent;
-    border: none;
-  }
 }
 
-.toolTip .ant-tooltip-inner{
+.toolTip,
+.toolTip *{
   white-space: normal;
   word-break: break-all;
 }

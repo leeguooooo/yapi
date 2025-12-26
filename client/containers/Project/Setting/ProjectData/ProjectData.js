@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import './ProjectData.scss';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
 
 import URL from 'url';
 
@@ -69,7 +70,7 @@ class ProjectData extends Component {
     };
   }
   static propTypes = {
-    match: PropTypes.object,
+    projectId: PropTypes.string,
     curCatid: PropTypes.number,
     basePath: PropTypes.string,
     saveImportData: PropTypes.func,
@@ -80,7 +81,7 @@ class ProjectData extends Component {
   };
 
   componentDidMount() {
-    axios.get(`/api/interface/getCatMenu?project_id=${this.props.match.params.id}`).then(data => {
+    axios.get(`/api/interface/getCatMenu?project_id=${this.props.projectId}`).then(data => {
       if (data.data.errcode === 0 && Array.isArray(data.data.data)) {
         let menuList = data.data.data;
         this.setState({
@@ -90,7 +91,7 @@ class ProjectData extends Component {
       }
     });
     plugin.emitHook('import_data', importDataModule);
-    plugin.emitHook('export_data', exportDataModule, this.props.match.params.id);
+    plugin.emitHook('export_data', exportDataModule, this.props.projectId);
     const importKeys = Object.keys(importDataModule);
     const exportKeys = Object.keys(exportDataModule);
     this.setState({
@@ -120,7 +121,7 @@ class ProjectData extends Component {
   handleAddInterface = async res => {
     return await HandleImportData(
       res,
-      this.props.match.params.id,
+      this.props.projectId,
       this.state.selectCatid,
       this.state.menuList,
       this.props.basePath,
@@ -158,7 +159,7 @@ class ProjectData extends Component {
 
   showConfirm = async res => {
     let that = this;
-    let typeid = this.props.match.params.id;
+    let typeid = this.props.projectId;
     let apiCollections = res.apis.map(item => {
       return {
         method: item.method,
@@ -332,6 +333,7 @@ class ProjectData extends Component {
               <div className="dataImportTile">
                 <Select
                   placeholder="请选择导入数据的方式"
+                  style={{ width: '100%' }}
                   value={this.state.curImportType}
                   onChange={this.handleImportType}
                 >
@@ -438,7 +440,7 @@ class ProjectData extends Component {
               ) : (
                 <div className="import-content">
                   <Spin spinning={this.state.showLoading} tip="上传中...">
-                    <Dragger {...uploadMess}>
+                    <Dragger {...uploadMess} className="data-import-dragger">
                       <p className="ant-upload-drag-icon">
                         <InboxOutlined />
                       </p>
@@ -471,7 +473,12 @@ class ProjectData extends Component {
                 <h3>数据导出</h3>
               </div>
               <div className="dataImportTile">
-                <Select placeholder="请选择导出数据的方式" onChange={this.handleExportType} value={this.state.curExportType}>
+                <Select
+                  placeholder="请选择导出数据的方式"
+                  style={{ width: '100%' }}
+                  onChange={this.handleExportType}
+                  value={this.state.curExportType}
+                >
                   {Object.keys(exportDataModule).map(name => {
                     return (
                       <Option key={name} value={name}>
@@ -533,4 +540,9 @@ class ProjectData extends Component {
   }
 }
 
-export default ProjectData;
+function ProjectDataWithParams(props) {
+  const { id } = useParams();
+  return <ProjectData {...props} projectId={id} />;
+}
+
+export default ProjectDataWithParams;

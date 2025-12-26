@@ -78,6 +78,49 @@ function buildQueryPath(parsedPath) {
   };
 }
 
+function normalizePathWithBase(basepath = '', rawPath = '') {
+  const trim = str => (str || '').toString().trim();
+  const handlePath = p => {
+    let v = trim(p);
+    if (!v) return '';
+    if (v[0] !== '/') v = '/' + v;
+    if (v.length > 1 && v.endsWith('/')) v = v.slice(0, -1);
+    return v;
+  };
+
+  const base = handlePath(basepath);
+  let normalized = handlePath(rawPath);
+  if (!base) return normalized;
+  while (normalized.startsWith(base + '/')) {
+    normalized = normalized.slice(base.length);
+  }
+  if (normalized === base) {
+    normalized = '/';
+  }
+  return handlePath(normalized);
+}
+
+async function ensureNormalizedPath(project, record, model) {
+  if (!project || !record || !record.path) return record;
+  const normalized = normalizePathWithBase(project.basepath || '', record.path);
+  if (normalized === record.path) return record;
+  const parsed = parseRequestPath(normalized);
+  const query_path = parsed ? buildQueryPath(parsed) : record.query_path;
+  try {
+    await model.up(record._id, { path: normalized, query_path });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('normalize path failed', record._id, err.message);
+  }
+  if (record.toObject) {
+    const obj = record.toObject();
+    obj.path = normalized;
+    obj.query_path = query_path;
+    return obj;
+  }
+  return { ...record, path: normalized, query_path };
+}
+
 function buildCategoryTree(categories) {
   const map = new Map();
   const roots = [];
@@ -277,6 +320,8 @@ class interfaceController extends baseController {
     params.method = params.method.toUpperCase();
     params.req_params = params.req_params || [];
     params.res_body_type = params.res_body_type ? params.res_body_type.toLowerCase() : 'json';
+    const project = await this.projectModel.get(params.project_id);
+    params.path = normalizePathWithBase(project?.basepath || '', params.path);
     const http_path = parseRequestPath(params.path);
 
     if (!http_path) {
@@ -526,6 +571,7 @@ class interfaceController extends baseController {
       }
       let userinfo = await this.userModel.findById(result.uid);
       let project = await this.projectModel.getBaseInfo(result.project_id);
+      result = await ensureNormalizedPath(project, result, this.Model);
       if (project.project_type === 'private') {
         if ((await this.checkAuth(project._id, 'project', 'view')) !== true) {
           return (ctx.body = yapi.commons.resReturn(null, 406, '没有权限'));
@@ -599,6 +645,10 @@ class interfaceController extends baseController {
         count = await this.Model.listCount(option);
       }
 
+      // 归一化历史遗留的重复 basepath
+      result = await Promise.all(
+        result.map(item => ensureNormalizedPath(project, item, this.Model))
+      );
 
       ctx.body = yapi.commons.resReturn({
         count: count,
@@ -662,6 +712,11 @@ class interfaceController extends baseController {
 
       let count = await this.Model.listCount(option);
 
+      // 归一化历史遗留路径
+      result = await Promise.all(
+        result.map(item => ensureNormalizedPath(project, item, this.Model))
+      );
+
       ctx.body = yapi.commons.resReturn({
         count: count,
         total: Math.ceil(count / limit),
@@ -694,7 +749,10 @@ class interfaceController extends baseController {
       const { map, roots } = buildCategoryTree(categories);
       for (const [, cat] of map) {
         const list = await this.Model.listByCatid(cat._id);
-        cat.list = list.map(item => item.toObject());
+        const normalizedList = await Promise.all(
+          list.map(item => ensureNormalizedPath(project, item, this.Model))
+        );
+        cat.list = normalizedList.map(item => (item.toObject ? item.toObject() : item));
       }
       const result = treeMode ? roots : Array.from(map.values());
       ctx.body = yapi.commons.resReturn(result);
@@ -764,6 +822,8 @@ class interfaceController extends baseController {
     );
 
     if (params.path) {
+      const project = await this.projectModel.get(interfaceData.project_id);
+      params.path = normalizePathWithBase(project?.basepath || '', params.path);
       const http_path = parseRequestPath(params.path);
 
       if (!http_path) {
@@ -1374,10 +1434,14 @@ class interfaceController extends baseController {
       for (let i = 0, item, list; i < result.length; i++) {
         item = result[i].toObject();
         list = await this.Model.listByInterStatus(item._id, 'open');
-        for (let j = 0; j < list.length; j++) {
-          list[j] = list[j].toObject();
-          list[j].basepath = basepath;
-        }
+        list = await Promise.all(
+          list.map(async row => {
+            const normalized = await ensureNormalizedPath(project, row, this.Model);
+            const obj = normalized.toObject ? normalized.toObject() : normalized;
+            obj.basepath = basepath;
+            return obj;
+          })
+        );
 
         newResult = [].concat(newResult, list);
       }

@@ -208,6 +208,7 @@ class List extends Component {
         <div className="user-search-wrapper">
           <h2 style={{ marginBottom: '10px' }}>用户总数：{this.state.total}位</h2>
           <Search
+            className="user-search"
             onChange={e => this.handleSearch(e.target.value)}
             onSearch={this.handleSearch}
             placeholder="请输入用户名"

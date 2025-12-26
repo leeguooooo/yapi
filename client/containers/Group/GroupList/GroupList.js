@@ -2,10 +2,10 @@ import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Modal, Input, message, Spin, Row, Menu, Col, Popover, Tooltip } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 import { autobind } from 'core-decorators';
 import axios from 'axios';
-import { withRouter } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 const { TextArea } = Input;
 const Search = Input.Search;
 import UsernameAutoComplete from '../../../components/UsernameAutoComplete/UsernameAutoComplete.js';
@@ -46,15 +46,14 @@ const tip = (
     fetchGroupMsg
   }
 )
-@withRouter
-export default class GroupList extends Component {
+class GroupList extends Component {
   static propTypes = {
     groupList: PropTypes.array,
     currGroup: PropTypes.object,
     fetchGroupList: PropTypes.func,
     setCurrGroup: PropTypes.func,
-    match: PropTypes.object,
-    history: PropTypes.object,
+    router: PropTypes.object,
+    groupId: PropTypes.string,
     curUserRole: PropTypes.string,
     curUserRoleInGroup: PropTypes.string,
     studyTip: PropTypes.number,
@@ -78,9 +77,8 @@ export default class GroupList extends Component {
   }
 
   async componentDidMount() {
-    const groupId = !isNaN(this.props.match.params.groupId)
-      ? parseInt(this.props.match.params.groupId)
-      : 0;
+    const groupId =
+      this.props.groupId && !isNaN(this.props.groupId) ? parseInt(this.props.groupId, 10) : 0;
     await this.props.fetchGroupList();
     let currGroup = false;
     if (this.props.groupList.length && groupId) {
@@ -90,11 +88,11 @@ export default class GroupList extends Component {
         }
       }
     } else if (!groupId && this.props.groupList.length) {
-      this.props.history.push(`/group/${this.props.groupList[0]._id}`);
+      this.props.router.navigate(`/group/${this.props.groupList[0]._id}`);
     }
     if (!currGroup) {
       currGroup = this.props.groupList[0] || { group_name: '', group_desc: '' };
-      this.props.history.replace(`/group/${currGroup._id}`);
+      this.props.router.navigate(`/group/${currGroup._id}`, { replace: true });
     }
     this.setState({ groupList: this.props.groupList });
     this.props.setCurrGroup(currGroup);
@@ -172,7 +170,7 @@ export default class GroupList extends Component {
       return +group._id === +groupId;
     });
     this.props.setCurrGroup(currGroup);
-    this.props.history.replace(`/group/${currGroup._id}`);
+    this.props.router.navigate(`/group/${currGroup._id}`, { replace: true });
     this.props.fetchNewsData(groupId, 'group', 1, 10);
   }
 
@@ -215,7 +213,7 @@ export default class GroupList extends Component {
               <span className="name">{currGroup.group_name}</span>
               <Tooltip title="添加分组">
                 <a className="editSet">
-                  <Icon className="btn" type="folder-add" onClick={this.showModal} />
+                  <Icon className="btn" name="folder-add" onClick={this.showModal} />
                 </a>
               </Tooltip>
             
@@ -229,6 +227,9 @@ export default class GroupList extends Component {
                 placeholder="搜索分类"
                 onChange={this.searchGroup}
                 onSearch={v => this.searchGroup(null, v)}
+                id="group-search"
+                name="group-search"
+                className="group-search-input"
               />
             </div>
           </div>
@@ -244,22 +245,28 @@ export default class GroupList extends Component {
             selectedKeys={[`${currGroup._id}`]}
             items={this.state.groupList.map(group => {
               const isPrivate = group.type === 'private';
+              const showStudyPopover =
+                isPrivate &&
+                this.props.studyTip === 0 &&
+                !this.props.study &&
+                typeof window !== 'undefined' &&
+                window.innerWidth > 768;
               const label = isPrivate ? (
                 <>
-                  <Icon type="user" />
+                  <Icon name="user" />
                   <Popover
                     overlayClassName="popover-index"
                     content={<GuideBtns />}
                     title={tip}
-                    placement="right"
-                    visible={this.props.studyTip === 0 && !this.props.study}
+                    placement="bottomRight"
+                    open={showStudyPopover}
                   >
                     {group.group_name}
                   </Popover>
                 </>
               ) : (
                 <>
-                  <Icon type="folder-open" />
+                  <Icon name="folder-open" />
                   {group.group_name}
                 </>
               );
@@ -275,7 +282,7 @@ export default class GroupList extends Component {
         {this.state.addGroupModalVisible ? (
           <Modal
             title="添加分组"
-            visible={this.state.addGroupModalVisible}
+            open={this.state.addGroupModalVisible}
             onOk={this.addGroup}
             onCancel={this.hideModal}
             className="add-group-modal"
@@ -312,3 +319,11 @@ export default class GroupList extends Component {
     );
   }
 }
+
+function GroupListWithRouter(props) {
+  const navigate = useNavigate();
+  const { groupId } = useParams();
+  return <GroupList {...props} router={{ navigate }} groupId={groupId} />;
+}
+
+export default GroupListWithRouter;

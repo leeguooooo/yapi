@@ -1,7 +1,7 @@
 import './Home.scss';
 import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Row, Col, Button, Card } from 'antd';
 import {
   AppstoreOutlined,
@@ -10,12 +10,19 @@ import {
   TeamOutlined
 } from '@ant-design/icons';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
 import LogoSVG from '../../components/LogoSVG/index.js';
 import { changeMenuItem } from '../../reducer/modules/menu';
 import plugin from 'client/plugin.js';
 
 const ThirdLogin = plugin.emitHook('third_login');
+
+const sectionCardHeadStyle = {
+  borderBottom: '1px solid #f0f0f0',
+  padding: '0 24px',
+  minHeight: 56
+};
+
+const sectionCardBodyStyle = { padding: 24 };
 
 const HomeGuest = () => (
   <div className="g-body">
@@ -118,7 +125,13 @@ const HomeGuest = () => (
         <span className="desc">你想要的 Mock 服务都在这里</span>
         <Row className="row-card">
           <Col lg={12} xs={24} className="section-card">
-            <Card title="Mock 规则">
+            <Card
+              bordered={false}
+              className="home-section-card home-section-card--hoverable"
+              title={<span className="home-section-card-title">Mock 规则</span>}
+              headStyle={sectionCardHeadStyle}
+              bodyStyle={sectionCardBodyStyle}
+            >
               <p className="mock-desc">
                 通过学习一些简单的 Mock
                 模板规则即可轻松编写接口，这将大大提高定义接口的效率，并且无需为编写 Mock 数据烦恼:
@@ -207,7 +220,13 @@ const HomeGuest = () => (
             </Card>
           </Col>
           <Col lg={12} xs={24} className="section-card mock-after">
-            <Card title="生成的 Mock 数据">
+            <Card
+              bordered={false}
+              className="home-section-card home-section-card--hoverable"
+              title={<span className="home-section-card-title">生成的 Mock 数据</span>}
+              headStyle={sectionCardHeadStyle}
+              bodyStyle={sectionCardBodyStyle}
+            >
               <p className="mock-desc">
                 生成的 Mock 数据可以直接用 ajax
                 请求使用，也可以通过服务器代理使用（不需要修改项目一行代码）
@@ -298,7 +317,11 @@ const HomeGuest = () => (
       <div className="container animate-on-scroll">
         <Row className="row-card" style={{ marginBottom: '.48rem' }}>
           <Col lg={7} xs={10} className="section-card">
-            <Card>
+            <Card
+              bordered={false}
+              className="home-section-card home-section-card--manage"
+              bodyStyle={{ padding: 0 }}
+            >
               <div className="section-block block-first">
                 <h4>超级管理员(* N)</h4>
                 <p className="item"> - 创建分组</p>
@@ -347,7 +370,6 @@ HomeGuest.propTypes = {
     changeMenuItem
   }
 )
-@withRouter
 class Home extends Component {
   constructor(props) {
     super(props);
@@ -355,15 +377,14 @@ class Home extends Component {
 
   componentDidMount() {
     if (this.props.login) {
-      this.props.history.push('/group/261');
+      this.props.router.navigate('/group/261', { replace: true });
     }
   }
 
-  componentDidMount() { }
   static propTypes = {
     introList: PropTypes.array,
     login: PropTypes.bool,
-    history: PropTypes.object,
+    router: PropTypes.object,
     changeMenuItem: PropTypes.func
   };
   toStart = () => {
@@ -400,4 +421,9 @@ class Home extends Component {
   }
 }
 
-export default Home;
+function HomeWithRouter(props) {
+  const navigate = useNavigate();
+  return <Home {...props} router={{ navigate }} />;
+}
+
+export default HomeWithRouter;

@@ -2,13 +2,18 @@ import './Header.scss';
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Layout, Dropdown, message, Tooltip, Popover, Tag } from 'antd';
-import { LogoutOutlined, StarFilled, PlusCircleOutlined, QuestionCircleOutlined, DownOutlined } from '@ant-design/icons';
-import { Icon } from '@ant-design/compatible';
+import {
+  LogoutOutlined,
+  StarFilled,
+  PlusCircleOutlined,
+  QuestionCircleOutlined,
+  DownOutlined
+} from '@ant-design/icons';
+import Icon from 'client/components/Icon';
 import { checkLoginState, logoutActions, loginTypeAction } from '../../reducer/modules/user';
 import { changeMenuItem } from '../../reducer/modules/menu';
-import { withRouter } from 'react-router-dom';
 import Srch from './Search/Search';
 const { Header } = Layout;
 import LogoSVG from '../LogoSVG/index.js';
@@ -42,12 +47,12 @@ const buildUserMenuItems = props => {
       const content =
         item.name === '个人中心' ? (
           <Link to={item.path + `/${props.uid}`}>
-            {item.icon === 'logout' ? <LogoutOutlined /> : <Icon type={item.icon} />}
+            {item.icon === 'logout' ? <LogoutOutlined /> : <Icon name={item.icon} />}
             {item.name}
           </Link>
         ) : (
           <Link to={item.path}>
-            {item.icon === 'logout' ? <LogoutOutlined /> : <Icon type={item.icon} />}
+            {item.icon === 'logout' ? <LogoutOutlined /> : <Icon name={item.icon} />}
             {item.name}
           </Link>
         );
@@ -58,7 +63,7 @@ const buildUserMenuItems = props => {
     key: 'logout',
     label: (
       <a onClick={e => e.preventDefault()}>
-        <Icon type="logout" />
+        <Icon name="logout" />
         退出
       </a>
     )
@@ -114,13 +119,13 @@ const ToolUser = props => {
         <Srch groupList={props.groupList} />
       </li>
       <li className="toolbar-li">
-        <Popover
+          <Popover
           overlayClassName="popover-index"
           content={<GuideBtns />}
           title={tipFollow}
           placement="bottomRight"
           arrowPointAtCenter
-          visible={showFollowGuide}
+          open={showFollowGuide}
         >
           {showFollowGuide ? (
             <Link to="/follow">
@@ -136,13 +141,13 @@ const ToolUser = props => {
         </Popover>
       </li>
       <li className="toolbar-li">
-        <Popover
+          <Popover
           overlayClassName="popover-index"
           content={<GuideBtns />}
           title={tipAdd}
           placement="bottomRight"
           arrowPointAtCenter
-          visible={showAddGuide}
+          open={showAddGuide}
         >
           {showAddGuide ? (
             <Link to="/add-project">
@@ -164,7 +169,7 @@ const ToolUser = props => {
           title={tipDoc}
           placement="bottomRight"
           arrowPointAtCenter
-          visible={showDocGuide}
+          open={showDocGuide}
         >
           {showDocGuide ? (
             <a target="_blank" href="https://leeguooooo.github.io/yapi" rel="noopener noreferrer">
@@ -233,8 +238,7 @@ ToolUser.propTypes = {
     changeMenuItem
   }
 )
-@withRouter
-export default class HeaderCom extends Component {
+class HeaderCom extends Component {
   constructor(props) {
     super(props);
   }
@@ -251,7 +255,6 @@ export default class HeaderCom extends Component {
     checkLoginState: PropTypes.func,
     loginTypeAction: PropTypes.func,
     changeMenuItem: PropTypes.func,
-    history: PropTypes.object,
     location: PropTypes.object,
     study: PropTypes.bool,
     studyTip: PropTypes.number,
@@ -274,7 +277,7 @@ export default class HeaderCom extends Component {
       .logoutActions()
       .then(res => {
         if (res.payload.data.errcode == 0) {
-          this.props.history.push('/');
+          this.props.router?.navigate('/');
           this.props.changeMenuItem('/');
           message.success('退出成功! ');
         } else {
@@ -294,10 +297,11 @@ export default class HeaderCom extends Component {
     this.props.loginTypeAction('2');
   };
   checkLoginState = () => {
-    this.props.checkLoginState
+    this.props
+      .checkLoginState()
       .then(res => {
         if (res.payload.data.errcode !== 0) {
-          this.props.history.push('/');
+          this.props.router?.navigate('/');
         }
       })
       .catch(err => {
@@ -337,3 +341,10 @@ export default class HeaderCom extends Component {
     );
   }
 }
+
+function HeaderComWithRouter(props) {
+  const navigate = useNavigate();
+  return <HeaderCom {...props} router={{ navigate }} />;
+}
+
+export default HeaderComWithRouter;

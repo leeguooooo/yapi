@@ -1,8 +1,7 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Form } from 'client/components/LegacyForm';
-import { Button, message } from 'antd';
+import { Button, Form, message } from 'antd';
 const FormItem = Form.Item;
 import './project-request.scss';
 import AceEditor from 'client/components/AceEditor/AceEditor';
@@ -19,7 +18,6 @@ import { updateProjectScript, getProject } from '../../../../reducer/modules/pro
     getProject
   }
 )
-@Form.create()
 export default class ProjectRequest extends Component {
   static propTypes = {
     projectMsg: PropTypes.object,
@@ -28,11 +26,18 @@ export default class ProjectRequest extends Component {
     projectId: PropTypes.number
   };
 
+  state = {
+    pre_script: '',
+    after_script: ''
+  };
+
   componentDidMount() {
-    this.setState({
-      pre_script: this.props.projectMsg.pre_script,
-      after_script: this.props.projectMsg.after_script
-    });
+    if (this.props.projectMsg) {
+      this.setState({
+        pre_script: this.props.projectMsg.pre_script,
+        after_script: this.props.projectMsg.after_script
+      });
+    }
   }
 
   handleSubmit = async () => {
@@ -78,7 +83,7 @@ export default class ProjectRequest extends Component {
 
     return (
       <div className="project-request">
-        <Form onSubmit={this.handleSubmit}>
+        <Form layout="horizontal">
           <FormItem {...formItemLayout} label="Pre-request Script(请求参数处理脚本)">
             <AceEditor
               data={pre_script}
@@ -96,7 +101,7 @@ export default class ProjectRequest extends Component {
             />
           </FormItem>
           <FormItem {...tailFormItemLayout}>
-            <Button onClick={this.handleSubmit} type="primary">
+            <Button htmlType="button" onClick={this.handleSubmit} type="primary">
               保存
             </Button>
           </FormItem>

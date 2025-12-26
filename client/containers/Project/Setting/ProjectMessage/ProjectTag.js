@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col, Input } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 import './ProjectTag.scss';
 
 
@@ -93,7 +93,7 @@ class ProjectTag extends Component {
             {/* 新增的项中，只有最后一项没有有删除按钮 */}
             <Icon
               className="dynamic-delete-button delete"
-              type="delete"
+              name="delete"
               onClick={e => {
                 e.stopPropagation();
                 this.delHeader(index, name);

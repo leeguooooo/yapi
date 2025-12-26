@@ -5,6 +5,7 @@ import { formatTime } from '../../common.js';
 import PropTypes from 'prop-types';
 import { setBreadcrumb, setImageUrl } from '../../reducer/modules/user';
 import { connect } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
 const EditButton = props => {
   const { isAdmin, isOwner, onClick, name, admin } = props;
@@ -61,7 +62,7 @@ EditButton.propTypes = {
 )
 class Profile extends Component {
   static propTypes = {
-    match: PropTypes.object,
+    uid: PropTypes.string,
     curUid: PropTypes.number,
     userType: PropTypes.string,
     setBreadcrumb: PropTypes.func,
@@ -81,22 +82,22 @@ class Profile extends Component {
   }
 
   componentDidMount() {
-    this._uid = this.props.match.params.uid;
+    this._uid = this.props.uid;
     this.handleUserinfo(this.props);
   }
 
   componentDidUpdate(prevProps) {
-    if (!this.props.match.params.uid) {
+    if (!this.props.uid) {
       return;
     }
-    if (this._uid !== this.props.match.params.uid) {
-      this._uid = this.props.match.params.uid;
+    if (this._uid !== this.props.uid) {
+      this._uid = this.props.uid;
       this.handleUserinfo(this.props);
     }
   }
 
   handleUserinfo(props) {
-    const uid = props.match.params.uid;
+    const uid = props.uid;
     this.getUserInfo(uid);
   }
 
@@ -241,6 +242,7 @@ class Profile extends Component {
       userNameEditHtml = (
         <div className="edit-content">
           <Input
+            style={{ marginBottom: 8 }}
             value={_userinfo.username}
             name="username"
             onChange={this.changeUserinfo}
@@ -288,6 +290,7 @@ class Profile extends Component {
       emailEditHtml = (
         <div className="edit-content">
           <Input
+            style={{ marginBottom: 8 }}
             placeholder="Email"
             value={_userinfo.email}
             name="email"
@@ -544,4 +547,9 @@ function getBase64(img, callback) {
   reader.readAsDataURL(img);
 }
 
-export default Profile;
+function ProfileWithParams(props) {
+  const { uid } = useParams();
+  return <Profile {...props} uid={uid} />;
+}
+
+export default ProfileWithParams;

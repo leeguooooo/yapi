@@ -11,14 +11,7 @@
     }
     
     .composition-schemas {
-      .ant-collapse-header {
-        padding: 8px 16px !important;
-        font-size: 13px;
-      }
-      
-      .ant-collapse-content-box {
-        padding: 12px;
-      }
+      // Collapse header/body spacing handled via public `styles` prop.
     }
     
     .discriminator-mapping {
@@ -59,15 +52,13 @@
     color: #495057;
   }
   
-  .ant-alert {
-    .ant-alert-message {
-      font-weight: 500;
-      color: #1890ff;
-    }
-    
-    .ant-alert-description {
-      color: #666;
-      font-size: 13px;
-    }
+  .openapi3-alert-message {
+    font-weight: 500;
+    color: #1890ff;
+  }
+
+  .openapi3-alert-description {
+    color: #666;
+    font-size: 13px;
   }
 }

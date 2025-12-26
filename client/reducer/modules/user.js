@@ -53,28 +53,28 @@ export default (state = initialState, action) => {
       }
       return {
         ...state,
-        isLogin: action.payload.data.errcode == 0,
-        isLDAP: action.payload.data.ladp,
-        canRegister: action.payload.data.canRegister,
-        role: action.payload.data.data ? action.payload.data.data.role : null,
-        loginState: action.payload.data.errcode == 0 ? MEMBER_STATUS : GUEST_STATUS,
-        userName: action.payload.data.data ? action.payload.data.data.username : null,
-        uid: action.payload.data.data ? action.payload.data.data._id : null,
-        type: action.payload.data.data ? action.payload.data.data.type : null,
-        study: action.payload.data.data ? action.payload.data.data.study : false
+        isLogin: action.payload?.data?.errcode == 0,
+        isLDAP: action.payload?.data?.ladp,
+        canRegister: action.payload?.data?.canRegister,
+        role: action.payload?.data?.data ? action.payload.data.data.role : null,
+        loginState: action.payload?.data?.errcode == 0 ? MEMBER_STATUS : GUEST_STATUS,
+        userName: action.payload?.data?.data ? action.payload.data.data.username : null,
+        uid: action.payload?.data?.data ? action.payload.data.data._id : null,
+        type: action.payload?.data?.data ? action.payload.data.data.type : null,
+        study: action.payload?.data?.data ? action.payload.data.data.study : false
       };
     }
     case LOGIN: {
-      if (action.payload.data.errcode === 0) {
+      if (action.payload?.data?.errcode === 0) {
         return {
           ...state,
           isLogin: true,
           loginState: MEMBER_STATUS,
-          uid: action.payload.data.data.uid,
-          userName: action.payload.data.data.username,
-          role: action.payload.data.data.role,
-          type: action.payload.data.data.type,
-          study: action.payload.data.data.study
+          uid: action.payload?.data?.data?.uid,
+          userName: action.payload?.data?.data?.username,
+          role: action.payload?.data?.data?.role,
+          type: action.payload?.data?.data?.type,
+          study: action.payload?.data?.data?.study
         };
       } else {
         return state;
@@ -102,10 +102,10 @@ export default (state = initialState, action) => {
         ...state,
         isLogin: true,
         loginState: MEMBER_STATUS,
-        uid: action.payload.data.data.uid,
-        userName: action.payload.data.data.username,
-        type: action.payload.data.data.type,
-        study: action.payload.data.data ? action.payload.data.data.study : false
+        uid: action.payload?.data?.data?.uid,
+        userName: action.payload?.data?.data?.username,
+        type: action.payload?.data?.data?.type,
+        study: action.payload?.data?.data ? action.payload.data.data.study : false
       };
     }
     case SET_BREADCRUMB: {

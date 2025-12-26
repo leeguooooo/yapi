@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import axios from 'axios';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Table, Button, message, Popconfirm, Tooltip } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 import { fetchMockCol } from 'client/reducer/modules/mockCol';
 import { formatTime } from 'client/common.js';
 import constants from 'client/constants/variable.js';
@@ -24,12 +24,12 @@ import _ from 'underscore';
     fetchMockCol
   }
 )
-@withRouter
-export default class MockCol extends Component {
+class MockCol extends Component {
   static propTypes = {
     list: PropTypes.array,
     currInterface: PropTypes.object,
-    match: PropTypes.object,
+    projectId: PropTypes.string,
+    actionId: PropTypes.string,
     fetchMockCol: PropTypes.func,
     currProject: PropTypes.object
   };
@@ -45,7 +45,7 @@ export default class MockCol extends Component {
   }
 
   componentDidMount() {
-    const interfaceId = this.props.match.params.actionId;
+    const interfaceId = this.props.actionId;
     this.props.fetchMockCol(interfaceId);
   }
 
@@ -80,8 +80,8 @@ export default class MockCol extends Component {
       return null;
     }
     const { caseData: currcase } = this.state;
-    const interface_id = this.props.match.params.actionId;
-    const project_id = this.props.match.params.id;
+    const interface_id = this.props.actionId;
+    const project_id = this.props.projectId;
     caseData = Object.assign({
       ...caseData,
       interface_id: interface_id,
@@ -102,7 +102,7 @@ export default class MockCol extends Component {
   };
 
   deleteCase = async id => {
-    const interface_id = this.props.match.params.actionId;
+    const interface_id = this.props.actionId;
     await axios.post('/api/plugin/advmock/case/del', { id }).then(async res => {
       if (res.data.errcode === 0) {
         message.success('删除成功');
@@ -115,7 +115,7 @@ export default class MockCol extends Component {
 
   // mock case 可以设置开启的关闭
   openMockCase = async (id , enable=true)=> {
-    const interface_id = this.props.match.params.actionId;
+    const interface_id = this.props.actionId;
 
     await axios.post('/api/plugin/advmock/case/hide', {
       id,
@@ -249,14 +249,14 @@ export default class MockCol extends Component {
             style={{ marginLeft: 8 }}
           >
             <Tooltip title="点击查看文档">
-              <Icon type="question-circle-o" />
+              <Icon name="question-circle-o" />
             </Tooltip>
           </a>
         </div>
         <Table columns={columns} dataSource={data} pagination={false} rowKey="_id" />
         {caseDesModalVisible && (
           <CaseDesModal
-            visible={caseDesModalVisible}
+            open={caseDesModalVisible}
             isAdd={isAdd}
             caseData={caseData}
             onOk={this.handleOk}
@@ -268,3 +268,10 @@ export default class MockCol extends Component {
     );
   }
 }
+
+function MockColWithParams(props) {
+  const { id, actionId } = useParams();
+  return <MockCol {...props} projectId={id} actionId={actionId} />;
+}
+
+export default MockColWithParams;

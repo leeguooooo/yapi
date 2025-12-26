@@ -4,6 +4,7 @@ import TimeTree from '../../../components/TimeLine/TimeLine';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Button } from 'antd';
+import { useParams } from 'react-router-dom';
 @connect(state => {
   return {
     uid: state.user.uid + '',
@@ -18,7 +19,7 @@ class Activity extends Component {
   static propTypes = {
     uid: PropTypes.string,
     getMockUrl: PropTypes.func,
-    match: PropTypes.object,
+    projectId: PropTypes.string,
     curdata: PropTypes.object,
     currProject: PropTypes.object
   };
@@ -42,17 +43,22 @@ class Activity extends Component {
                   `/mock/${currProject._id}${currProject.basepath}/yourPath`}
               </p>
               <Button type="primary">
-                <a href={`/api/project/download?project_id=${this.props.match.params.id}`}>
+                <a href={`/api/project/download?project_id=${this.props.projectId}`}>
                   下载Mock数据
                 </a>
               </Button>
             </div>
           </div>
-          <TimeTree type={'project'} typeid={+this.props.match.params.id} />
+          <TimeTree type={'project'} typeid={+this.props.projectId} />
         </section>
       </div>
     );
   }
 }
 
-export default Activity;
+function ActivityWithParams(props) {
+  const { id } = useParams();
+  return <Activity {...props} projectId={id} />;
+}
+
+export default ActivityWithParams;

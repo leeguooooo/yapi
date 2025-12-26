@@ -106,6 +106,35 @@ const handleApiPath = path => {
   return path[0] !== '/' ? '/' + path : path;
 };
 
+// 去重 basepath 与接口 path，确保只保留一次前缀
+const normalizeInterfacePath = (basepath = '', path = '') => {
+  const base = handlePath(basepath);
+  let normalizedPath = handleApiPath(path);
+  if (!base) return normalizedPath;
+  // 反复剥离重复的 base 前缀，避免 /base/base/foo 情况
+  while (normalizedPath.startsWith(base + '/')) {
+    normalizedPath = normalizedPath.slice(base.length);
+  }
+  if (normalizedPath === base) {
+    normalizedPath = '/';
+  }
+  return handleApiPath(normalizedPath);
+};
+
+// 安全拼接 basepath 与接口 path，避免重复前缀
+const joinBasePath = (basepath = '', path = '') => {
+  const base = handlePath(basepath);
+  const normalizedPath = handleApiPath(path);
+  if (!base) return normalizedPath;
+  if (normalizedPath === base || normalizedPath.startsWith(base + '/')) {
+    return normalizedPath;
+  }
+  if (normalizedPath === '/') {
+    return base;
+  }
+  return base + normalizedPath;
+};
+
 // 名称限制 constants.NAME_LIMIT 字符
 const nameLengthLimit = type => {
   const strLength = str => {
@@ -176,6 +205,8 @@ const common = {
   trim,
   handlePath,
   handleApiPath,
+  normalizeInterfacePath,
+  joinBasePath,
   nameLengthLimit,
   htmlFilter,
   entries,
@@ -200,6 +231,8 @@ export {
   trim,
   handlePath,
   handleApiPath,
+  normalizeInterfacePath,
+  joinBasePath,
   nameLengthLimit,
   htmlFilter,
   entries,

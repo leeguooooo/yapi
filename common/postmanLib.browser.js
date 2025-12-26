@@ -176,7 +176,8 @@ export default {
   checkNameIsRepeat,
   formatToString,
   handleJsonSchema,
-  httpRequestByNode
+  httpRequestByNode,
+  safeArray
 };
 export {
   checkRequestBodyIsRaw,
@@ -188,5 +189,6 @@ export {
   checkNameIsRepeat,
   formatToString,
   handleJsonSchema,
-  httpRequestByNode
+  httpRequestByNode,
+  safeArray
 };

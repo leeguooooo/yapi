@@ -22,8 +22,17 @@ $color-antd-purple: #7265e6;
   max-width: 12.2rem;
   min-width: 10.2rem;
   padding: 0 .24rem;
+  @media (max-width: 992px) {
+    min-width: 0;
+    width: 100%;
+    padding: 0 .16rem;
+  }
 }
 
 @mixin wrap-width-limit {
   min-width: 10.2rem;
+  @media (max-width: 992px) {
+    min-width: 0;
+    width: 100%;
+  }
 }

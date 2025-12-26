@@ -35,26 +35,26 @@ export default (state = initialState, action) => {
     case FETCH_INTERFACE_COL_LIST: {
       return {
         ...state,
-        interfaceColList: action.payload.data.data
+        interfaceColList: action.payload?.data?.data || []
       };
     }
     case FETCH_CASE_DATA: {
       return {
         ...state,
-        currCase: action.payload.data.data
+        currCase: action.payload?.data?.data || {}
       };
     }
     case FETCH_CASE_LIST: {
       return {
         ...state,
-        currCaseList: action.payload.data.data
+        currCaseList: action.payload?.data?.data || []
       };
     }
 
     case FETCH_VARIABLE_PARAMS_LIST: {
       return {
         ...state,
-        variableParamsList: action.payload.data.data
+        variableParamsList: action.payload?.data?.data || []
       };
     }
     case SET_COL_DATA: {
@@ -66,7 +66,7 @@ export default (state = initialState, action) => {
     case FETCH_CASE_ENV_LIST: {
       return {
         ...state,
-        envList: action.payload.data.data
+        envList: action.payload?.data?.data || []
       };
     }
     default:

@@ -1,9 +1,8 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
-import {  } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 import './ErrMsg.scss';
-import { withRouter } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * 错误信息提示
@@ -25,7 +24,6 @@ import { withRouter } from 'react-router-dom';
  * @description 一般用于描述错误信息名称
  * @returns {object}
  */
-@withRouter
 class ErrMsg extends Component {
   constructor(props) {
     super(props);
@@ -33,7 +31,7 @@ class ErrMsg extends Component {
 
   static propTypes = {
     type: PropTypes.string,
-    history: PropTypes.object,
+    router: PropTypes.object,
     title: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
     desc: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
     opration: PropTypes.oneOfType([PropTypes.string, PropTypes.object])
@@ -48,7 +46,7 @@ class ErrMsg extends Component {
           title = '你还没有关注项目呢';
           desc = (
             <span>
-              先去 <a onClick={() => this.props.history.push('/group')}>“项目广场”</a> 逛逛吧,
+              先去 <a onClick={() => this.props.router.navigate('/group')}>“项目广场”</a> 逛逛吧,
               那里可以添加关注。
             </span>
           );
@@ -82,7 +80,7 @@ class ErrMsg extends Component {
     }
     return (
       <div className="err-msg">
-        <Icon type={icon} className="icon" />
+        <Icon name={icon} className="icon" />
         <p className="title">{title}</p>
         <p className="desc">{desc}</p>
         <p className="opration">{opration}</p>
@@ -91,4 +89,9 @@ class ErrMsg extends Component {
   }
 }
 
-export default ErrMsg;
+function ErrMsgWithRouter(props) {
+  const navigate = useNavigate();
+  return <ErrMsg {...props} router={{ navigate }} />;
+}
+
+export default ErrMsgWithRouter;

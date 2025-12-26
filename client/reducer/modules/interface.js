@@ -37,12 +37,12 @@ export default (state = initialState, action) => {
     case FETCH_INTERFACE_DATA:
       return {
         ...state,
-        curdata: action.payload.data.data
+        curdata: action.payload?.data?.data || {}
       };
     case FETCH_INTERFACE_LIST_MENU:
       return {
         ...state,
-        list: action.payload.data.data
+        list: action.payload?.data?.data || []
       };
     case CHANGE_EDIT_STATUS: {
       return {
@@ -54,16 +54,16 @@ export default (state = initialState, action) => {
     case FETCH_INTERFACE_LIST: {
       return {
         ...state,
-        totalTableList: action.payload.data.data.list,
-        totalCount: action.payload.data.data.count
+        totalTableList: action.payload?.data?.data?.list || [],
+        totalCount: action.payload?.data?.data?.count || 0
       };
     }
 
     case FETCH_INTERFACE_CAT_LIST: {
       return {
         ...state,
-        catTableList: action.payload.data.data.list,
-        count: action.payload.data.data.count
+        catTableList: action.payload?.data?.data?.list || [],
+        count: action.payload?.data?.data?.count || 0
       };
     }
     default:

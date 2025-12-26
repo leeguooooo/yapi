@@ -33,8 +33,11 @@ function CheckCrossInstall(props) {
         <Alert
           message={
             <div>
-              重要：当前的接口测试服务，需安装免费测试增强插件,仅支持 chrome
-              浏览器，选择下面任意一种安装方式：
+              提示：未检测到 Cross Request 插件。
+              <br />
+              现在会直接用浏览器请求真实接口；如果因跨域或服务不可达失败，会自动回退到 Mock。
+              <br />
+              如需绕过跨域限制或调试真实接口，可按教程安装插件：
               {/* <div>
                 <a
                   target="blank"
@@ -51,7 +54,8 @@ function CheckCrossInstall(props) {
               </div>
             </div>
           }
-          type="warning"
+          type="info"
+          showIcon
         />
       )}
     </div>

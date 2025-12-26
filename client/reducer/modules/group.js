@@ -36,7 +36,7 @@ export default (state = initialState, action) => {
     case FETCH_GROUP_LIST: {
       return {
         ...state,
-        groupList: action.payload.data.data
+        groupList: action.payload?.data?.data || []
       };
     }
     case UPDATE_GROUP_LIST: {
@@ -48,25 +48,26 @@ export default (state = initialState, action) => {
     case SET_CURR_GROUP: {
       return {
         ...state,
-        currGroup: action.payload.data.data
+        currGroup: action.payload?.data?.data || state.currGroup
       };
     }
     case FETCH_GROUP_MEMBER: {
       return {
         ...state,
-        member: action.payload.data.data
+        member: action.payload?.data?.data || []
       };
     }
     case FETCH_GROUP_MSG: {
       console.log(action.payload)
       // const {role,group_name,group_desc,} = action.payload.data.data
+      const groupData = action.payload?.data?.data || state.currGroup;
       return {
         ...state,
-        role: action.payload.data.data.role,
-        currGroup: action.payload.data.data,
+        role: groupData.role,
+        currGroup: groupData,
         field: {
-          name: action.payload.data.data.custom_field1.name,
-          enable: action.payload.data.data.custom_field1.enable
+          name: groupData?.custom_field1?.name,
+          enable: groupData?.custom_field1?.enable
         }
       };
     }

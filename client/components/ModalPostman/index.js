@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import './index.scss';
 import { Alert, Modal, Row, Col, Collapse, Input, Tooltip } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 import MockList from './MockList.js';
 import MethodsList from './MethodsList.js';
 import VariablesSelect from './VariablesSelect.js';
@@ -36,7 +36,7 @@ function closeRightTabsAndAddNewTab(arr, index, name, params) {
 
 class ModalPostman extends Component {
   static propTypes = {
-    visible: PropTypes.bool,
+    open: PropTypes.bool,
     handleCancel: PropTypes.func,
     handleOk: PropTypes.func,
     inputValue: PropTypes.any,
@@ -208,7 +208,7 @@ class ModalPostman extends Component {
   };
 
   render() {
-    const { visible, envType } = this.props;
+    const { open, envType } = this.props;
     const { methodsParamsList, constantInput } = this.state;
 
     const outputParams = () => {
@@ -231,18 +231,19 @@ class ModalPostman extends Component {
       <Modal
         title={
           <p>
-            <Icon type="edit" /> 高级参数设置
+            <Icon name="edit" /> 高级参数设置
           </p>
         }
-        visible={visible}
+        open={open}
         onOk={() => this.handleOk(outputParams())}
         onCancel={this.handleCancel}
         wrapClassName="modal-postman"
         width={1024}
         maskClosable={false}
         okText="插入"
+        bodyStyle={{ padding: 0 }}
       >
-        <Row className="modal-postman-form" type="flex">
+        <Row className="modal-postman-form" type="flex" style={{ flexWrap: 'nowrap' }}>
           {methodsParamsList.map((item, index) => {
             return item.type === 'dataSource' ? (
               <Col span={8} className="modal-postman-col" key={index}>
@@ -271,7 +272,7 @@ class ModalPostman extends Component {
                             placement="top"
                             title="YApi 提供了强大的变量参数功能，你可以在测试的时候使用前面接口的 参数 或 返回值 作为 后面接口的参数，即使接口之间存在依赖，也可以轻松 一键测试~"
                           >
-                            <Icon type="question-circle-o" />
+                            <Icon name="question-circle-o" />
                           </Tooltip>
                         </h3>
                       }

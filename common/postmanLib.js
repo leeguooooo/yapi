@@ -657,7 +657,8 @@ module.exports = {
   formatRequestBody,
   handleParamsToRequest,
   handleDownload,
-  httpRequestByNode
+  httpRequestByNode,
+  safeArray
 };
 module.exports.default = module.exports;
 module.exports.__esModule = true;

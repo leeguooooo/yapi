@@ -1,10 +1,9 @@
 import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
 import { Modal, Collapse, Row, Col, Input, message, Button } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { withRouter } from 'react-router-dom';
 import { fetchInterfaceColList } from '../../../../../reducer/modules/interfaceCol';
 
 const { TextArea } = Input;
@@ -18,13 +17,12 @@ const Panel = Collapse.Panel;
     fetchInterfaceColList
   }
 )
-@withRouter
 export default class AddColModal extends Component {
   static propTypes = {
-    visible: PropTypes.bool,
+    open: PropTypes.bool,
     interfaceColList: PropTypes.array,
     fetchInterfaceColList: PropTypes.func,
-    match: PropTypes.object,
+    projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     onOk: PropTypes.func,
     onCancel: PropTypes.func,
     caseName: PropTypes.string
@@ -43,7 +41,7 @@ export default class AddColModal extends Component {
   }
 
   componentDidMount() {
-    this.props.fetchInterfaceColList(this.props.match.params.id);
+    this.props.fetchInterfaceColList(this.props.projectId);
     this.setState({ caseName: this.props.caseName });
   }
 
@@ -54,7 +52,7 @@ export default class AddColModal extends Component {
 
   addCol = async () => {
     const { addColName: name, addColDesc: desc } = this.state;
-    const project_id = this.props.match.params.id;
+    const project_id = this.props.projectId;
     const res = await axios.post('/api/col/add_col', { name, desc, project_id });
     if (!res.data.errcode) {
       message.success('添加集合成功');
@@ -77,7 +75,7 @@ export default class AddColModal extends Component {
       <Modal
         className="add-col-modal"
         title="添加到集合"
-        visible={this.props.visible}
+        open={this.props.open}
         onOk={() => this.props.onOk(id, this.state.caseName)}
         onCancel={this.props.onCancel}
       >
@@ -102,7 +100,7 @@ export default class AddColModal extends Component {
                 className={`col-item ${col._id === id ? 'selected' : ''}`}
                 onClick={() => this.select(col._id)}
               >
-                <Icon type="folder-open" style={{ marginRight: 6 }} />
+                <Icon name="folder-open" style={{ marginRight: 6 }} />
                 {col.name}
               </li>
             ))

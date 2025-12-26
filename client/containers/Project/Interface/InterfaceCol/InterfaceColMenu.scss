@@ -1,8 +1,5 @@
 .col-list-tree {
   line-height: 25px;
-  .ant-tree-node-content-wrapper {
-    width: calc(100% - 28px);
-  }
   .opts-icon,
   .case-delete-icon {
     line-height: 25px;
@@ -17,6 +14,7 @@
     display: flex;
     justify-content: space-between;
     overflow: hidden;
+    width: 100%;
     .casename {
       overflow: hidden;
     }
@@ -137,11 +135,6 @@
 }
 
 .import-case-modal {
-  .ant-modal-body {
-    max-height: 800px;
-    overflow-y: scroll;
-  }
-
   .select-project {
     margin-bottom: 16px;
   }
@@ -165,10 +158,6 @@
     height: 50px;
     font-size: 14px;
     width: 70px;
-  }
-
-  .ant-modal-body {
-    padding-top: 32px;
   }
 
   .row {

@@ -69,6 +69,7 @@ export default class Group extends Component {
     if (this.state.groupId === -1) return <Spin />;
     const GroupContent = (
       <Layout
+        className="group-layout"
         style={{
           minHeight: 'calc(100vh - 100px)',
           marginLeft: '24px',
@@ -78,13 +79,15 @@ export default class Group extends Component {
       >
         <Sider
           theme="light"
+          className="group-sider"
           style={{ height: '100%', background: '#f5f7fb', paddingRight: '0' }}
           width={300}
         >
           <GroupList />
         </Sider>
-        <Layout style={{ background: 'transparent' }}>
+        <Layout className="group-main-layout" style={{ background: 'transparent' }}>
           <Content
+            className="group-content"
             style={{
               height: '100%',
               margin: '0 24px 0 16px',

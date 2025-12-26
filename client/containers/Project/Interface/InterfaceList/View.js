@@ -3,10 +3,10 @@ import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Table, Row, Col, Tooltip, message, Tag } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 import { Link } from 'react-router-dom';
 import AceEditor from 'client/components/AceEditor/AceEditor';
-import { formatTime, safeArray } from '../../../../common.js';
+import { formatTime, safeArray, joinBasePath } from '../../../../common.js';
 import ErrMsg from '../../../../components/ErrMsg/ErrMsg.js';
 import variable from '../../../../constants/variable';
 import constants from '../../../../constants/variable.js';
@@ -37,6 +37,18 @@ class View extends Component {
     custom_field: PropTypes.object
   };
 
+  getAceHeight(data, min = 220, max = 420) {
+    try {
+      const text =
+        typeof data === 'string' ? data : JSON.stringify(data || {}, null, 2);
+      const lines = text ? text.split('\n').length : 0;
+      const height = Math.min(Math.max(lines * 18 + 40, min), max);
+      return height;
+    } catch (e) {
+      return min;
+    }
+  }
+
   req_body_form(req_body_type, req_body_form) {
     if (req_body_type === 'form') {
       const columns = [
@@ -59,7 +71,7 @@ class View extends Component {
               </span>
             ) : (
               <span>
-                <Icon type="file" className="query-icon" />文件
+                <Icon name="file" className="query-icon" />文件
               </span>
             );
           }
@@ -144,14 +156,23 @@ class View extends Component {
                 title="返回数据 Schema (OpenAPI 3.1)"
               />
             )}
-            <AceEditor data={res_body} readOnly={true} style={{ minHeight: 600 }} />
+            <AceEditor
+              data={res_body}
+              readOnly={true}
+              style={{ height: this.getAceHeight(res_body) }}
+            />
           </div>
         );
       }
     } else if (res_body_type === 'raw') {
       return (
         <div className="colBody">
-          <AceEditor data={res_body} readOnly={true} mode="text" style={{ minHeight: 300 }} />
+          <AceEditor
+            data={res_body}
+            readOnly={true}
+            mode="text"
+            style={{ height: this.getAceHeight(res_body, 200, 360) }}
+          />
         </div>
       );
     }
@@ -416,6 +437,7 @@ class View extends Component {
     }
 
     const { tag, up_time, title, uid, username } = this.props.curData;
+    const fullPath = joinBasePath(this.props.currProject.basepath, this.props.curData.path);
 
     let res = (
       <div className="caseContainer">
@@ -479,15 +501,12 @@ class View extends Component {
               >
                 {this.props.curData.method}
               </span>
-              <span className="colValue">
-                {this.props.currProject.basepath}
-                {this.props.curData.path}
-              </span>
+              <span className="colValue">{fullPath}</span>
               <Tooltip title="复制路径">
                 <Icon
-                  type="copy"
+                  name="copy"
                   className="interface-url-icon"
-                  onClick={() => this.copyUrl(this.props.currProject.basepath + this.props.curData.path)}
+                  onClick={() => this.copyUrl(fullPath)}
                   style={{ display: this.state.enter ? 'inline-block' : 'none' }}
                 />
               </Tooltip>
@@ -507,9 +526,7 @@ class View extends Component {
                       '//' +
                       location.hostname +
                       (location.port !== '' ? ':' + location.port : '') +
-                      `/mock/${this.props.currProject._id}${this.props.currProject.basepath}${
-                        this.props.curData.path
-                      }`,
+                      `/mock/${this.props.currProject._id}${fullPath}`,
                     '_blank'
                   )
                 }
@@ -518,9 +535,7 @@ class View extends Component {
                   '//' +
                   location.hostname +
                   (location.port !== '' ? ':' + location.port : '') +
-                  `/mock/${this.props.currProject._id}${this.props.currProject.basepath}${
-                    this.props.curData.path
-                  }`}
+                  `/mock/${this.props.currProject._id}${fullPath}`}
               </span>
             </Col>
           </Row>

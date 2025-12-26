@@ -16,9 +16,9 @@ import { FolderOpenOutlined, ApiOutlined, HomeOutlined } from '@ant-design/icons
 import AddInterfaceForm from './AddInterfaceForm';
 import AddInterfaceCatForm from './AddInterfaceCatForm';
 import axios from 'axios';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { produce } from 'immer';
-import { arrayChangeIndex } from '../../../../common.js';
+import { arrayChangeIndex, normalizeInterfacePath } from '../../../../common.js';
 
 import './interfaceMenu.scss';
 
@@ -105,7 +105,6 @@ const filterTreeByKeyword = (nodes = [], keyword = '') => {
 )
 class InterfaceMenu extends Component {
   static propTypes = {
-    match: PropTypes.object,
     inter: PropTypes.object,
     projectId: PropTypes.string,
     list: PropTypes.array,
@@ -115,7 +114,6 @@ class InterfaceMenu extends Component {
     addInterfaceData: PropTypes.func,
     deleteInterfaceData: PropTypes.func,
     initInterface: PropTypes.func,
-    history: PropTypes.object,
     router: PropTypes.object,
     getProject: PropTypes.func,
     fetchInterfaceCatList: PropTypes.func,
@@ -161,37 +159,43 @@ class InterfaceMenu extends Component {
   }
 
   async getList() {
-    let r = await this.props.fetchInterfaceListMenu(this.props.projectId);
-    this.setState({
-      list: r.payload.data.data
-    });
+    try {
+      const r = await this.props.fetchInterfaceListMenu(this.props.projectId);
+      const list = (r && r.payload && r.payload.data && r.payload.data.data) || [];
+      this.setState({ list });
+      return list;
+    } catch (err) {
+      console.error(err);
+      this.setState({ list: [] });
+      message.error('获取接口列表失败，请稍后重试');
+      return [];
+    }
   }
 
   componentDidMount() {
     this.handleRequest();
   }
 
-  componentDidUpdate(nextProps) {
-    if (this.props.list !== nextProps.list) {
-      // console.log('next', nextProps.list)
+  componentDidUpdate(prevProps) {
+    if (this.props.list !== prevProps.list) {
       this.setState({
-        list: nextProps.list
+        list: this.props.list
       });
     }
   }
 
   onSelect = selectedKeys => {
-    const { history, match } = this.props;
+    const navigate = this.props.router.navigate;
     let curkey = selectedKeys[0];
 
     if (!curkey || !selectedKeys) {
       return false;
     }
-    let basepath = '/project/' + match.params.id + '/interface/api';
+    let basepath = '/project/' + this.props.projectId + '/interface/api';
     if (curkey === 'root') {
-      history.push(basepath);
+      navigate(basepath);
     } else {
-      history.push(basepath + '/' + curkey);
+      navigate(basepath + '/' + curkey);
     }
     this.setState({
       expands: null
@@ -206,22 +210,28 @@ class InterfaceMenu extends Component {
 
   handleAddInterface = (data, cb) => {
     const catidVal = parseInt(data.catid, 10);
+    const basepath = this.props.curProject?.basepath || '';
+    const path = normalizeInterfacePath(basepath, data.path);
     const payload = {
       ...data,
-      project_id: this.props.projectId,
+      path,
+      project_id: Number(this.props.projectId),
       catid: Number.isNaN(catidVal) ? data.catid : catidVal
     };
-    axios.post('/api/interface/add', payload).then(res => {
+    axios.post('/api/interface/add', payload).then(async res => {
       if (res.data.errcode !== 0) {
         return message.error(res.data.errmsg);
       }
       message.success('接口添加成功');
       let interfaceId = res.data.data._id;
-      this.props.history.push('/project/' + this.props.projectId + '/interface/api/' + interfaceId);
-      this.getList();
+      // 先重新拉取列表，确保新接口出现在树和列表中，然后再跳转
+      await this.getList();
       this.setState({
         visible: false
       });
+      this.props.router.navigate(
+        '/project/' + this.props.projectId + '/interface/api/' + interfaceId
+      );
       if (cb) {
         cb();
       }
@@ -229,9 +239,10 @@ class InterfaceMenu extends Component {
   };
 
   handleAddInterfaceCat = data => {
+    const projectId = Number(this.props.projectId);
     const payload = {
       ...data,
-      project_id: this.props.projectId,
+      project_id: projectId,
       parent_id: data.parent_id ? parseInt(data.parent_id, 10) : 0
     };
     axios.post('/api/interface/add_cat', payload).then(res => {
@@ -240,7 +251,7 @@ class InterfaceMenu extends Component {
       }
       message.success('接口分类添加成功');
       this.getList();
-      this.props.getProject(data.project_id);
+      // 分类列表已重新获取，项目数据无需重复请求，避免 undefined id 误调用
       this.setState({
         add_cat_modal_visible: false
       });
@@ -282,8 +293,8 @@ class InterfaceMenu extends Component {
         await that.getList();
         await that.props.fetchInterfaceCatList({ catid });
         ref.destroy();
-        that.props.history.push(
-          '/project/' + that.props.match.params.id + '/interface/api/cat_' + catid
+        that.props.router.navigate(
+          '/project/' + that.props.projectId + '/interface/api/cat_' + catid
         );
       },
       onCancel() {
@@ -304,7 +315,7 @@ class InterfaceMenu extends Component {
         await that.getList();
         // await that.props.getProject(that.props.projectId)
         await that.props.fetchInterfaceList({ project_id: that.props.projectId });
-        that.props.history.push('/project/' + that.props.match.params.id + '/interface/api');
+        that.props.router.navigate('/project/' + that.props.projectId + '/interface/api');
         ref.destroy();
       },
       onCancel() {}
@@ -329,7 +340,9 @@ class InterfaceMenu extends Component {
       message.success('接口添加成功');
       let interfaceId = res.data.data._id;
       await this.getList();
-      this.props.history.push('/project/' + this.props.projectId + '/interface/api/' + interfaceId);
+      this.props.router.navigate(
+        '/project/' + this.props.projectId + '/interface/api/' + interfaceId
+      );
       this.setState({
         visible: false
       });
@@ -555,11 +568,16 @@ class InterfaceMenu extends Component {
   };
 
   render() {
-    const matchParams = this.props.match.params;
     // let menuList = this.state.list;
     const searchBox = (
       <div className="interface-filter">
-        <Input onChange={this.onFilter} value={this.state.filter} placeholder="搜索接口" />
+        <Input
+          onChange={this.onFilter}
+          value={this.state.filter}
+          placeholder="搜索接口"
+          id="interface-search"
+          name="interface-search"
+        />
         <Button
           type="primary"
           onClick={() => this.changeModal('add_cat_modal_visible', true)}
@@ -570,14 +588,16 @@ class InterfaceMenu extends Component {
         {this.state.visible ? (
           <Modal
             title="添加接口"
-            visible={this.state.visible}
+            open={this.state.visible}
             onCancel={() => this.changeModal('visible', false)}
             footer={null}
             className="addcatmodal"
+            styles={{ body: { padding: '10px 0' } }}
           >
             <AddInterfaceForm
               catdata={this.state.list}
               catid={this.state.curCatid}
+              basepath={this.props.curProject?.basepath}
               onCancel={() => this.changeModal('visible', false)}
               onSubmit={this.handleAddInterface}
             />
@@ -589,10 +609,11 @@ class InterfaceMenu extends Component {
         {this.state.add_cat_modal_visible ? (
           <Modal
             title="添加分类"
-            visible={this.state.add_cat_modal_visible}
+            open={this.state.add_cat_modal_visible}
             onCancel={() => this.changeModal('add_cat_modal_visible', false)}
             footer={null}
             className="addcatmodal"
+            styles={{ body: { padding: '10px 0' } }}
           >
             <AddInterfaceCatForm
               onCancel={() => this.changeModal('add_cat_modal_visible', false)}
@@ -607,10 +628,11 @@ class InterfaceMenu extends Component {
         {this.state.change_cat_modal_visible ? (
           <Modal
             title="修改分类"
-            visible={this.state.change_cat_modal_visible}
+            open={this.state.change_cat_modal_visible}
             onCancel={() => this.changeModal('change_cat_modal_visible', false)}
             footer={null}
             className="addcatmodal"
+            styles={{ body: { padding: '10px 0' } }}
           >
             <AddInterfaceCatForm
               catdata={this.state.curCatdata}
@@ -691,4 +713,4 @@ class InterfaceMenu extends Component {
   }
 }
 
-export default withRouter(InterfaceMenu);
+export default InterfaceMenu;

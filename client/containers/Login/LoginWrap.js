@@ -41,7 +41,7 @@ export default class LoginWrap extends Component {
 
   render() {
     const { canRegister } = this.props;
-    const { activeKey } = this.state;
+    const activeKey = this.state.activeKey || '1';
     {/** show only login when register is disabled */}
     const items = [
       { key: '1', label: '登录', children: <LoginForm /> },
@@ -61,6 +61,7 @@ export default class LoginWrap extends Component {
         onChange={this.handleTabChange}
         className="login-form"
         tabBarStyle={{ border: 'none' }}
+        destroyInactiveTabPane
         items={items}
       />
     );

@@ -1,5 +1,5 @@
 import Mock from 'mockjs';
-import * as powerString from './power-string.browser.js';
+import { filter, utils as stringUtils } from './power-string.browser.js';
 import json5 from 'json5';
 import Ajv from 'ajv';
 import localize from 'ajv-i18n';
@@ -28,78 +28,76 @@ function simpleJsonPathParse(key, json) {
 }
 
 function handleGlobalWord(word, json) {
-  if (typeof word === 'string') {
-    return simpleJsonPathParse(word, json);
-  } else {
-    return word;
-  }
+  if (!word || typeof word !== 'string' || word.indexOf('global.') !== 0) return word;
+  let keys = word.split('.');
+  keys = keys.filter(item => item);
+  return (json && json[keys[0]] && json[keys[0]][keys[1]]) || word;
 }
 
 export function handleMockWord(word) {
-  if (word && typeof word === 'object' && word.mock) {
-    word.mock = handleJson(word.mock, handleGlobalWord);
-    return word.mock;
-  }
-  if (typeof word === 'string' && word.indexOf('@') === 0) {
+  if (!word || typeof word !== 'string' || word[0] !== '@') return word;
   return Mock.mock(word);
-  } else {
-    return word;
-  }
 }
 
 export function handleJson(data, handleValueFn) {
-  try {
-    data = handleValueFn(data);
-    data = JSON.stringify(data);
-    data = JSON.parse(data);
-    data = JSON.stringify(data, handleValueWithFilter({ handleValueFn }));
-    return JSON.parse(data);
-  } catch (err) {
+  if (!data) {
     return data;
   }
+  if (typeof data === 'string') {
+    return handleValueFn(data);
+  }
+  if (typeof data === 'object') {
+    for (let i in data) {
+      data[i] = handleJson(data[i], handleValueFn);
+    }
+  } else {
+    return data;
+  }
+  return data;
 }
 
 function handleValueWithFilter(context) {
-  return function(key, value) {
-    if (typeof value === 'string') {
-      try {
-        value = powerString.filter(value, (match, idx) => handleFilter(value, match, context));
-      } catch (err) {
-        return value;
-      }
+  return function(match) {
+    if (match[0] === '@') {
+      return handleMockWord(match);
+    } else if (match.indexOf('$.') === 0) {
+      return simpleJsonPathParse(match, context);
+    } else if (match.indexOf('global.') === 0) {
+      return handleGlobalWord(match, context);
+    } else {
+      return match;
     }
-    if (typeof context.handleValueFn === 'function') {
-      value = context.handleValueFn(value, context.json);
-    }
-    return value;
   };
 }
 
 function handleFilter(str, match, context) {
-  switch (match.type) {
-    case 'Function':
-      if (typeof context.handleValueFn === 'function') {
-        return context.handleValueFn(match.match, context.json);
-      }
-      return match.match;
-    case 'Mock':
-      return stringUtils.handleMock(match.match);
-    default:
-      return str;
+  match = match.trim();
+  try {
+    return filter(match, handleValueWithFilter(context));
+  } catch (err) {
+    return str;
   }
 }
 
 export function handleParamsValue(val, context = {}) {
-  if (val === null || typeof val === 'undefined') {
+  const variableRegexp = /\{\{\s*([^}]+?)\}\}/g;
+  if (!val || typeof val !== 'string') {
     return val;
   }
-  if (typeof val === 'string') {
-    return powerString.filter(val, match => handleFilter(val, match, context));
+  val = val.trim();
+
+  let match = val.match(/^\{\{([^\}]+)\}\}$/);
+  if (!match) {
+    if (val[0] === '@' || val[0] === '$') {
+      return handleFilter(val, val, context);
+    }
+  } else {
+    return handleFilter(val, match[1], context);
   }
-  if (typeof val === 'object') {
-    return handleJson(val, context.handleValueFn);
-  }
-  return val;
+
+  return val.replace(variableRegexp, (str, match) => {
+    return handleFilter(str, match, context);
+  });
 }
 
 export function safeArray(arr) {
@@ -207,8 +205,12 @@ export function timeago(timestamp) {
 export function schemaValidator(schema, params) {
   try {
     const ajv = new Ajv({
-      format: false,
-      allErrors: true
+      allErrors: true,
+      strict: false,
+      validateFormats: false,
+      schemaId: 'auto',
+      meta: false,
+      logger: false
     });
 
     schema = schema || {
@@ -216,6 +218,37 @@ export function schemaValidator(schema, params) {
       title: 'empty object',
       properties: {}
     };
+    const normalizeDraft04Exclusive = node => {
+      if (!node || typeof node !== 'object') return;
+      if (node.exclusiveMinimum === true && typeof node.minimum === 'number') {
+        node.exclusiveMinimum = node.minimum;
+        delete node.minimum;
+      } else if (node.exclusiveMinimum === false) {
+        delete node.exclusiveMinimum;
+      }
+      if (node.exclusiveMaximum === true && typeof node.maximum === 'number') {
+        node.exclusiveMaximum = node.maximum;
+        delete node.maximum;
+      } else if (node.exclusiveMaximum === false) {
+        delete node.exclusiveMaximum;
+      }
+      Object.keys(node).forEach(key => {
+        const val = node[key];
+        if (Array.isArray(val)) {
+          val.forEach(child => normalizeDraft04Exclusive(child));
+        } else if (val && typeof val === 'object') {
+          normalizeDraft04Exclusive(val);
+        }
+      });
+    };
+
+    if (schema && typeof schema === 'object') {
+      schema = JSON.parse(JSON.stringify(schema));
+      if (schema.$schema && /draft-04/i.test(schema.$schema)) {
+        delete schema.$schema;
+      }
+      normalizeDraft04Exclusive(schema);
+    }
     const validate = ajv.compile(schema);
     let valid = validate(params);
 
@@ -251,7 +284,6 @@ export default {
   handleParamsValue,
   simpleJsonPathParse,
   handleMockWord,
-  joinPath: powerString.utils.joinPath,
   safeArray,
   isJson5,
   isJson,
@@ -260,7 +292,6 @@ export default {
   json_format,
   ArrayToObject,
   timeago,
-  depth: powerString.utils.depth,
   schemaValidator,
   handlePath
 };

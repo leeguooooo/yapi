@@ -1,39 +1,21 @@
 import React, { PureComponent as Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { fetchInterfaceColList, setColData, fetchCaseList, fetchCaseData } from '../../../../reducer/modules/interfaceCol';
 import { fetchProjectList } from '../../../../reducer/modules/project';
 import axios from 'axios';
 import ImportInterface from './ImportInterface';
-import { Form } from 'client/components/LegacyForm';
-import { Icon } from '@ant-design/compatible';
-import { Input, Button, Modal, message, Tooltip, Tree } from 'antd';
+import Icon from 'client/components/Icon';
+import { Input, Button, Modal, message, Tooltip, Tree, Form } from 'antd';
 import { arrayChangeIndex } from '../../../../common.js';
 import _ from 'underscore'
 
-const FormItem = Form.Item;
 const confirm = Modal.confirm;
 const headHeight = 240; // menu顶部到网页顶部部分的高度
 
 import './InterfaceColMenu.scss';
 
-const ColModalForm = Form.create()(props => {
-  const { visible, onCancel, onCreate, form, title } = props;
-  const { getFieldDecorator } = form;
-  return (
-    <Modal visible={visible} title={title} onCancel={onCancel} onOk={onCreate}>
-      <Form layout="vertical">
-        <FormItem label="集合名">
-          {getFieldDecorator('colName', {
-            rules: [{ required: true, message: '请输入集合命名！' }]
-          })(<Input />)}
-        </FormItem>
-        <FormItem label="简介">{getFieldDecorator('colDesc')(<Input type="textarea" />)}</FormItem>
-      </Form>
-    </Modal>
-  );
-});
+const FormItem = Form.Item;
 
 @connect(
   state => {
@@ -57,18 +39,16 @@ const ColModalForm = Form.create()(props => {
     fetchProjectList
   }
 )
-@withRouter
-export default class InterfaceColMenu extends Component {
+class InterfaceColMenu extends Component {
   static propTypes = {
-    match: PropTypes.object,
     interfaceColList: PropTypes.array,
+    projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     fetchInterfaceColList: PropTypes.func,
     // fetchInterfaceListMenu: PropTypes.func,
     fetchCaseList: PropTypes.func,
     fetchCaseData: PropTypes.func,
     setColData: PropTypes.func,
     currCaseId: PropTypes.number,
-    history: PropTypes.object,
     isRander: PropTypes.bool,
     // list: PropTypes.array,
     router: PropTypes.object,
@@ -81,6 +61,10 @@ export default class InterfaceColMenu extends Component {
   state = {
     colModalType: '',
     colModalVisible: false,
+    colModalValues: {
+      colName: '',
+      colDesc: ''
+    },
     editColId: 0,
     filterValue: '',
     importInterVisible: false,
@@ -100,16 +84,16 @@ export default class InterfaceColMenu extends Component {
     this.getList();
   }
 
-  componentDidUpdate(nextProps) {
-    if (this.props.interfaceColList !== nextProps.interfaceColList) {
+  componentDidUpdate(prevProps) {
+    if (this.props.interfaceColList !== prevProps.interfaceColList) {
       this.setState({
-        list: nextProps.interfaceColList
+        list: this.props.interfaceColList
       });
     }
   }
 
   async getList() {
-    let r = await this.props.fetchInterfaceColList(this.props.match.params.id);
+    let r = await this.props.fetchInterfaceColList(this.props.projectId);
     this.setState({
       list: r.payload.data.data
     });
@@ -117,9 +101,13 @@ export default class InterfaceColMenu extends Component {
   }
 
   addorEditCol = async () => {
-    const { colName: name, colDesc: desc } = this.form.getFieldsValue();
+    const { colName: name, colDesc: desc } = this.state.colModalValues || {};
+    if (!name || !name.trim()) {
+      message.error('请输入集合命名！');
+      return;
+    }
     const { colModalType, editColId: col_id } = this.state;
-    const project_id = this.props.match.params.id;
+    const project_id = this.props.projectId;
     let res = {};
     if (colModalType === 'add') {
       res = await axios.post('/api/col/add_col', { name, desc, project_id });
@@ -148,13 +136,13 @@ export default class InterfaceColMenu extends Component {
       const { nodeType, id } = key.startsWith('col_') || key.startsWith('case_')
         ? { nodeType: key.split('_')[0], id: key.split('_')[1] }
         : {};
-      const project_id = this.props.match.params.id;
+      const project_id = this.props.projectId;
       if (nodeType === 'col') {
         this.props.setColData({ isRander: false });
-        this.props.history.push('/project/' + project_id + '/interface/col/' + id);
+        this.props.router.navigate('/project/' + project_id + '/interface/col/' + id);
       } else if (nodeType === 'case') {
         this.props.setColData({ isRander: false });
-        this.props.history.push('/project/' + project_id + '/interface/case/' + id);
+        this.props.router.navigate('/project/' + project_id + '/interface/case/' + id);
       }
     }
     this.setState({ expands: null });
@@ -162,7 +150,7 @@ export default class InterfaceColMenu extends Component {
 
   showDelColConfirm = colId => {
     let that = this;
-    const params = this.props.match.params;
+    const projectId = this.props.projectId;
     confirm({
       title: '您确认删除此测试集合',
       content: '温馨提示：该操作会删除该集合下所有测试用例，用例删除后无法恢复',
@@ -175,7 +163,7 @@ export default class InterfaceColMenu extends Component {
           const result = await that.getList();
           const nextColId = result.payload.data.data[0]._id;
 
-          that.props.history.push('/project/' + params.id + '/interface/col/' + nextColId);
+          that.props.router.navigate('/project/' + projectId + '/interface/col/' + nextColId);
         } else {
           message.error(res.data.errmsg);
         }
@@ -198,6 +186,7 @@ export default class InterfaceColMenu extends Component {
 
     if (add_col_res.data.errcode) {
       message.error(add_col_res.data.errmsg);
+      this._copyInterfaceSign = false;
       return;
     }
 
@@ -242,7 +231,7 @@ export default class InterfaceColMenu extends Component {
         let colId = res.data.data.col_id;
         let projectId=res.data.data.project_id;
         await this.getList();
-        this.props.history.push('/project/' + projectId + '/interface/col/' + colId);
+        this.props.router.navigate('/project/' + projectId + '/interface/col/' + colId);
         this.setState({
           visible: false
         });
@@ -252,7 +241,7 @@ export default class InterfaceColMenu extends Component {
   };
   showDelCaseConfirm = caseId => {
     let that = this;
-    const params = this.props.match.params;
+    const projectId = this.props.projectId;
     confirm({
       title: '您确认删除此测试用例',
       content: '温馨提示：用例删除后无法恢复',
@@ -265,7 +254,7 @@ export default class InterfaceColMenu extends Component {
           that.getList();
           // 如果删除当前选中 case，切换路由到集合
           if (+caseId === +that.props.currCaseId) {
-            that.props.history.push('/project/' + params.id + '/interface/col/');
+            that.props.router.navigate('/project/' + projectId + '/interface/col/');
           } else {
             // that.props.fetchInterfaceColList(that.props.match.params.id);
             that.props.setColData({ isRander: true });
@@ -282,12 +271,17 @@ export default class InterfaceColMenu extends Component {
     this.setState({
       colModalVisible: true,
       colModalType: type || 'add',
-      editColId: col && col._id
+      editColId: col && col._id,
+      colModalValues: editCol
     });
-    this.form.setFieldsValue(editCol);
   };
-  saveFormRef = form => {
-    this.form = form;
+  handleColFieldChange = (key, value) => {
+    this.setState({
+      colModalValues: {
+        ...this.state.colModalValues,
+        [key]: value
+      }
+    });
   };
 
   selectInterface = (importInterIds, selectedProject) => {
@@ -304,7 +298,7 @@ export default class InterfaceColMenu extends Component {
   };
 
   handleImportOk = async () => {
-    const project_id = this.state.selectedProject || this.props.match.params.id;
+    const project_id = this.state.selectedProject || this.props.projectId;
     const { importColId, importInterIds } = this.state;
     const res = await axios.post('/api/col/add_case_list', {
       interface_list: importInterIds,
@@ -394,7 +388,7 @@ export default class InterfaceColMenu extends Component {
   render() {
     // const { currColId, currCaseId, isShowCol } = this.props;
     const { colModalType, colModalVisible, importInterVisible } = this.state;
-    const currProjectId = this.props.match.params.id;
+    const currProjectId = this.props.projectId;
     // const menu = (col) => {
     //   return (
     //     <Menu>
@@ -459,7 +453,7 @@ export default class InterfaceColMenu extends Component {
                 <div className="btns">
                   <Tooltip title="删除用例">
                     <Icon
-                      type="delete"
+                      name="delete"
                       className="interface-delete-icon"
                       onClick={e => {
                         e.stopPropagation();
@@ -470,7 +464,7 @@ export default class InterfaceColMenu extends Component {
                   </Tooltip>
                   <Tooltip title="克隆用例">
                     <Icon
-                      type="copy"
+                      name="copy"
                       className="interface-delete-icon"
                       onClick={e => {
                         e.stopPropagation();
@@ -497,7 +491,7 @@ export default class InterfaceColMenu extends Component {
               <div className="btns">
                 <Tooltip title="删除集合">
                   <Icon
-                    type="delete"
+                    name="delete"
                     className="interface-delete-icon"
                     onClick={e => {
                       e.stopPropagation();
@@ -508,7 +502,7 @@ export default class InterfaceColMenu extends Component {
                 </Tooltip>
                 <Tooltip title="修改集合">
                   <Icon
-                    type="edit"
+                    name="edit"
                     className="interface-delete-icon"
                     style={{ display: this.state.delIcon == col._id ? 'block' : 'none' }}
                     onClick={e => {
@@ -517,25 +511,25 @@ export default class InterfaceColMenu extends Component {
                     }}
                   />
                 </Tooltip>
-                <Tooltip title="克隆集合">
+                <Tooltip title="添加用例">
                   <Icon
-                    type="copy"
-                    className="interface-delete-icon"
-                    style={{ display: this.state.delIcon == col._id ? 'block' : 'none' }}
-                    onClick={e => {
-                      e.stopPropagation();
-                      this.copyInterface(col);
-                    }}
-                  />
-                </Tooltip>
-                <Tooltip title="导入接口">
-                  <Icon
-                    type="import"
+                    name="plus"
                     className="interface-delete-icon"
                     style={{ display: this.state.delIcon == col._id ? 'block' : 'none' }}
                     onClick={e => {
                       e.stopPropagation();
                       this.showImportInterfaceModal(col._id);
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip title="克隆集合">
+                  <Icon
+                    name="copy"
+                    className="interface-delete-icon"
+                    style={{ display: this.state.delIcon == col._id ? 'block' : 'none' }}
+                    onClick={e => {
+                      e.stopPropagation();
+                      this.copyInterface(col);
                     }}
                   />
                 </Tooltip>
@@ -577,9 +571,14 @@ export default class InterfaceColMenu extends Component {
     // console.log('currentKey', currentKes)
 
     return (
-      <div>
+        <div>
         <div className="interface-filter">
-          <Input placeholder="搜索测试集合" onChange={this.filterCol} />
+          <Input
+            placeholder="搜索测试集合"
+            onChange={this.filterCol}
+            id="col-search"
+            name="col-search"
+          />
           <Tooltip placement="bottom" title="添加集合">
             <Button
               type="primary"
@@ -606,23 +605,39 @@ export default class InterfaceColMenu extends Component {
             treeData={treeData}
           />
         </div>
-        <ColModalForm
-          ref={this.saveFormRef}
-          type={colModalType}
-          visible={colModalVisible}
+        <Modal
+          title={colModalType === 'edit' ? '修改集合' : '添加集合'}
+          open={colModalVisible}
           onCancel={() => {
-            this.setState({ colModalVisible: false });
+            this.setState({ colModalVisible: false, colModalValues: { colName: '', colDesc: '' } });
           }}
-          onCreate={this.addorEditCol}
-        />
+          onOk={this.addorEditCol}
+          destroyOnClose
+        >
+          <Form layout="vertical">
+            <FormItem label="集合名" required>
+              <Input
+                value={this.state.colModalValues.colName}
+                onChange={e => this.handleColFieldChange('colName', e.target.value)}
+              />
+            </FormItem>
+            <FormItem label="简介">
+              <Input
+                value={this.state.colModalValues.colDesc}
+                onChange={e => this.handleColFieldChange('colDesc', e.target.value)}
+              />
+            </FormItem>
+          </Form>
+        </Modal>
 
         <Modal
           title="导入接口到集合"
-          visible={importInterVisible}
+          open={importInterVisible}
           onOk={this.handleImportOk}
           onCancel={this.handleImportCancel}
           className="import-case-modal"
           width={800}
+          styles={{ body: { maxHeight: 800, overflowY: 'auto' } }}
         >
           <ImportInterface currProjectId={currProjectId} selectInterface={this.selectInterface} />
         </Modal>
@@ -630,3 +645,5 @@ export default class InterfaceColMenu extends Component {
     );
   }
 }
+
+export default InterfaceColMenu;

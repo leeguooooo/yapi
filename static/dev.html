@@ -7,13 +7,37 @@
 <meta name="description" content="YApi 是高效、易用、功能强大的 api 管理平台，旨在为开发、产品、测试人员提供更优雅的接口管理服务。可以帮助开发者轻松创建、发布、维护 API，YApi 还为用户提供了优秀的交互体验，开发人员只需利用平台提供的接口数据写入工具以及简单的点击操作就可以实现接口的管理。" />
 <title>YApi-高效、易用、功能强大的可视化接口管理平台</title>
 <link rel="icon" type="image/png" sizes="192x192" href="/image/favicon.png">
-<script type="module" src="http://127.0.0.1:4000/@vite/client"></script>
 </head>
 <body>
 <div id="yapi" style="height: 100%;"></div>
 
-<script type="module" src="http://127.0.0.1:4000/index.jsx"></script>
+<script type="module">
+  const devClientUrl = 'http://127.0.0.1:4000/@vite/client';
+  const devEntryUrl = 'http://127.0.0.1:4000/index.jsx';
+  const prodCssUrl = '/prd/assets/main.css';
+  const prodJsUrl = '/prd/assets/main.js';
 
+  const loadProdAssets = () => {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = prodCssUrl;
+    document.head.appendChild(css);
+
+    const js = document.createElement('script');
+    js.type = 'module';
+    js.src = prodJsUrl;
+    document.body.appendChild(js);
+  };
+
+  try {
+    await import(devClientUrl);
+    await import(devEntryUrl);
+    console.info('[yapi] Loaded Vite dev client.');
+  } catch (error) {
+    console.warn('[yapi] Vite dev server unavailable, falling back to built assets.', error);
+    loadProdAssets();
+  }
+</script>
 
 </body>
 </html>

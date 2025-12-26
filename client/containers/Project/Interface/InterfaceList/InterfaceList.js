@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { Table, Button, Modal, message, Tooltip, Select } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 import AddInterfaceForm from './AddInterfaceForm';
 import {
   fetchInterfaceListMenu,
@@ -13,6 +13,7 @@ import {
 import { getProject } from '../../../../reducer/modules/project.js';
 import { Link } from 'react-router-dom';
 import variable from '../../../../constants/variable';
+import { joinBasePath, normalizeInterfacePath } from '../../../../common.js';
 import './Edit.scss';
 import Label from '../../../../components/Label/Label.js';
 
@@ -64,9 +65,8 @@ class InterfaceList extends Component {
   static propTypes = {
     curData: PropTypes.object,
     catList: PropTypes.array,
-    match: PropTypes.object,
     curProject: PropTypes.object,
-    history: PropTypes.object,
+    router: PropTypes.object,
     fetchInterfaceListMenu: PropTypes.func,
     fetchInterfaceList: PropTypes.func,
     fetchInterfaceCatList: PropTypes.func,
@@ -78,7 +78,7 @@ class InterfaceList extends Component {
   };
 
   handleRequest = async props => {
-    const { params } = props.match;
+    const params = props.router?.params || {};
     if (!params.actionId) {
       let projectId = params.id;
       this.setState({
@@ -118,7 +118,7 @@ class InterfaceList extends Component {
       if (res.data.errcode !== 0) {
         return message.error(res.data.errmsg);
       }
-      let project_id = this.props.match.params.id;
+      let project_id = this.props.router?.params?.id;
       await this.props.getProject(project_id);
       await this.props.fetchInterfaceListMenu(project_id);
       message.success('接口集合简介更新成功');
@@ -134,15 +134,15 @@ class InterfaceList extends Component {
   };
 
   async componentDidMount() {
-    this.actionId = this.props.match.params.actionId;
-    await this.props.fetchInterfaceListMenu(this.props.match.params.id);
+    this.actionId = this.props.router?.params?.actionId;
+    await this.props.fetchInterfaceListMenu(this.props.router?.params?.id);
     this.handleRequest(this.props);
   }
 
   componentDidUpdate(prevProps) {
-    let _actionId = this.props.match.params.actionId;
+    let _actionId = this.props.router?.params?.actionId;
 
-    if (prevProps.match.params.actionId !== _actionId) {
+    if (prevProps.router?.params?.actionId !== _actionId) {
       this.actionId = _actionId;
       this.setState(
         {
@@ -155,9 +155,13 @@ class InterfaceList extends Component {
 
   handleAddInterface = data => {
     const catidVal = parseInt(data.catid, 10);
+    const projectId = this.props.router?.params?.id || this.props.curProject?._id;
+    const basepath = this.props.curProject?.basepath || '';
+    const path = normalizeInterfacePath(basepath, data.path);
     const payload = {
       ...data,
-      project_id: this.props.curProject._id,
+      path,
+      project_id: projectId,
       catid: Number.isNaN(catidVal) ? data.catid : catidVal
     };
     axios.post('/api/interface/add', payload).then(res => {
@@ -166,8 +170,8 @@ class InterfaceList extends Component {
       }
       message.success('接口添加成功');
       let interfaceId = res.data.data._id;
-      this.props.history.push('/project/' + data.project_id + '/interface/api/' + interfaceId);
-      this.props.fetchInterfaceListMenu(data.project_id);
+      this.props.router.navigate('/project/' + projectId + '/interface/api/' + interfaceId);
+      this.props.fetchInterfaceListMenu(projectId);
     });
   };
 
@@ -238,7 +242,7 @@ class InterfaceList extends Component {
         key: 'path',
         width: 50,
         render: (item, record) => {
-          const path = this.props.curProject.basepath + item;
+          const path = joinBasePath(this.props.curProject.basepath, item);
           let methodColor =
             variable.METHOD_COLOR[record.method ? record.method.toLowerCase() : 'get'] ||
             variable.METHOD_COLOR['get'];
@@ -251,7 +255,7 @@ class InterfaceList extends Component {
                 {record.method}
               </span>
               <Tooltip title="开放接口" placement="topLeft">
-                <span>{record.api_opened && <Icon className="opened" type="eye-o" />}</span>
+                <span>{record.api_opened && <Icon className="opened" name="eye-o" />}</span>
               </Tooltip>
               <Tooltip title={path} placement="topLeft" overlayClassName="toolTip">
                 <span className="path">{path}</span>
@@ -352,7 +356,7 @@ class InterfaceList extends Component {
     // }) : [];
     let data = [];
     let total = 0;
-    const { params } = this.props.match;
+    const params = this.props.router?.params || {};
     if (!params.actionId) {
       data = this.props.totalTableList;
       total = this.props.totalCount;
@@ -404,14 +408,16 @@ class InterfaceList extends Component {
         {this.state.visible && (
           <Modal
             title="添加接口"
-            visible={this.state.visible}
+            open={this.state.visible}
             onCancel={() => this.setState({ visible: false })}
             footer={null}
             className="addcatmodal"
+            styles={{ body: { padding: '10px 0' } }}
           >
             <AddInterfaceForm
               catid={this.state.catid}
               catdata={catTree}
+              basepath={this.props.curProject?.basepath}
               onCancel={() => this.setState({ visible: false })}
               onSubmit={this.handleAddInterface}
             />

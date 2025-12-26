@@ -80,7 +80,7 @@ export default (state = initialState, action) => {
     case FETCH_INTERFACE_PROJECT:
       return {
         ...state,
-        project: action.payload.data.data
+        project: action.payload?.data?.data || {}
       };
     case ADD_INTERFACE_CLIPBOARD:
       return {

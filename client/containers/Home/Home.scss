@@ -278,30 +278,23 @@ $color-bg-lightblue: #eef5fe; // Lighter blue bg
 
   // Card styles update
   .section-card {
-    .ant-card {
+    .home-section-card {
       border-radius: 12px;
       border: none;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .home-section-card--hoverable {
       transition: all 0.3s ease;
 
       &:hover {
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
       }
+    }
 
-      .ant-card-head {
-        border-bottom: 1px solid #f0f0f0;
-        padding: 0 24px;
-        min-height: 56px;
-
-        .ant-card-head-title {
-          font-size: 16px;
-          font-weight: 600;
-        }
-      }
-
-      .ant-card-body {
-        padding: 24px;
-      }
+    .home-section-card-title {
+      font-size: 16px;
+      font-weight: 600;
     }
   }
 
@@ -347,15 +340,11 @@ $color-bg-lightblue: #eef5fe; // Lighter blue bg
     background: #fff;
 
     .section-card {
-      .ant-card {
+      .home-section-card--manage {
         border-radius: 12px;
         overflow: hidden;
         border: none;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-      }
-
-      .ant-card-body {
-        padding: 0;
       }
     }
 

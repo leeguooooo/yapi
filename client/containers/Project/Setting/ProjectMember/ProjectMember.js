@@ -13,7 +13,7 @@ import {
   Switch,
   Tooltip
 } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 import PropTypes from 'prop-types';
 import { fetchGroupMsg } from '../../../../reducer/modules/group';
 import { connect } from 'react-redux';
@@ -30,6 +30,7 @@ import {
 } from '../../../../reducer/modules/project.js';
 import UsernameAutoComplete from '../../../../components/UsernameAutoComplete/UsernameAutoComplete.js';
 import '../Setting.scss';
+import { useParams } from 'react-router-dom';
 
 const Option = Select.Option;
 
@@ -79,8 +80,7 @@ class ProjectMember extends Component {
     };
   }
   static propTypes = {
-    match: PropTypes.object,
-    projectId: PropTypes.number,
+    projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     projectMsg: PropTypes.object,
     uid: PropTypes.number,
     addMember: PropTypes.func,
@@ -111,7 +111,7 @@ class ProjectMember extends Component {
   // 重新获取列表
 
   reFetchList = () => {
-    this.props.getProjectMemberList(this.props.match.params.id).then(res => {
+    this.props.getProjectMemberList(this.props.projectId).then(res => {
       this.setState({
         projectMemberList: arrayAddKey(res.payload.data.data),
         visible: false,
@@ -128,7 +128,7 @@ class ProjectMember extends Component {
   addMembers = memberUids => {
     this.props
       .addMember({
-        id: this.props.match.params.id,
+        id: this.props.projectId,
         member_uids: memberUids,
         role: this.state.inputRole
       })
@@ -156,7 +156,7 @@ class ProjectMember extends Component {
   // 删 - 删除分组成员
   deleteConfirm = member_uid => {
     return () => {
-      const id = this.props.match.params.id;
+      const id = this.props.projectId;
       this.props.delMember({ id, member_uid }).then(res => {
         if (!res.payload.data.errcode) {
           message.success(res.payload.data.errmsg);
@@ -168,7 +168,7 @@ class ProjectMember extends Component {
 
   // 改 - 修改成员权限
   changeUserRole = e => {
-    const id = this.props.match.params.id;
+    const id = this.props.projectId;
     const role = e.split('-')[0];
     const member_uid = e.split('-')[1];
     this.props.changeMemberRole({ id, member_uid, role }).then(res => {
@@ -181,7 +181,7 @@ class ProjectMember extends Component {
 
   // 修改用户是否接收消息通知
   changeEmailNotice = async (notice, member_uid) => {
-    const id = this.props.match.params.id;
+    const id = this.props.projectId;
     await this.props.changeMemberEmailNotice({ id, member_uid, notice });
     this.reFetchList(); // 添加成功后重新获取项目成员列表
   };
@@ -225,7 +225,7 @@ class ProjectMember extends Component {
   async componentDidMount() {
     const groupMemberList = await this.props.fetchGroupMemberList(this.props.projectMsg.group_id);
     const groupMsg = await this.props.fetchGroupMsg(this.props.projectMsg.group_id);
-    const projectMemberList = await this.props.getProjectMemberList(this.props.match.params.id);
+    const projectMemberList = await this.props.getProjectMemberList(this.props.projectId);
     this.setState({
       groupMemberList: groupMemberList.payload.data.data,
       groupName: groupMsg.payload.data.data.group_name,
@@ -270,14 +270,14 @@ class ProjectMember extends Component {
               <Button
                 className="btn"
                 type="primary"
-                icon={<Icon type="plus" />}
+                icon={<Icon name="plus" />}
                 onClick={this.showAddMemberModal}
               >
                 添加成员
               </Button>
               <Button
                 className="btn"
-                icon={<Icon type="plus" />}
+                icon={<Icon name="plus" />}
                 onClick={this.showImportMemberModal}
               >
                 批量导入成员
@@ -310,7 +310,7 @@ class ProjectMember extends Component {
                 >
                   <Button
                     type="danger"
-                    icon={<Icon type="delete" />}
+                    icon={<Icon name="delete" />}
                     className="btn-danger"
                   />
                 </Popconfirm>
@@ -344,7 +344,7 @@ class ProjectMember extends Component {
           {this.state.visible ? (
             <Modal
               title="添加成员"
-              visible={this.state.visible}
+              open={this.state.visible}
               onOk={this.handleOk}
               onCancel={this.handleCancel}
             >
@@ -374,7 +374,7 @@ class ProjectMember extends Component {
           )}
           <Modal
             title="批量导入成员"
-            visible={this.state.modalVisible}
+            open={this.state.modalVisible}
             onOk={this.handleModalOk}
             onCancel={this.handleModalCancel}
           >
@@ -405,11 +405,15 @@ class ProjectMember extends Component {
           />
           <Card
             bordered={false}
-            title={
-              this.state.groupName + ' 分组成员 ' + '(' + this.state.groupMemberList.length + ') 人'
-            }
             hoverable={true}
             className="setting-group"
+            headStyle={{ backgroundColor: '#eee', padding: '0 .08rem' }}
+            bodyStyle={{ padding: 0 }}
+            title={
+              <span className="setting-group-title">
+                {this.state.groupName} 分组成员 ({this.state.groupMemberList.length}) 人
+              </span>
+            }
           >
             {this.state.groupMemberList.length ? (
               this.state.groupMemberList.map((item, index) => {
@@ -455,4 +459,9 @@ class ProjectMember extends Component {
   }
 }
 
-export default ProjectMember;
+function ProjectMemberWithParams(props) {
+  const { id } = useParams();
+  return <ProjectMember {...props} projectId={id} />;
+}
+
+export default ProjectMemberWithParams;

@@ -11,11 +11,6 @@
 .card-danger {
   border-color: #ff561b;
   border-radius: 4px;
-  .ant-card-body {
-    display: flex;
-    align-items: center;
-    padding: .24rem !important;
-  }
   .card-danger-content {
     flex: 1;
   }
@@ -39,16 +34,10 @@
   margin-top: .48rem;
   border-radius: 2px;
   border-bottom: 1px solid #eee;
-  .ant-card-head {
-    background-color: #eee;
-    padding: 0 .08rem !important;
-  }
-  .ant-card-head-title {
+
+  .setting-group-title {
     font-size: .12rem;
     float: inherit;
-  }
-  .ant-card-body {
-    padding: 0 !important;
   }
   .card-item {
     padding: .1rem .15rem;
@@ -131,16 +120,16 @@
 
 .change-project-container {
   max-width: 320px;
-  .ant-popover-inner {
-    text-align: center;
-  }
-  .ant-popover-title {
+  text-align: center;
+
+  .change-project-popover-title {
     padding: 8px .16rem;
     height: auto;
   }
-  .ant-radio-button-wrapper {
+  .change-project-radio-button {
     font-size: 16px;
     border: none;
+    box-shadow: none;
     &:first-child {
       border: none;
     }
@@ -148,19 +137,8 @@
       display: none !important;
     }
   }
-  .ant-radio-button-wrapper-checked {
-    box-shadow: none;
-    color: #fff;
-    background-color: #2395f1;
-    border-radius: 4px;
-  }
   .color {
-    // .ant-radio-button-wrapper {
-    //   &:first-child {
-    //     border: none;
-    //   }
-    // }
-    .ant-radio-button-wrapper-checked {
+    .change-project-radio-button {
       border-radius: 0;
       &:hover {
         border: none;
@@ -203,7 +181,7 @@
 
 .project-env{
   // 环境配置中首个item的删除按钮定位调整
-  .ant-row-flex {
+  .first-menu-item {
     display: flex;
     flex-flow: row wrap;
     height: 60px;
@@ -222,6 +200,8 @@
   }
 }
 
-.radio.ant-radio-wrapper{
-  line-height: unset
+.project-setting {
+  .radio {
+    line-height: unset;
+  }
 }

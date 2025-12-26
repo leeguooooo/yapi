@@ -56,7 +56,7 @@ class NewsTimeline extends Component {
     if (data && data.length) {
       data = data.map(function(item, i) {
         return (
-          <Timeline.Item key={i}>
+          <Timeline.Item key={i} className="news-timeline-item">
             <span className="logoTimeago">{timeago(item.add_time)}</span>
             <span className="logusername">{item.username}</span>
             <span className="logtype">{item.type}</span>

@@ -74,7 +74,14 @@ class OpenAPI3SchemaViewer extends PureComponent {
           )}
         </div>
         
-        <Collapse size="small" className="composition-schemas">
+        <Collapse
+          size="small"
+          className="composition-schemas"
+          styles={{
+            header: { padding: '8px 16px', fontSize: 13 },
+            body: { padding: 12 }
+          }}
+        >
           {actualSchemas && actualSchemas.map((schema, index) => (
             <Panel 
               header={
@@ -122,8 +129,13 @@ class OpenAPI3SchemaViewer extends PureComponent {
           <Alert
             type="info"
             showIcon
-            message="类型识别"
-            description={`使用 ${composition.discriminator.propertyName} 字段进行类型识别`}
+            className="openapi3-alert"
+            message={<span className="openapi3-alert-message">类型识别</span>}
+            description={
+              <span className="openapi3-alert-description">
+                使用 {composition.discriminator.propertyName} 字段进行类型识别
+              </span>
+            }
             style={{ marginBottom: 16 }}
           />
         )}

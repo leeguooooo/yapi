@@ -1,7 +1,7 @@
 import React, { PureComponent as Component } from 'react';
 import PropTypes from 'prop-types';
 import { Table, Select, Tooltip } from 'antd';
-import { Icon } from '@ant-design/compatible';
+import Icon from 'client/components/Icon';
 import variable from '../../../../constants/variable';
 import { connect } from 'react-redux';
 const Option = Select.Option;
@@ -161,7 +161,7 @@ export default class ImportInterface extends Component {
           <span>
             状态{' '}
             <Tooltip title="筛选满足条件的接口集合">
-              <Icon type="question-circle-o" />
+              <Icon name="question-circle-o" />
             </Tooltip>
           </span>
         ),

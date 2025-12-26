@@ -24,9 +24,6 @@
     ul {
       border: none;
     }
-    .ant-menu-item {
-      font-size: 18px;
-    }
   }
   .user-name {
     padding: 0.24rem;
@@ -47,16 +44,9 @@
     padding: 24px;
     background: #fff;
     min-height: 5rem;
-    .ant-table-wrapper table {
-      // font-size: .14rem;
-
-      a {
-        // font-size: 13px;
-      }
-    }
     .user-search-wrapper {
       position: relative;
-      .ant-input-search {
+      .user-search {
         position: absolute;
         right: 0;
         top: 0;
@@ -130,10 +120,6 @@
           display: flex;
           flex-direction: column;
           max-width: 400px;
-          
-          .ant-input {
-            margin-bottom: 8px;
-          }
         }
       }
     }

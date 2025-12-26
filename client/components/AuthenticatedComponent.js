@@ -1,38 +1,23 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { Navigate, useLocation } from 'react-router-dom';
 import { changeMenuItem } from '../reducer/modules/menu';
 
-export function requireAuthentication(Component) {
-  class AuthenticatedComponent extends React.PureComponent {
-    constructor(props) {
-      super(props);
+export function requireAuthentication(WrappedComponent) {
+  function AuthenticatedComponent(props) {
+    const location = useLocation();
+    if (!props.isAuthenticated) {
+      const from = location?.pathname || '';
+      return <Navigate to="/login" replace state={{ from }} />;
     }
-    static propTypes = {
-      isAuthenticated: PropTypes.bool,
-      location: PropTypes.object,
-      dispatch: PropTypes.func,
-      history: PropTypes.object,
-      changeMenuItem: PropTypes.func
-    };
-    componentDidMount() {
-      this.checkAuth();
-    }
-    componentDidUpdate() {
-      this.checkAuth();
-    }
-    checkAuth() {
-      if (!this.props.isAuthenticated) {
-        this.props.history.push('/');
-        this.props.changeMenuItem('/');
-      }
-    }
-    render() {
-      // eslint-disable-next-line no-console
-      console.log('Auth render', { isAuthenticated: this.props.isAuthenticated, path: this.props.location?.pathname });
-      return <div>{this.props.isAuthenticated ? <Component {...this.props} /> : null}</div>;
-    }
+    return <WrappedComponent {...props} />;
   }
+
+  AuthenticatedComponent.propTypes = {
+    isAuthenticated: PropTypes.bool,
+    changeMenuItem: PropTypes.func
+  };
   
   const ConnectedComponent = connect(
     state => {
@@ -46,7 +31,8 @@ export function requireAuthentication(Component) {
   )(AuthenticatedComponent);
   
   // Ensure the component has a displayName for better debugging
-  ConnectedComponent.displayName = `AuthenticatedComponent(${Component.displayName || Component.name || 'Component'})`;
+  const displayName = WrappedComponent.displayName || WrappedComponent.name || 'Component';
+  ConnectedComponent.displayName = `AuthenticatedComponent(${displayName})`;
   
   return ConnectedComponent;
 }
